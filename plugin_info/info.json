@@ -10,6 +10,8 @@
 	"author" : "TiTidom",
 	"require" : "4.4.2",
 	"hasDependency" : true,
+	"hasOwnDeamon" : true,
+	"maxDependancyInstallTime" : 60,
 	"category" : "monitoring",
 	"language" : [
 		"fr_FR"
