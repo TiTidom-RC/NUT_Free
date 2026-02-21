@@ -48,8 +48,8 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
         <legend><i class="fas fa-info-circle"></i> {{Plugin(s)}}</legend>
 
         <div class="form-group">
-            <label class="col-md-3 control-label">{{Version NUT_Free}}
-                <sup><i class="fas fa-question-circle tooltips" title="{{Version du plugin NUT_Free à indiquer sur Community}}"></i></sup>
+            <label class="col-md-3 control-label">{{Version NUT Free}}
+                <sup><i class="fas fa-question-circle tooltips" title="{{Version du plugin NUT Free à indiquer sur Community}}"></i></sup>
             </label>
             <div class="col-md-1">
                 <input class="configKey form-control" data-l1key="pluginVersion" readonly />
@@ -86,6 +86,15 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
             </label>
             <div class="col-md-1">
                 <input class="configKey form-control" data-l1key="pyenvVersion" readonly />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-3 control-label">{{Désactiver les messages de MàJ}}
+                <sup><i class="fas fa-question-circle tooltips" title="{{Cocher cette case désactivera les messages de mise à jour du plugin dans le centre de message}}"></i></sup>
+            </label>
+            <div class="col-md-1">
+                <input type="checkbox" class="configKey" data-l1key="disableUpdateMsg" />
             </div>
         </div>
 
@@ -152,17 +161,5 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
                 <input class="configKey form-control" data-l1key="cycleFactor" placeholder="1.0" />
             </div>
         </div>
-
-        <legend><i class="fas fa-tasks"></i> {{Options}}</legend>
-
-        <div class="form-group">
-            <label class="col-md-3 control-label">{{Désactiver les messages de MàJ}}
-                <sup><i class="fas fa-question-circle tooltips" title="{{Cocher cette case désactivera les messages de mise à jour du plugin dans le centre de message}}"></i></sup>
-            </label>
-            <div class="col-md-3">
-                <input type="checkbox" class="configKey" data-l1key="disableUpdateMsg" />
-            </div>
-        </div>
-
     </fieldset>
 </form>
