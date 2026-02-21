@@ -407,7 +407,6 @@ my_jeedom_socket: Any = None
 
 try:
     if myConfig.pidFile:
-        os.makedirs(os.path.dirname(os.path.abspath(myConfig.pidFile)), exist_ok=True)
         jeedom_utils.write_pid(myConfig.pidFile)
         logging.info('[DAEMON] PID écrit dans %s', myConfig.pidFile)
 

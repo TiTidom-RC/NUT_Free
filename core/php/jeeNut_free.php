@@ -32,7 +32,7 @@
  */
 
 try {
-    require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
+    require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 
     // ----- Vérification API key -----
     $apikey = init('apikey');
