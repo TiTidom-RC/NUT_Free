@@ -41,8 +41,8 @@ function addCmdToTable(_cmd) {
   if (!isset(_cmd)) _cmd = { configuration: {} }
   if (!isset(_cmd.configuration)) _cmd.configuration = {}
 
-  const logicalId = init(_cmd.logicalId)
-  const canBeVisible = VISIBLE_COMMANDS.includes(logicalId)
+  const logicalId       = init(_cmd.logicalId)
+  const canBeVisible    = VISIBLE_COMMANDS.includes(logicalId)
   const canBeHistorized = HISTORIZED_COMMANDS.includes(logicalId)
 
   const testButtons = is_numeric(_cmd.id)
