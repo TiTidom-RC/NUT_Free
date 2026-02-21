@@ -5,7 +5,7 @@
 26/03/2023 Ajout ups.temp
 
 ## 0.36: ##
-14/11/2020 Ajout 2>1| grep -v '^Init SSL' suite probleme sur PI4 en local. Erreur de sertificat SSL
+14/11/2020 Ajout 2>1| grep -v '^Init SSL' suite problème sur PI4 en local. Erreur de certificat SSL
 
 ## 0.35: ##
 26/04/2020 Correction des warnings en retour dans Cron_event

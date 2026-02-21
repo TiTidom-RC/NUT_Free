@@ -1,5 +1,5 @@
-# nut_free
-dev nut_free
+# NUT_Free
+dev NUT_Free
 
 
 Todo list:

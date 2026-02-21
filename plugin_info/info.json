@@ -1,14 +1,36 @@
 {
 	"id" : "Nut_free",
-	"name" : "Nut_free",
-	"description" : "Plugin de UPS free",
+	"name" : "NUT_Free",
+	"pluginVersion" : "1.0.0",
+	"description" : {
+		"fr_FR" : "Plugin de supervision d'onduleur (UPS) via le protocole NUT (Network UPS Tools), en local ou à distance via SSH-Manager."
+	},
+	"utilization" : "Créez un équipement, configurez l'adresse de votre serveur NUT (local ou distant via SSH-Manager) et sauvegardez pour générer automatiquement toutes les commandes de supervision.",
 	"licence" : "AGPL",
-	"author" : "SFY",
-	"require" : "3.0",
-	"category" : "monitoring",
+	"author" : "TiTidom",
+	"require" : "4.4.2",
 	"hasDependency" : true,
-	"language" : ["fr_FR"],
-	"changelog" : "https://megastorage.github.io/Nut_Free/fr_FR/changelog.html",
-	"documentation": "https://megastorage.github.io/Nut_Free",
-	"compatibility" : ["miniplus","smart","rpi","docker","diy"]
+	"category" : "monitoring",
+	"language" : [
+		"fr_FR"
+	],
+	"compatibility" : [
+		"smart",
+		"rpi",
+		"docker",
+		"diy",
+		"v4",
+		"atlas"
+	],
+	"os" : {
+		"min" : 11
+	},
+	"link" : {
+		"forum" : "https://community.jeedom.com/tag/plugin-Nut_free",
+		"video" : ""
+	},
+	"changelog" : "https://titidom-rc.github.io/Documentation/#language#/Nut_free/changelog",
+	"documentation" : "https://titidom-rc.github.io/Documentation/#language#/Nut_free/index",
+	"changelog_beta" : "https://titidom-rc.github.io/Documentation/#language#/Nut_free/beta/changelog",
+	"documentation_beta" : "https://titidom-rc.github.io/Documentation/#language#/Nut_free/beta/index"
 }

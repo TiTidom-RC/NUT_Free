@@ -14,42 +14,128 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 
+;(() => {
+'use strict'
+
+// Commandes pouvant être historisées
+const HISTORIZED_COMMANDS = Object.freeze([
+  'input_volt', 'input_freq', 'output_volt', 'output_freq',
+  'output_power', 'output_real_power', 'batt_charge', 'batt_volt',
+  'batt_temp', 'ups_temp', 'ups_load', 'batt_runtime', 'batt_runtime_min',
+  'timer_shutdown', 'timer_shutdown_min'
+])
+
+// Commandes affichables (visibles par défaut)
+const VISIBLE_COMMANDS = Object.freeze([
+  'Marque', 'Model', 'ups_serial', 'ups_line',
+  'input_volt', 'input_freq', 'output_volt', 'output_freq',
+  'output_power', 'output_real_power', 'batt_charge', 'batt_volt',
+  'batt_temp', 'ups_temp', 'ups_load', 'batt_runtime', 'batt_runtime_min',
+  'timer_shutdown', 'timer_shutdown_min', 'beeper_stat'
+])
+
+/**
+ * Construit la ligne de commande dans le tableau de l'onglet Commandes
+ */
 function addCmdToTable(_cmd) {
-	if (!isset(_cmd)) {
-		var _cmd = {configuration: {}};
-	}
-	var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
-	tr += '<td>';
-	tr += '<span class="cmdAttr" data-l1key="id" ></span>';
-	tr += '</td>';
-	tr += '<td>';
-	tr += '<input class="cmdAttr form-control input-sm" data-l1key="type" value="info" style="display: none">';
-	tr += '<input class="cmdAttr form-control input-sm" data-l1key="name"">';
-	tr += '</td>'; 
-	tr += '<td>';
-	tr += '</td>';
-	tr += '<td style="width: 150px;">';
-	if (_cmd.logicalId == 'Model' || _cmd.logicalId == 'ups_serial' || _cmd.logicalId == 'ups_line' ||_cmd.logicalId == 'input_volt' || _cmd.logicalId == 'input_freq'|| _cmd.logicalId == 'output_volt' || _cmd.logicalId == 'output_freq'||_cmd.logicalId == 'output_power'||_cmd.logicalId == 'output_real_power'||_cmd.logicalId == 'batt_charge'||_cmd.logicalId == 'batt_volt'||_cmd.logicalId == 'batt_temp'||_cmd.logicalId == 'ups_temp'||_cmd.logicalId == 'ups_load'||_cmd.logicalId == 'batt_runtime'||_cmd.logicalId == 'batt_runtime_min'||_cmd.logicalId == 'timer_shutdown'||_cmd.logicalId == 'timer_shutdown_min'||_cmd.logicalId == 'beeper_stat') {
-		tr += '<span><input type="checkbox" class="cmdAttr" data-size="mini" data-l1key="isVisible" checked/> {{Afficher}}<br/></span>';
-	}
-	if (_cmd.logicalId == 'input_volt' ||_cmd.logicalId == 'input_freq'||_cmd.logicalId == 'output_volt' ||_cmd.logicalId == 'output_freq'||_cmd.logicalId == 'output_power'||_cmd.logicalId == 'output_real_power'||_cmd.logicalId == 'batt_charge'||_cmd.logicalId == 'batt_volt'||_cmd.logicalId == 'batt_temp'||_cmd.logicalId == 'ups_temp'||_cmd.logicalId == 'ups_load'||_cmd.logicalId == 'batt_runtime'||_cmd.logicalId == 'batt_runtime_min'||_cmd.logicalId == 'timer_shutdown'||_cmd.logicalId == 'timer_shutdown_min') {
-		tr += '<span><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/> {{Historiser}}</span>';
-	}
-	tr += '</td>';
-		tr += '<td>';
-	if (is_numeric(_cmd.id)) {
-		tr += '<a class="btn btn-default btn-xs cmdAction expertModeVisible" data-action="configure"><i class="fa fa-cogs"></i></a> ';
-		tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fa fa-rss"></i> {{Tester}}</a>';
-	}
-	tr += '</td>';
-	tr += '</tr>';
-	$('#table_cmd tbody').append(tr);
-	$('#table_cmd tbody tr:last').setValues(_cmd, '.cmdAttr');
+  if (!isset(_cmd)) _cmd = { configuration: {} }
+  if (!isset(_cmd.configuration)) _cmd.configuration = {}
+
+  const logicalId     = init(_cmd.logicalId)
+  const canBeVisible  = VISIBLE_COMMANDS.includes(logicalId)
+  const canHistorize  = HISTORIZED_COMMANDS.includes(logicalId)
+
+  const testButtons = is_numeric(_cmd.id)
+    ? `<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fas fa-cogs"></i></a>
+       <a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fas fa-rss"></i> {{Tester}}</a>`
+    : ''
+
+  const rowHtml = `
+    <td class="hidden-xs"><span class="cmdAttr" data-l1key="id"></span></td>
+    <td>
+      <div class="input-group">
+        <input class="cmdAttr form-control input-sm" data-l1key="type" value="info" style="display:none">
+        <input class="cmdAttr form-control input-sm roundedLeft" data-l1key="name" placeholder="{{Nom de la commande}}">
+        <span class="cmdAttr input-group-addon roundedRight" data-l1key="display" data-l2key="icon" style="font-size:19px;padding:0 5px 0 5px!important;"></span>
+      </div>
+    </td>
+    <td>
+      ${canBeVisible  ? '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-size="mini" data-l1key="isVisible" checked/> {{Afficher}}</label>' : ''}
+      ${canHistorize  ? '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-size="mini" data-l1key="isHistorized"/> {{Historiser}}</label>' : ''}
+    </td>
+    <td>
+      ${testButtons}
+      <i class="fas fa-minus-circle pull-right cmdAction cursor" data-action="remove" title="{{Supprimer la commande}}"></i>
+    </td>`
+
+  const row = Object.assign(document.createElement('tr'), {
+    className: 'cmd',
+    innerHTML: rowHtml
+  })
+  row.setAttribute('data-cmd_id', init(_cmd.id))
+
+  const tbody = document.querySelector('#table_cmd tbody')
+  if (!tbody) return
+  tbody.appendChild(row)
+  row.setJeeValues(_cmd, '.cmdAttr')
 }
 
-$('.eqLogicAttr[data-l1key=configuration][data-l2key=sendMode]').on('change', function () {
-    $('.sendMode').hide();
-    $('.sendMode.' + $(this).value()).show();
-});
+/**
+ * Affichage conditionnel des sections local/distant et UPS manuel
+ */
+function updateLocalDistantDisplay(value) {
+  const localEl   = document.querySelector('.nut-local')
+  const distantEl = document.querySelector('.nut-distant')
+  const isDistant = value === 'distant'
+  if (localEl)   localEl.style.display   = isDistant ? 'none' : ''
+  if (distantEl) distantEl.style.display = isDistant ? '' : 'none'
+}
 
-//$("#table_cmd").sortable({axis: "y", cursor: "move", items: ".cmd", placeholder: "ui-state-highlight", tolerance: "intersect", forcePlaceholderSize: true});model
+function updateUpsManualDisplay(value) {
+  const manualEl = document.querySelector('.nut-ups-manual')
+  if (manualEl) manualEl.style.display = (value === '1') ? '' : 'none'
+}
+
+/**
+ * Appelé par Jeedom lors du chargement d'un équipement dans le formulaire
+ */
+function printEqLogic(_eqLogic) {
+  if (!_eqLogic) return
+
+  // Affichage local/distant
+  const localDistant = _eqLogic.configuration?.localoudistant ?? 'local'
+  updateLocalDistantDisplay(localDistant)
+
+  // Affichage nom UPS manuel
+  const upsAuto = _eqLogic.configuration?.UPS_auto_select ?? '0'
+  updateUpsManualDisplay(upsAuto)
+
+  // Événements dynamiques
+  const selLocalDistant = document.querySelector('#sel_localoudistant')
+  if (selLocalDistant) {
+    selLocalDistant.addEventListener('change', function () {
+      updateLocalDistantDisplay(this.value)
+    })
+  }
+
+  const selUpsAuto = document.querySelector('#sel_ups_auto')
+  if (selUpsAuto) {
+    selUpsAuto.addEventListener('change', function () {
+      updateUpsManualDisplay(this.value)
+    })
+  }
+}
+
+// Event delegation openLocation (un seul listener global)
+if (!window._nutFreeOpenLocationAttached) {
+  window._nutFreeOpenLocationAttached = true
+  document.addEventListener('click', (event) => {
+    const target = event.target.closest('.pluginAction[data-action=openLocation]')
+    if (target) {
+      event.preventDefault()
+      window.open(target.getAttribute('data-location'), '_blank', null)
+    }
+  })
+}
+
+})()
