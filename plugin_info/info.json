@@ -1,6 +1,6 @@
 {
 	"id" : "Nut_free",
-	"name" : "NUT_Free",
+	"name" : "NUT Free",
 	"pluginVersion" : "1.0.0",
 	"description" : {
 		"fr_FR" : "Plugin de supervision d'onduleur (UPS) via le protocole NUT (Network UPS Tools), en local ou à distance via SSH-Manager."
