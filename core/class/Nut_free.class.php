@@ -185,7 +185,7 @@ class Nut_free extends eqLogic {
                 ));
             } else {
                 // Mode distant : collecte via SSH-Manager directement en PHP
-                $Nut_free->getInformations();
+                $Nut_free->getInfosSSH();
                 $Nut_free->refreshWidget();
             }
         }
@@ -348,7 +348,7 @@ class Nut_free extends eqLogic {
 				),
 			));
 		} else {
-			$this->getInformations();
+			$this->getInfosSSH();
 		}
 	}
 	
@@ -428,46 +428,31 @@ class Nut_free extends eqLogic {
 		return template_replace($replace, getTemplate('core', $_version, 'worxLandroid', 'worxLandroid'));
 	}
 	*/
-   public function getInformations() {
+    public function getInfosSSH() {
         if (!$this->getIsEnable()) return;
 
         $equipement      = $this->getName();
-        $connexionType   = $this->getConfiguration('localoudistant', 'local');
-
-        // Le mode local est géré entièrement par le daemon Python.
-        if ($connexionType !== 'distant') {
-            log::add('Nut_free', 'debug', '[' . $equipement . '] getInformations() ignoré en mode local (géré par le daemon)');
-            return;
-        }
-        $ip              = $this->getConfiguration('addressip', '');
         $UPS_auto_select = $this->getConfiguration('UPS_auto_select', '0');
         $ups             = trim($this->getConfiguration('UPS', ''));
         $sshHostId       = $this->getConfiguration('SSHHostId', '');
 
-        log::add('Nut_free', 'debug', '--- [' . $equipement . '] Début collecte NUT | mode=' . $connexionType . ' ---');
+        log::add('Nut_free', 'debug', '--- [' . $equipement . '] Début collecte NUT via SSH ---');
 
-        // --- Vérification SSH-Manager en mode distant ---
-        if ($connexionType === 'distant') {
-            if (!class_exists('sshmanager')) {
-                log::add('Nut_free', 'error', '[' . $equipement . '] Plugin SSH-Manager introuvable - vérifiez les dépendances');
-                return false;
-            }
-            if (empty($sshHostId)) {
-                log::add('Nut_free', 'error', '[' . $equipement . '] SSHHostId non configuré');
-                return false;
-            }
+        // --- Vérification SSH-Manager ---
+        if (!class_exists('sshmanager')) {
+            log::add('Nut_free', 'error', '[' . $equipement . '] Plugin SSH-Manager introuvable - vérifiez les dépendances');
+            return false;
+        }
+        if (empty($sshHostId)) {
+            log::add('Nut_free', 'error', '[' . $equipement . '] SSHHostId non configuré');
+            return false;
         }
 
         // --- Résolution du nom de l'UPS (auto-détection si UPS_auto_select = 0) ---
         if ($UPS_auto_select === '0' || $ups === '') {
             try {
-                if ($connexionType === 'local') {
-                    $upsListCmd = 'upsc -l ' . escapeshellarg($ip) . " 2>&1 | grep -v '^Init SSL'";
-                    $ups = trim((string) exec($upsListCmd));
-                } else {
-                    $upsListCmd = "upsc -l 2>&1 | grep -v '^Init SSL'";
-                    $ups = trim((string) sshmanager::executeCmds($sshHostId, $upsListCmd));
-                }
+                $upsListCmd = "upsc -l 2>&1 | grep -v '^Init SSL'";
+                $ups = trim((string) sshmanager::executeCmds($sshHostId, $upsListCmd));
                 log::add('Nut_free', 'debug', '[' . $equipement . '] UPS auto-détecté : ' . $ups);
             } catch (\Exception $e) {
                 log::add('Nut_free', 'error', '[' . $equipement . '] Auto-détection UPS échouée : ' . $e->getMessage());
@@ -482,7 +467,7 @@ class Nut_free extends eqLogic {
             return false;
         }
 
-        // --- Collecte des valeurs NUT ---
+        // --- Collecte des valeurs NUT via SSH ---
         $Not_Online = 0;
         $Marque     = '';
 
@@ -491,13 +476,8 @@ class Nut_free extends eqLogic {
 
             $result = '';
             try {
-                if ($connexionType === 'local') {
-                    $cmdline = 'upsc ' . escapeshellarg($ups . '@' . $ip) . ' ' . escapeshellarg($info['cmd']) . " 2>&1 | grep -v '^Init SSL'";
-                    $result  = trim((string) exec($cmdline));
-                } else {
-                    $cmdline = 'upsc ' . escapeshellarg($ups) . ' ' . escapeshellarg($info['cmd']) . " 2>&1 | grep -v '^Init SSL'";
-                    $result  = trim((string) sshmanager::executeCmds($sshHostId, $cmdline));
-                }
+                $cmdline = 'upsc ' . escapeshellarg($ups) . ' ' . escapeshellarg($info['cmd']) . " 2>&1 | grep -v '^Init SSL'";
+                $result  = trim((string) sshmanager::executeCmds($sshHostId, $cmdline));
             } catch (\Exception $e) {
                 log::add('Nut_free', 'warning', '[' . $equipement . '] ' . $info['name'] . ' erreur : ' . $e->getMessage());
                 continue;
