@@ -609,7 +609,9 @@ class Nut_free extends eqLogic {
 
         try {
             self::getPythonDepFromRequirements();
-			self::getPyEnvVersion();
+            self::getPyEnvVersion();
+            self::getPythonVersion();
+        } catch (Exception $e) {
             log::add('Nut_free', 'error', '[DAEMON][START][PythonDep] Exception :: ' . $e->getMessage());
         }
 
