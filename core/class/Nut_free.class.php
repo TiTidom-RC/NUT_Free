@@ -615,7 +615,7 @@ class Nut_free extends eqLogic {
             log::add('Nut_free', 'error', '[DAEMON][START][PythonDep] Exception :: ' . $e->getMessage());
         }
 
-        $python3       = realpath(self::VENV_PYTHON);
+        $python3       = self::VENV_PYTHON;
         $script        = realpath(self::DAEMON_SCRIPT);
         $pidFile       = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
         $logLevel      = log::convertLogLevel(log::getLogLevel('Nut_free')) ?: 'error';
@@ -625,7 +625,7 @@ class Nut_free extends eqLogic {
         $cyclePolling  = config::byKey('cyclePolling', 'Nut_free', 60);
         $cycleFactor   = config::byKey('cycleFactor', 'Nut_free', '1.0');
 
-        if (empty($python3) || !file_exists($python3)) {
+        if (!file_exists($python3)) {
             log::add('Nut_free', 'error', '[DAEMON] Python venv introuvable : ' . self::VENV_PYTHON);
             return false;
         }
