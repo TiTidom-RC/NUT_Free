@@ -43,7 +43,7 @@ from typing import Any, Optional
 
 # --- Import pynutclient ---
 try:
-    from PyNUT import PyNUTClient
+    from PyNUTClient.PyNUT import PyNUTClient
 except ImportError as e:
     print(f'[DAEMON][IMPORT] ERREUR : pynutclient introuvable :: {e}')
     sys.exit(1)
