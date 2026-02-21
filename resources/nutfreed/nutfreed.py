@@ -40,7 +40,6 @@ import argparse
 import threading
 from dataclasses import dataclass
 from typing import Optional
-from queue import Empty
 
 # --- Import pynutclient ---
 try:
@@ -55,6 +54,13 @@ try:
     from jeedom.jeedom import jeedom_utils, jeedom_com, jeedom_socket, JEEDOM_SOCKET_MESSAGE
 except ImportError as e:
     print(f'[DAEMON][IMPORT] ERREUR : jeedom lib introuvable :: {e}')
+    sys.exit(1)
+
+# --- Import Config ---
+try:
+    from utils import Config, Comm
+except ImportError as e:
+    print(f'[DAEMON][IMPORT] ERREUR : utils introuvable :: {e}')
     sys.exit(1)
 
 # ---------------------------------------------------------------------------
@@ -85,12 +91,14 @@ NUT_VARS: list[dict] = [
 ]
 
 
+# ---------------------------------------------------------------------------
+
 @dataclass
 class NutDevice:
     eqLogic_id: str
     host: str
     port: int
-    ups_name: str       # vide = auto-détection via GetUPSList()
+    ups_name: str      # vide = auto-détection via GetUPSList()
     auto_detect: bool
 
     @classmethod
@@ -103,6 +111,8 @@ class NutDevice:
             auto_detect=bool(int(d.get('auto_detect', '1'))),
         )
 
+
+# ---------------------------------------------------------------------------
 
 def query_device(device: NutDevice) -> Optional[dict]:
     """
@@ -181,184 +191,185 @@ def query_device(device: NutDevice) -> Optional[dict]:
     return results
 
 
-class NutFreeDaemon:
+# ---------------------------------------------------------------------------
 
-    def __init__(self, args: argparse.Namespace, jeecom: jeedom_com):
-        self._args = args
-        self._jeecom = jeecom
-        self._devices: dict[str, NutDevice] = {}
-        self._lock = threading.Lock()
-        self._running = True
+class Loops:
 
-    # ---- Gestion de la liste des équipements --------------------------------
+    # *** Boucle events from Jeedom ***
+    @staticmethod
+    def eventsFromJeedom(cycle=0.5):
+        while not myConfig.IS_ENDING:
+            if not JEEDOM_SOCKET_MESSAGE.empty():
+                logging.debug('[DAEMON][SOCKET] Message reçu')
 
-    def _set_devices(self, devices_list: list) -> None:
-        with self._lock:
-            self._devices = {
-                NutDevice.from_dict(d).eqLogic_id: NutDevice.from_dict(d)
-                for d in devices_list
-            }
-        logging.info('[DAEMON] Liste mise à jour : %d équipement(s)', len(self._devices))
+                try:
+                    message = json.loads(JEEDOM_SOCKET_MESSAGE.get().decode('utf-8'))
+                except Exception as e:
+                    logging.error('[DAEMON][SOCKET] Erreur décodage JSON :: %s', e)
+                    time.sleep(cycle)
+                    continue
 
-    def _add_device(self, data: dict) -> None:
-        device = NutDevice.from_dict(data)
-        with self._lock:
-            self._devices[device.eqLogic_id] = device
-        logging.info('[DAEMON] Équipement ajouté/mis à jour : eqLogic_id=%s host=%s:%d',
-                     device.eqLogic_id, device.host, device.port)
+                if message.get('apikey') != myConfig.apiKey:
+                    logging.error('[DAEMON][SOCKET] API key invalide, message ignoré')
+                    time.sleep(cycle)
+                    continue
 
-    def _remove_device(self, eqLogic_id: str) -> None:
-        with self._lock:
-            self._devices.pop(eqLogic_id, None)
-        logging.info('[DAEMON] Équipement retiré : %s', eqLogic_id)
+                try:
+                    action = message.get('action', '')
+                    logging.info('[DAEMON][SOCKET] Action reçue : %s', action)
 
-    # ---- Polling ------------------------------------------------------------
+                    if action == 'update_devices':
+                        with myConfig.devicesLock:
+                            myConfig.devices = {
+                                NutDevice.from_dict(d).eqLogic_id: NutDevice.from_dict(d)
+                                for d in message.get('devices', [])
+                            }
+                        logging.info('[DAEMON] Liste mise à jour : %d équipement(s)', len(myConfig.devices))
 
-    def _poll_device(self, device: NutDevice) -> None:
+                    elif action == 'add_device':
+                        device_data = message.get('device')
+                        if device_data:
+                            device = NutDevice.from_dict(device_data)
+                            with myConfig.devicesLock:
+                                myConfig.devices[device.eqLogic_id] = device
+                            logging.info('[DAEMON] Équipement ajouté/mis à jour : eqLogic_id=%s host=%s:%d',
+                                         device.eqLogic_id, device.host, device.port)
+
+                    elif action == 'remove_device':
+                        eqLogic_id = str(message.get('eqLogic_id', ''))
+                        with myConfig.devicesLock:
+                            myConfig.devices.pop(eqLogic_id, None)
+                        logging.info('[DAEMON] Équipement retiré : %s', eqLogic_id)
+
+                    elif action == 'query_now':
+                        eqLogic_id = str(message.get('eqLogic_id', ''))
+                        with myConfig.devicesLock:
+                            device = myConfig.devices.get(eqLogic_id)
+                        if device:
+                            threading.Thread(target=Loops._poll_device, args=(device,), daemon=True).start()
+                        else:
+                            logging.warning('[DAEMON][SOCKET] query_now : équipement %s inconnu', eqLogic_id)
+
+                    elif action == 'shutdown':
+                        logging.info('[DAEMON] Arrêt demandé via socket')
+                        shutdown()
+
+                    else:
+                        logging.warning('[DAEMON][SOCKET] Action inconnue : %s', action)
+
+                except Exception as e:
+                    logging.error('[DAEMON][SOCKET] Erreur traitement message :: %s', e)
+
+            time.sleep(cycle)
+
+    # *** Boucle principale ***
+    @staticmethod
+    def mainLoop(cycle=60.0):
+        my_jeedom_socket.open()
+        logging.info('[DAEMON][MAINLOOP] Démarrage MainLoop')
+
+        # Thread pour les events venant de Jeedom
+        threading.Thread(target=Loops.eventsFromJeedom, args=(myConfig.cycleEvent,), daemon=True).start()
+
+        last_poll = 0.0
+        while not myConfig.IS_ENDING:
+            now = time.time()
+            if now - last_poll >= cycle:
+                last_poll = now
+                with myConfig.devicesLock:
+                    devices = dict(myConfig.devices)
+                if devices:
+                    for device in devices.values():
+                        Loops._poll_device(device)
+                else:
+                    logging.debug('[DAEMON] Aucun équipement enregistré, polling ignoré')
+            time.sleep(0.1)
+
+        logging.info('[DAEMON][MAINLOOP] MainLoop terminée')
+        my_jeedom_socket.close()
+
+    # *** Polling d'un équipement ***
+    @staticmethod
+    def _poll_device(device: NutDevice) -> None:
         logging.debug('[DAEMON][%s] Interrogation NUT %s:%d', device.eqLogic_id, device.host, device.port)
         results = query_device(device)
         if results:
-            self._jeecom.add_changes(f'update::{device.eqLogic_id}', results)
+            Comm.sendToJeedom.add_changes(f'update::{device.eqLogic_id}', results)  # type: ignore
             logging.info('[DAEMON][%s] Envoi de %d valeur(s) vers Jeedom', device.eqLogic_id, len(results))
         elif results is None:
             logging.warning('[DAEMON][%s] Aucune donnée retournée (erreur connexion)', device.eqLogic_id)
 
-    def poll_all(self) -> None:
-        with self._lock:
-            devices = dict(self._devices)
-        for device in devices.values():
-            self._poll_device(device)
 
-    # ---- Traitement des messages socket -------------------------------------
+# ---------------------------------------------------------------------------
 
-    def handle_message(self, raw: bytes) -> None:
-        try:
-            message = json.loads(raw.strip())
-        except (json.JSONDecodeError, Exception) as e:
-            logging.error('[DAEMON][SOCKET] Erreur décodage JSON :: %s', e)
-            return
-
-        # Validation API key
-        if message.get('apikey') != self._args.apikey:
-            logging.warning('[DAEMON][SOCKET] API key invalide, message ignoré')
-            return
-
-        action = message.get('action', '')
-        logging.info('[DAEMON][SOCKET] Action reçue : %s', action)
-
-        if action == 'update_devices':
-            self._set_devices(message.get('devices', []))
-
-        elif action == 'add_device':
-            device_data = message.get('device')
-            if device_data:
-                self._add_device(device_data)
-
-        elif action == 'remove_device':
-            self._remove_device(str(message.get('eqLogic_id', '')))
-
-        elif action == 'query_now':
-            eqLogic_id = str(message.get('eqLogic_id', ''))
-            with self._lock:
-                device = self._devices.get(eqLogic_id)
-            if device:
-                self._poll_device(device)
-            else:
-                logging.warning('[DAEMON][SOCKET] query_now : équipement %s inconnu', eqLogic_id)
-
-        elif action == 'shutdown':
-            logging.info('[DAEMON] Arrêt demandé via socket')
-            self._running = False
-
-        else:
-            logging.warning('[DAEMON][SOCKET] Action inconnue : %s', action)
-
-    # ---- Boucle principale --------------------------------------------------
-
-    def run(self) -> None:
-        cycle_s = float(self._args.cycle)
-        last_poll = 0.0
-
-        logging.info('[DAEMON] Démarrage de la boucle principale (cycle=%ss)', cycle_s)
-
-        while self._running:
-            # Traiter les messages socket en attente
-            while True:
-                try:
-                    raw = JEEDOM_SOCKET_MESSAGE.get_nowait()
-                    self.handle_message(raw)
-                except Empty:
-                    break
-
-            # Lancer un cycle de polling si nécessaire
-            now = time.time()
-            if now - last_poll >= cycle_s:
-                last_poll = now
-                if self._devices:
-                    self.poll_all()
-                else:
-                    logging.debug('[DAEMON] Aucun équipement enregistré, polling ignoré')
-
-            time.sleep(0.1)
-
-        logging.info('[DAEMON] Boucle principale terminée')
-
-
-def _shutdown_handler(signum: int, _frame) -> None:
+def handler(signum=None, frame=None):
     logging.info('[DAEMON] Signal %d reçu, arrêt en cours...', signum)
-    sys.exit(0)
+    shutdown()
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser(description='NUT_Free daemon - Connexion TCP directe vers serveurs NUT')
-    parser.add_argument('--socketport', type=int, default=55113, help='Port d\'écoute socket TCP (défaut: 55113)')
-    parser.add_argument('--callback', type=str, required=True, help='URL callback Jeedom (jeeNut_free.php)')
-    parser.add_argument('--apikey', type=str, required=True, help='Clé API Jeedom')
-    parser.add_argument('--cycle', type=float, default=60.0, help='Intervalle de polling en secondes (défaut: 60)')
-    parser.add_argument('--loglevel', type=str, default='error', help='Niveau de log (debug/info/warning/error)')
-    parser.add_argument('--pid', type=str, default='', help='Chemin du fichier PID')
-    args = parser.parse_args()
-
-    # Configuration du logging
-    jeedom_utils.set_log_level(args.loglevel)
-    logging.info('[DAEMON] ==========================================')
-    logging.info('[DAEMON] Démarrage NUT_Free daemon')
-    logging.info('[DAEMON] socketport=%d | cycle=%ss | loglevel=%s', args.socketport, args.cycle, args.loglevel)
-
-    # Fichier PID
-    if args.pid:
-        os.makedirs(os.path.dirname(os.path.abspath(args.pid)), exist_ok=True)
-        jeedom_utils.write_pid(args.pid)
-        logging.info('[DAEMON] PID écrit dans %s', args.pid)
-
-    # Signaux
-    signal.signal(signal.SIGTERM, _shutdown_handler)
-    signal.signal(signal.SIGINT, _shutdown_handler)
-
-    # Callback Jeedom (envoi async des données)
-    jeecom = jeedom_com(
-        apikey=args.apikey,
-        url=args.callback,
-    )
-
-    # Socket TCP pour recevoir les commandes PHP
-    sock = jeedom_socket(address='127.0.0.1', port=args.socketport)
-    sock.open()
-    logging.info('[DAEMON] Socket d\'écoute démarré sur 127.0.0.1:%d', args.socketport)
-
-    # Daemon
-    daemon = NutFreeDaemon(args=args, jeecom=jeecom)
-    try:
-        daemon.run()
-    except KeyboardInterrupt:
-        logging.info('[DAEMON] Interruption clavier')
-    finally:
-        logging.info('[DAEMON] Fermeture socket')
-        sock.close()
-        if args.pid and os.path.exists(args.pid):
-            os.remove(args.pid)
-        logging.info('[DAEMON] NUT_Free daemon arrêté')
+def shutdown():
+    myConfig.IS_ENDING = True
 
 
-if __name__ == '__main__':
-    main()
+# ---------------------------------------------------------------------------
+# Point d'entrée — niveau module (cohérence TTSCast)
+# ---------------------------------------------------------------------------
+
+myConfig = Config()
+
+parser = argparse.ArgumentParser(description='NUT_Free daemon - Connexion TCP directe vers serveurs NUT')
+parser.add_argument('--socketport', help="Port d'écoute socket TCP", type=str)
+parser.add_argument('--callback', help='URL callback Jeedom (jeeNut_free.php)', type=str)
+parser.add_argument('--apikey', help='Clé API Jeedom', type=str)
+parser.add_argument('--cycle', help='Intervalle de polling en secondes', type=str)
+parser.add_argument('--loglevel', help='Niveau de log (debug/info/warning/error)', type=str)
+parser.add_argument('--pid', help='Chemin du fichier PID', type=str)
+
+args = parser.parse_args()
+
+if args.socketport:
+    myConfig.socketPort = int(args.socketport)
+if args.callback:
+    myConfig.callBack = args.callback
+if args.apikey:
+    myConfig.apiKey = args.apikey
+if args.cycle:
+    myConfig.cycle = float(args.cycle)
+if args.loglevel:
+    myConfig.logLevel = args.loglevel
+if args.pid:
+    myConfig.pidFile = args.pid
+
+jeedom_utils.set_log_level(myConfig.logLevel)
+
+logging.info('[DAEMON] ==========================================')
+logging.info('[DAEMON] Démarrage NUT_Free daemon')
+logging.info('[DAEMON] socketport=%d | cycle=%ss | loglevel=%s',
+             myConfig.socketPort, myConfig.cycle, myConfig.logLevel)
+logging.info('[DAEMON] callback=%s', myConfig.callBack)
+logging.info('[DAEMON] pid=%s', myConfig.pidFile)
+
+signal.signal(signal.SIGTERM, handler)
+signal.signal(signal.SIGINT, handler)
+
+try:
+    if myConfig.pidFile:
+        os.makedirs(os.path.dirname(os.path.abspath(myConfig.pidFile)), exist_ok=True)
+        jeedom_utils.write_pid(myConfig.pidFile)
+        logging.info('[DAEMON] PID écrit dans %s', myConfig.pidFile)
+
+    Comm.sendToJeedom = jeedom_com(apikey=myConfig.apiKey, url=myConfig.callBack, cycle=myConfig.cycleComm)
+
+    my_jeedom_socket = jeedom_socket(address=myConfig.socketHost, port=myConfig.socketPort)
+
+    Loops.mainLoop(myConfig.cycle)
+
+except Exception as e:
+    logging.error('[DAEMON] Erreur fatale :: %s', e)
+    shutdown()
+
+finally:
+    logging.info('[DAEMON] Fermeture en cours...')
+    if myConfig.pidFile and os.path.exists(myConfig.pidFile):
+        os.remove(myConfig.pidFile)
+    logging.info('[DAEMON] NUT_Free daemon arrêté')
