@@ -38,13 +38,13 @@ import signal
 import json
 import argparse
 import threading
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
-from queue import Queue, Empty
+from queue import Empty
 
 # --- Import pynutclient ---
 try:
-    from pynutclient import PyNUTClient
+    from PyNUTClient.PyNUT import PyNUTClient
 except ImportError as e:
     print(f'[DAEMON][IMPORT] ERREUR : pynutclient introuvable :: {e}')
     print('[DAEMON][IMPORT] Installez le venv : resources/install.sh')
@@ -62,29 +62,28 @@ except ImportError as e:
 # Les entrées sans 'nut_var' (ssh_op, cnx_ssh) sont ignorées car gérées en PHP
 # ---------------------------------------------------------------------------
 NUT_VARS: list[dict] = [
-    {'logicalId': 'Marque',             'nut_var': 'device.mfr'},
-    {'logicalId': 'Model',              'nut_var': 'device.model'},
-    {'logicalId': 'ups_serial',         'nut_var': 'ups.serial'},
-    {'logicalId': 'ups_line',           'nut_var': 'ups.status'},
-    {'logicalId': 'input_volt',         'nut_var': 'input.voltage'},
-    {'logicalId': 'input_freq',         'nut_var': 'input.frequency'},
-    {'logicalId': 'output_volt',        'nut_var': 'output.voltage'},
-    {'logicalId': 'output_freq',        'nut_var': 'output.frequency'},
-    {'logicalId': 'output_power',       'nut_var': 'ups.power'},
-    {'logicalId': 'output_real_power',  'nut_var': 'ups.realpower'},
-    {'logicalId': 'batt_charge',        'nut_var': 'battery.charge'},
-    {'logicalId': 'batt_volt',          'nut_var': 'battery.voltage'},
-    {'logicalId': 'batt_temp',          'nut_var': 'battery.temperature'},
-    {'logicalId': 'ups_temp',           'nut_var': 'ups.temperature'},
-    {'logicalId': 'ups_load',           'nut_var': 'ups.load'},
-    {'logicalId': 'batt_runtime',       'nut_var': 'battery.runtime'},
-    {'logicalId': 'batt_runtime_min',   'nut_var': 'battery.runtime'},      # converti en minutes
-    {'logicalId': 'timer_shutdown',     'nut_var': 'ups.timer.shutdown'},
-    {'logicalId': 'timer_shutdown_min', 'nut_var': 'ups.timer.shutdown'},   # converti en minutes
-    {'logicalId': 'beeper_stat',        'nut_var': 'ups.beeper.status'},
+    {'logicalId': 'Marque', 'nut_var': 'device.mfr'},
+    {'logicalId': 'Model', 'nut_var': 'device.model'},
+    {'logicalId': 'ups_serial', 'nut_var': 'ups.serial'},
+    {'logicalId': 'ups_line', 'nut_var': 'ups.status'},
+    {'logicalId': 'input_volt', 'nut_var': 'input.voltage'},
+    {'logicalId': 'input_freq', 'nut_var': 'input.frequency'},
+    {'logicalId': 'output_volt', 'nut_var': 'output.voltage'},
+    {'logicalId': 'output_freq', 'nut_var': 'output.frequency'},
+    {'logicalId': 'output_power', 'nut_var': 'ups.power'},
+    {'logicalId': 'output_real_power', 'nut_var': 'ups.realpower'},
+    {'logicalId': 'batt_charge', 'nut_var': 'battery.charge'},
+    {'logicalId': 'batt_volt', 'nut_var': 'battery.voltage'},
+    {'logicalId': 'batt_temp', 'nut_var': 'battery.temperature'},
+    {'logicalId': 'ups_temp', 'nut_var': 'ups.temperature'},
+    {'logicalId': 'ups_load', 'nut_var': 'ups.load'},
+    {'logicalId': 'batt_runtime', 'nut_var': 'battery.runtime'},
+    {'logicalId': 'batt_runtime_min', 'nut_var': 'battery.runtime'},  # converti en minutes
+    {'logicalId': 'timer_shutdown', 'nut_var': 'ups.timer.shutdown'},
+    {'logicalId': 'timer_shutdown_min', 'nut_var': 'ups.timer.shutdown'},  # converti en minutes
+    {'logicalId': 'beeper_stat', 'nut_var': 'ups.beeper.status'},
 ]
 
-# ---------------------------------------------------------------------------
 
 @dataclass
 class NutDevice:
@@ -97,14 +96,13 @@ class NutDevice:
     @classmethod
     def from_dict(cls, d: dict) -> 'NutDevice':
         return cls(
-            eqLogic_id  = str(d['eqLogic_id']),
-            host        = str(d.get('host', '127.0.0.1')),
-            port        = int(d.get('port', 3493)),
-            ups_name    = str(d.get('ups_name', '')).strip(),
-            auto_detect = bool(int(d.get('auto_detect', '1'))),
+            eqLogic_id=str(d['eqLogic_id']),
+            host=str(d.get('host', '127.0.0.1')),
+            port=int(d.get('port', 3493)),
+            ups_name=str(d.get('ups_name', '')).strip(),
+            auto_detect=bool(int(d.get('auto_detect', '1'))),
         )
 
-# ---------------------------------------------------------------------------
 
 def query_device(device: NutDevice) -> Optional[dict]:
     """
@@ -144,10 +142,10 @@ def query_device(device: NutDevice) -> Optional[dict]:
     not_online = False
     marque = ''
 
-    for i, var in enumerate(NUT_VARS):
+    for var in NUT_VARS:
         logical_id = var['logicalId']
-        nut_var    = var['nut_var']
-        raw        = all_vars.get(nut_var)
+        nut_var = var['nut_var']
+        raw = all_vars.get(nut_var)
 
         if raw is None:
             logging.debug('[DAEMON][%s] %s (%s) : non supporté', device.eqLogic_id, logical_id, nut_var)
@@ -182,15 +180,14 @@ def query_device(device: NutDevice) -> Optional[dict]:
 
     return results
 
-# ---------------------------------------------------------------------------
 
 class NutFreeDaemon:
 
-    def __init__(self, args: argparse.Namespace, jcom: jeedom_com):
-        self._args    = args
-        self._jcom    = jcom
+    def __init__(self, args: argparse.Namespace, jeecom: jeedom_com):
+        self._args = args
+        self._jeecom = jeecom
         self._devices: dict[str, NutDevice] = {}
-        self._lock    = threading.Lock()
+        self._lock = threading.Lock()
         self._running = True
 
     # ---- Gestion de la liste des équipements --------------------------------
@@ -221,7 +218,7 @@ class NutFreeDaemon:
         logging.debug('[DAEMON][%s] Interrogation NUT %s:%d', device.eqLogic_id, device.host, device.port)
         results = query_device(device)
         if results:
-            self._jcom.add_changes(f'update::{device.eqLogic_id}', results)
+            self._jeecom.add_changes(f'update::{device.eqLogic_id}', results)
             logging.info('[DAEMON][%s] Envoi de %d valeur(s) vers Jeedom', device.eqLogic_id, len(results))
         elif results is None:
             logging.warning('[DAEMON][%s] Aucune donnée retournée (erreur connexion)', device.eqLogic_id)
@@ -279,7 +276,7 @@ class NutFreeDaemon:
     # ---- Boucle principale --------------------------------------------------
 
     def run(self) -> None:
-        cycle_s   = float(self._args.cycle)
+        cycle_s = float(self._args.cycle)
         last_poll = 0.0
 
         logging.info('[DAEMON] Démarrage de la boucle principale (cycle=%ss)', cycle_s)
@@ -306,20 +303,20 @@ class NutFreeDaemon:
 
         logging.info('[DAEMON] Boucle principale terminée')
 
-# ---------------------------------------------------------------------------
 
 def _shutdown_handler(signum: int, _frame) -> None:
     logging.info('[DAEMON] Signal %d reçu, arrêt en cours...', signum)
     sys.exit(0)
 
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='NUT_Free daemon - Connexion TCP directe vers serveurs NUT')
-    parser.add_argument('--socketport', type=int,   default=55200,   help='Port d\'écoute socket TCP (défaut: 55200)')
-    parser.add_argument('--callback',   type=str,   required=True,   help='URL callback Jeedom (jeeNut_free.php)')
-    parser.add_argument('--apikey',     type=str,   required=True,   help='Clé API Jeedom')
-    parser.add_argument('--cycle',      type=float, default=60.0,    help='Intervalle de polling en secondes (défaut: 60)')
-    parser.add_argument('--loglevel',   type=str,   default='error', help='Niveau de log (debug/info/warning/error)')
-    parser.add_argument('--pid',        type=str,   default='',      help='Chemin du fichier PID')
+    parser.add_argument('--socketport', type=int, default=55113, help='Port d\'écoute socket TCP (défaut: 55113)')
+    parser.add_argument('--callback', type=str, required=True, help='URL callback Jeedom (jeeNut_free.php)')
+    parser.add_argument('--apikey', type=str, required=True, help='Clé API Jeedom')
+    parser.add_argument('--cycle', type=float, default=60.0, help='Intervalle de polling en secondes (défaut: 60)')
+    parser.add_argument('--loglevel', type=str, default='error', help='Niveau de log (debug/info/warning/error)')
+    parser.add_argument('--pid', type=str, default='', help='Chemin du fichier PID')
     args = parser.parse_args()
 
     # Configuration du logging
@@ -336,13 +333,12 @@ def main() -> None:
 
     # Signaux
     signal.signal(signal.SIGTERM, _shutdown_handler)
-    signal.signal(signal.SIGINT,  _shutdown_handler)
+    signal.signal(signal.SIGINT, _shutdown_handler)
 
     # Callback Jeedom (envoi async des données)
-    jcom = jeedom_com(
-        apikey = args.apikey,
-        url    = args.callback,
-        cycle  = 1.0,
+    jeecom = jeedom_com(
+        apikey=args.apikey,
+        url=args.callback,
     )
 
     # Socket TCP pour recevoir les commandes PHP
@@ -351,7 +347,7 @@ def main() -> None:
     logging.info('[DAEMON] Socket d\'écoute démarré sur 127.0.0.1:%d', args.socketport)
 
     # Daemon
-    daemon = NutFreeDaemon(args=args, jcom=jcom)
+    daemon = NutFreeDaemon(args=args, jeecom=jeecom)
     try:
         daemon.run()
     except KeyboardInterrupt:
