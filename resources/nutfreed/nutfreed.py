@@ -292,7 +292,6 @@ class Loops:
             time.sleep(cycle)
 
         logging.info('[DAEMON][MAINLOOP] MainLoop terminée')
-        my_jeedom_socket.close()
 
     # *** Polling d'un équipement ***
     @staticmethod
@@ -328,7 +327,7 @@ def shutdown():
             logging.info('[DAEMON] Shutdown :: Socket fermé')
     except Exception as e:
         logging.error('[DAEMON] Shutdown :: Erreur fermeture socket :: %s', e)
-    logging.debug('[DAEMON] Shutdown :: Suppression PID %s', myConfig.pidFile)
+    logging.debug('[DAEMON] Shutdown :: Suppression PID :: %s', myConfig.pidFile)
     try:
         if myConfig.pidFile:
             os.remove(myConfig.pidFile)
@@ -337,6 +336,8 @@ def shutdown():
         logging.debug('[DAEMON] Shutdown :: PID déjà absent')
     except Exception as e:
         logging.error('[DAEMON] Shutdown :: Erreur suppression PID :: %s', e)
+    logging.info('[DAEMON] Shutdown :: Arrêt complet')
+    sys.exit(0)
 
 
 parser = argparse.ArgumentParser(description='NUT_Free daemon - Connexion TCP directe vers serveurs NUT')
@@ -419,6 +420,3 @@ try:
 except Exception as e:
     logging.error('[DAEMON] Erreur fatale :: %s', e)
     shutdown()
-
-finally:
-    logging.info('[DAEMON] NUT_Free daemon arrêté')
