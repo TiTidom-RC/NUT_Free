@@ -588,7 +588,7 @@ class Nut_free extends eqLogic {
             . ' --callback '   . escapeshellarg($callback)
             . ' --apikey '     . escapeshellarg($apikey)
             . ' --loglevel '   . escapeshellarg($loglevel)
-            . ' --cycle '      . escapeshellarg($cycle)
+            . ' --cyclepolling ' . escapeshellarg($cycle)
             . ' --pid '        . escapeshellarg($pidFile)
             . ' >> ' . log::getPathToLog('nutfreed') . ' 2>&1 &';
 

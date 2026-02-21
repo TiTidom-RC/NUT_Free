@@ -39,7 +39,7 @@ import json
 import argparse
 import threading
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any, Optional
 
 # --- Import pynutclient ---
 try:
@@ -57,11 +57,7 @@ except ImportError as e:
     sys.exit(1)
 
 # --- Import Config ---
-try:
-    from utils import Config, Comm
-except ImportError as e:
-    print(f'[DAEMON][IMPORT] ERREUR : utils introuvable :: {e}')
-    sys.exit(1)
+from utils import Config, Comm
 
 # ---------------------------------------------------------------------------
 # Mapping variables NUT → logicalId Jeedom (miroir de $_infosMap PHP)
@@ -264,18 +260,29 @@ class Loops:
 
     # *** Boucle principale ***
     @staticmethod
-    def mainLoop(cycle=60.0):
+    def mainLoop(cycle=0.5):
         my_jeedom_socket.open()
         logging.info('[DAEMON][MAINLOOP] Démarrage MainLoop')
 
         # Thread pour les events venant de Jeedom
         threading.Thread(target=Loops.eventsFromJeedom, args=(myConfig.cycleEvent,), daemon=True).start()
 
-        last_poll = 0.0
+        # Informer Jeedom que le daemon est démarré
+        Comm.sendToJeedom.send_change_immediate({'daemonStarted': '1'})
+        logging.info('[DAEMON][MAINLOOP] daemonStarted envoyé à Jeedom')
+
+        lastPoll = 0.0
         while not myConfig.IS_ENDING:
-            now = time.time()
-            if now - last_poll >= cycle:
-                last_poll = now
+            currentTime = int(time.time())
+
+            # Heartbeat
+            if (myConfig.HeartbeatLastTime + myConfig.HeartbeatFrequency) <= currentTime:
+                logging.info('[DAEMON][MAINLOOP] Heartbeat = 1')
+                Comm.sendToJeedom.send_change_immediate({'heartbeat': '1'})
+                myConfig.HeartbeatLastTime = currentTime
+
+            if currentTime - lastPoll >= myConfig.cyclePolling:
+                lastPoll = currentTime
                 with myConfig.devicesLock:
                     devices = dict(myConfig.devices)
                 if devices:
@@ -283,7 +290,7 @@ class Loops:
                         Loops._poll_device(device)
                 else:
                     logging.debug('[DAEMON] Aucun équipement enregistré, polling ignoré')
-            time.sleep(0.1)
+            time.sleep(cycle)
 
         logging.info('[DAEMON][MAINLOOP] MainLoop terminée')
         my_jeedom_socket.close()
@@ -294,13 +301,19 @@ class Loops:
         logging.debug('[DAEMON][%s] Interrogation NUT %s:%d', device.eqLogic_id, device.host, device.port)
         results = query_device(device)
         if results:
-            Comm.sendToJeedom.add_changes(f'update::{device.eqLogic_id}', results)  # type: ignore
+            Comm.sendToJeedom.add_changes(f'update::{device.eqLogic_id}', results)
             logging.info('[DAEMON][%s] Envoi de %d valeur(s) vers Jeedom', device.eqLogic_id, len(results))
         elif results is None:
             logging.warning('[DAEMON][%s] Aucune donnée retournée (erreur connexion)', device.eqLogic_id)
 
 
 # ---------------------------------------------------------------------------
+# Bootstrap du daemon — instanciation, gestionnaires de signaux, parsing des
+# arguments CLI et bloc d'exécution principal
+# ---------------------------------------------------------------------------
+
+myConfig = Config()
+
 
 def handler(signum=None, frame=None):
     logging.info('[DAEMON] Signal %d reçu, arrêt en cours...', signum)
@@ -308,20 +321,30 @@ def handler(signum=None, frame=None):
 
 
 def shutdown():
+    logging.info('[DAEMON] Shutdown :: Début arrêt...')
     myConfig.IS_ENDING = True
+    try:
+        if my_jeedom_socket is not None:
+            my_jeedom_socket.close()
+            logging.info('[DAEMON] Shutdown :: Socket fermé')
+    except Exception as e:
+        logging.error('[DAEMON] Shutdown :: Erreur fermeture socket :: %s', e)
+    logging.debug('[DAEMON] Shutdown :: Suppression PID %s', myConfig.pidFile)
+    try:
+        if myConfig.pidFile:
+            os.remove(myConfig.pidFile)
+            logging.debug('[DAEMON] Shutdown :: PID supprimé')
+    except FileNotFoundError:
+        logging.debug('[DAEMON] Shutdown :: PID déjà absent')
+    except Exception as e:
+        logging.error('[DAEMON] Shutdown :: Erreur suppression PID :: %s', e)
 
-
-# ---------------------------------------------------------------------------
-# Point d'entrée — niveau module (cohérence TTSCast)
-# ---------------------------------------------------------------------------
-
-myConfig = Config()
 
 parser = argparse.ArgumentParser(description='NUT_Free daemon - Connexion TCP directe vers serveurs NUT')
 parser.add_argument('--socketport', help="Port d'écoute socket TCP", type=str)
 parser.add_argument('--callback', help='URL callback Jeedom (jeeNut_free.php)', type=str)
 parser.add_argument('--apikey', help='Clé API Jeedom', type=str)
-parser.add_argument('--cycle', help='Intervalle de polling en secondes', type=str)
+parser.add_argument('--cyclepolling', help='Intervalle de polling en secondes', type=str)
 parser.add_argument('--loglevel', help='Niveau de log (debug/info/warning/error)', type=str)
 parser.add_argument('--pid', help='Chemin du fichier PID', type=str)
 
@@ -333,8 +356,8 @@ if args.callback:
     myConfig.callBack = args.callback
 if args.apikey:
     myConfig.apiKey = args.apikey
-if args.cycle:
-    myConfig.cycle = float(args.cycle)
+if args.cyclepolling:
+    myConfig.cyclePolling = float(args.cyclepolling)
 if args.loglevel:
     myConfig.logLevel = args.loglevel
 if args.pid:
@@ -345,12 +368,14 @@ jeedom_utils.set_log_level(myConfig.logLevel)
 logging.info('[DAEMON] ==========================================')
 logging.info('[DAEMON] Démarrage NUT_Free daemon')
 logging.info('[DAEMON] socketport=%d | cycle=%ss | loglevel=%s',
-             myConfig.socketPort, myConfig.cycle, myConfig.logLevel)
+             myConfig.socketPort, myConfig.cyclePolling, myConfig.logLevel)
 logging.info('[DAEMON] callback=%s', myConfig.callBack)
 logging.info('[DAEMON] pid=%s', myConfig.pidFile)
 
 signal.signal(signal.SIGTERM, handler)
 signal.signal(signal.SIGINT, handler)
+
+my_jeedom_socket: Any = None
 
 try:
     if myConfig.pidFile:
@@ -362,14 +387,11 @@ try:
 
     my_jeedom_socket = jeedom_socket(address=myConfig.socketHost, port=myConfig.socketPort)
 
-    Loops.mainLoop(myConfig.cycle)
+    Loops.mainLoop(myConfig.cycleMain)
 
 except Exception as e:
     logging.error('[DAEMON] Erreur fatale :: %s', e)
     shutdown()
 
 finally:
-    logging.info('[DAEMON] Fermeture en cours...')
-    if myConfig.pidFile and os.path.exists(myConfig.pidFile):
-        os.remove(myConfig.pidFile)
     logging.info('[DAEMON] NUT_Free daemon arrêté')

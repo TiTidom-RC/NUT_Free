@@ -13,11 +13,13 @@
 # You should have received a copy of the GNU General Public License
 # along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 
+import time
 import threading
+from typing import Any
 
 
 class Config:
-    IS_ENDING = False
+    IS_ENDING: bool = False
 
     logLevel = 'error'
     socketPort = 55113
@@ -25,13 +27,17 @@ class Config:
     pidFile = ''
     apiKey = ''
     callBack = ''
-    cycle = 60.0
+    cyclePolling = 60.0
+    cycleMain = 0.5   # cycle de la boucle principale (tick détection IS_ENDING)
     cycleEvent = 0.5  # cycle de la boucle events from Jeedom
     cycleComm = 0.5   # cycle de la boucle comm vers Jeedom
+
+    HeartbeatFrequency = 600          # intervalle heartbeat en secondes
+    HeartbeatLastTime = int(time.time())
 
     devices: dict = {}       # dict[eqLogic_id, NutDevice]
     devicesLock = threading.Lock()
 
 
 class Comm:
-    sendToJeedom = None
+    sendToJeedom: Any = None

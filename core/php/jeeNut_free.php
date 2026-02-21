@@ -69,6 +69,23 @@ try {
         exit;
     }
 
+    // ----- Traitement des événements daemon -----
+    if (isset($data['daemonStarted'])) {
+        if ($data['daemonStarted'] == '1') {
+            log::add('Nut_free', 'info', '[jeeNut_free] Daemon démarré');
+        }
+        echo json_encode(['status' => 'ok']);
+        exit;
+    }
+
+    if (isset($data['heartbeat'])) {
+        if ($data['heartbeat'] == '1') {
+            log::add('Nut_free', 'info', '[jeeNut_free] Daemon Heartbeat (' . config::byKey('HeartbeatFrequency', 'Nut_free', 600) . 's)');
+        }
+        echo json_encode(['status' => 'ok']);
+        exit;
+    }
+
     // ----- Traitement des mises à jour -----
     if (!isset($data['update']) || !is_array($data['update'])) {
         log::add('Nut_free', 'debug', '[jeeNut_free] Aucune clé "update" dans le payload');
