@@ -683,23 +683,20 @@ class Nut_free extends eqLogic {
     }
 
     public static function deamon_stop() {
-        // 1. Arrêt propre via socket
-        self::sendToDaemon(['action' => 'shutdown']);
-
-        // 2. Attendre la fin du processus (max 3s par paliers de 100ms)
         $pidFile = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
-        for ($i = 0; $i < 30 && file_exists($pidFile); $i++) {
-            usleep(100000);
-        }
-
-        // 3. Force kill si toujours en vie
         if (file_exists($pidFile)) {
             $pid = intval(trim(file_get_contents($pidFile)));
             if ($pid > 0) {
-                system::kill($pid);
+                // SIGTERM uniquement (pas de SIGKILL immédiat) → le daemon gère son arrêt proprement
+                system::kill($pid, false);
+                // Attendre la fin du processus (max 3s par paliers de 100ms)
+                for ($i = 0; $i < 30 && file_exists($pidFile); $i++) {
+                    usleep(100000);
+                }
             }
             @unlink($pidFile);
         }
+        // Filet de sécurité si le processus traîne encore
         system::kill('nutfreed.py');
         system::fuserk(config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT));
         log::add('Nut_free', 'info', '[DAEMON] Arrêté');

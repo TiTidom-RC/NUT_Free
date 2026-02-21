@@ -47,7 +47,7 @@ try {
     }
 
     if (!jeedom::apiAccess($apikey, 'Nut_free')) {
-        log::add('Nut_free', 'error', '[jeeNut_free] Accès refusé : clé API invalide');
+        log::add('Nut_free', 'error', '[CALLBACK] Accès refusé : clé API invalide');
         http_response_code(403);
         echo json_encode(['status' => 'error', 'message' => 'Access denied']);
         exit;
@@ -56,14 +56,14 @@ try {
     // ----- Lecture du corps POST -----
     $body = file_get_contents('php://input');
     if (empty($body)) {
-        log::add('Nut_free', 'warning', '[jeeNut_free] Corps POST vide');
+        log::add('Nut_free', 'warning', '[CALLBACK] Corps POST vide');
         echo json_encode(['status' => 'ok']);
         exit;
     }
 
     $data = json_decode($body, true);
     if (!is_array($data)) {
-        log::add('Nut_free', 'error', '[jeeNut_free] JSON invalide :: ' . $body);
+        log::add('Nut_free', 'error', '[CALLBACK] JSON invalide :: ' . $body);
         http_response_code(400);
         echo json_encode(['status' => 'error', 'message' => 'Invalid JSON']);
         exit;
@@ -72,7 +72,7 @@ try {
     // ----- Traitement des événements daemon -----
     if (isset($data['daemonStarted'])) {
         if ($data['daemonStarted'] == '1') {
-            log::add('Nut_free', 'info', '[jeeNut_free] Daemon démarré');
+            log::add('Nut_free', 'info', '[CALLBACK] NUT_Free Daemon démarré');
         }
         echo json_encode(['status' => 'ok']);
         exit;
@@ -80,7 +80,7 @@ try {
 
     if (isset($data['heartbeat'])) {
         if ($data['heartbeat'] == '1') {
-            log::add('Nut_free', 'info', '[jeeNut_free] Daemon Heartbeat (' . config::byKey('HeartbeatFrequency', 'Nut_free', 600) . 's)');
+            log::add('Nut_free', 'info', '[CALLBACK] NUT_Free Daemon Heartbeat (' . config::byKey('HeartbeatFrequency', 'Nut_free', 600) . 's)');
         }
         echo json_encode(['status' => 'ok']);
         exit;
@@ -88,7 +88,7 @@ try {
 
     // ----- Traitement des mises à jour -----
     if (!isset($data['update']) || !is_array($data['update'])) {
-        log::add('Nut_free', 'debug', '[jeeNut_free] Aucune clé "update" dans le payload');
+        log::add('Nut_free', 'debug', '[CALLBACK] Aucune clé "update" dans le payload');
         echo json_encode(['status' => 'ok']);
         exit;
     }
@@ -101,12 +101,12 @@ try {
         /** @var Nut_free $eqLogic */
         $eqLogic = Nut_free::byId($eqLogic_id);
         if (!is_object($eqLogic)) {
-            log::add('Nut_free', 'warning', '[jeeNut_free] eqLogic introuvable : ' . $eqLogic_id);
+            log::add('Nut_free', 'warning', '[CALLBACK] eqLogic introuvable : ' . $eqLogic_id);
             continue;
         }
 
         if (!$eqLogic->getIsEnable()) {
-            log::add('Nut_free', 'debug', '[jeeNut_free] eqLogic désactivé, ignore : ' . $eqLogic_id);
+            log::add('Nut_free', 'debug', '[CALLBACK] eqLogic désactivé, ignore : ' . $eqLogic_id);
             continue;
         }
 
@@ -114,24 +114,24 @@ try {
         foreach ($values as $logicalId => $value) {
             $cmd = $eqLogic->getCmd('info', $logicalId);
             if (!is_object($cmd)) {
-                log::add('Nut_free', 'debug', '[jeeNut_free][' . $eqLogic_id . '] Commande introuvable : ' . $logicalId);
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogic_id . '] Commande introuvable : ' . $logicalId);
                 continue;
             }
             $cmd->event($value);
             $updated = true;
-            log::add('Nut_free', 'debug', '[jeeNut_free][' . $eqLogic_id . '] ' . $logicalId . ' = ' . $value);
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogic_id . '] ' . $logicalId . ' = ' . $value);
         }
 
         if ($updated) {
             $eqLogic->refreshWidget();
-            log::add('Nut_free', 'info', '[jeeNut_free] Widget rafraîchi pour eqLogic ' . $eqLogic_id);
+            log::add('Nut_free', 'info', '[CALLBACK] Widget rafraîchi pour eqLogic ' . $eqLogic_id);
         }
     }
 
     echo json_encode(['status' => 'ok']);
 
 } catch (Exception $e) {
-    log::add('Nut_free', 'error', '[jeeNut_free] Exception :: ' . $e->getMessage());
+    log::add('Nut_free', 'error', '[CALLBACK] Exception :: ' . $e->getMessage());
     http_response_code(500);
     echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
 }
