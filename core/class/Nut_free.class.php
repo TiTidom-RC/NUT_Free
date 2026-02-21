@@ -26,6 +26,7 @@ class Nut_free extends eqLogic {
 	const VENV_PYTHON    = __DIR__ . '/../../resources/venv/bin/python3';
 	const DAEMON_SCRIPT  = __DIR__ . '/../../resources/nutfreed/nutfreed.py';
 	const DAEMON_PORT    = 55113;
+	const PYENV_PATH     = '/opt/pyenv/bin/pyenv';
 
 	public static $_infosMap = array(
 		//on crée un tableau contenant la liste des infos a traiter 
@@ -281,17 +282,66 @@ class Nut_free extends eqLogic {
 		return true;
 	}
 
+	public static function getPythonVersion() {
+		$pythonVersion = '0.0.0';
+		try {
+			if (file_exists(self::VENV_PYTHON)) {
+				$pythonVersion = exec(system::getCmdSudo() . self::VENV_PYTHON . " --version | awk '{ print $2 }'");
+				config::save('pythonVersion', $pythonVersion, 'Nut_free');
+			} else {
+				log::add('Nut_free', 'error', '[Python-Version] Python venv introuvable :: ' . self::VENV_PYTHON);
+			}
+		} catch (\Exception $e) {
+			log::add('Nut_free', 'error', '[Python-Version] Exception :: ' . $e->getMessage());
+		}
+		log::add('Nut_free', 'info', '[Python-Version] PythonVersion (venv) :: ' . $pythonVersion);
+		return $pythonVersion;
+	}
+
+	public static function getPyEnvVersion() {
+		$pyenvVersion = '0.0.0';
+		try {
+			if (file_exists(self::PYENV_PATH)) {
+				$pyenvVersion = exec(system::getCmdSudo() . self::PYENV_PATH . " --version | awk '{ print $2 }'");
+				config::save('pyenvVersion', $pyenvVersion, 'Nut_free');
+			} elseif (file_exists(self::VENV_PYTHON)) {
+				$pythonPyEnvInUse = (exec(system::getCmdSudo() . 'dirname $(readlink ' . self::VENV_PYTHON . ') | grep -Ewc "opt/pyenv"') == 1) ? true : false;
+				if (!$pythonPyEnvInUse) {
+					$pyenvVersion = '-';
+					config::save('pyenvVersion', $pyenvVersion, 'Nut_free');
+				}
+			} else {
+				log::add('Nut_free', 'error', '[PyEnv-Version] PyEnv File :: KO');
+			}
+		} catch (\Exception $e) {
+			log::add('Nut_free', 'error', '[PyEnv-Version] Exception :: ' . $e->getMessage());
+		}
+		log::add('Nut_free', 'info', '[PyEnv-Version] PyEnvVersion :: ' . $pyenvVersion);
+		return $pyenvVersion;
+	}
+
 	public static function dependancy_install() {
 		log::remove(__CLASS__ . '_update');
 
+		$script_sysUpdates  = 0;
+		$script_restorePyEnv = 0;
 		$script_restoreVenv = 0;
+
+		if (config::byKey('debugInstallUpdates', 'Nut_free') == '1') {
+			$script_sysUpdates = 1;
+			config::save('debugInstallUpdates', '0', 'Nut_free');
+		}
+		if (config::byKey('debugRestorePyEnv', 'Nut_free') == '1') {
+			$script_restorePyEnv = 1;
+			config::save('debugRestorePyEnv', '0', 'Nut_free');
+		}
 		if (config::byKey('debugRestoreVenv', 'Nut_free') == '1') {
 			$script_restoreVenv = 1;
 			config::save('debugRestoreVenv', '0', 'Nut_free');
 		}
 
 		return array(
-			'script' => __DIR__ . '/../../resources/install.sh ' . jeedom::getTmpFolder(__CLASS__) . '/dependency ' . $script_restoreVenv,
+			'script' => __DIR__ . '/../../resources/install_#stype#.sh ' . jeedom::getTmpFolder(__CLASS__) . '/dependency' . ' ' . $script_sysUpdates . ' ' . $script_restorePyEnv . ' ' . $script_restoreVenv,
 			'log'    => log::getPathToLog(__CLASS__ . '_update'),
 		);
 	}
@@ -559,7 +609,7 @@ class Nut_free extends eqLogic {
 
         try {
             self::getPythonDepFromRequirements();
-        } catch (Exception $e) {
+			self::getPyEnvVersion();
             log::add('Nut_free', 'error', '[DAEMON][START][PythonDep] Exception :: ' . $e->getMessage());
         }
 

@@ -33,11 +33,23 @@ function Nut_free_install() {
     if (config::byKey('pythonVersion', 'Nut_free') == '') {
         config::save('pythonVersion', '?.?.?', 'Nut_free');
     }
-    if (config::byKey('socketport', 'Nut_free') == '') {
-        config::save('socketport', '55113', 'Nut_free');
+    if (config::byKey('pyenvVersion', 'Nut_free') == '') {
+        config::save('pyenvVersion', '?.?.?', 'Nut_free');
     }
-    if (config::byKey('cycle', 'Nut_free') == '') {
-        config::save('cycle', '60', 'Nut_free');
+    if (config::byKey('socketPort', 'Nut_free') == '') {
+        config::save('socketPort', '55113', 'Nut_free');
+    }
+    if (config::byKey('cyclePolling', 'Nut_free') == '') {
+        config::save('cyclePolling', '60', 'Nut_free');
+    }
+    if (config::byKey('cycleFactor', 'Nut_free') == '') {
+        config::save('cycleFactor', '1.0', 'Nut_free');
+    }
+    if (config::byKey('debugInstallUpdates', 'Nut_free') == '') {
+        config::save('debugInstallUpdates', '0', 'Nut_free');
+    }
+    if (config::byKey('debugRestorePyEnv', 'Nut_free') == '') {
+        config::save('debugRestorePyEnv', '0', 'Nut_free');
     }
     if (config::byKey('debugRestoreVenv', 'Nut_free') == '') {
         config::save('debugRestoreVenv', '0', 'Nut_free');
@@ -89,11 +101,23 @@ function Nut_free_update() {
     if (config::byKey('pythonVersion', 'Nut_free') == '') {
         config::save('pythonVersion', '?.?.?', 'Nut_free');
     }
-    if (config::byKey('socketport', 'Nut_free') == '') {
-        config::save('socketport', '55113', 'Nut_free');
+    if (config::byKey('pyenvVersion', 'Nut_free') == '') {
+        config::save('pyenvVersion', '?.?.?', 'Nut_free');
     }
-    if (config::byKey('cycle', 'Nut_free') == '') {
-        config::save('cycle', '60', 'Nut_free');
+    if (config::byKey('socketPort', 'Nut_free') == '') {
+        config::save('socketPort', '55113', 'Nut_free');
+    }
+    if (config::byKey('cyclePolling', 'Nut_free') == '') {
+        config::save('cyclePolling', '60', 'Nut_free');
+    }
+    if (config::byKey('cycleFactor', 'Nut_free') == '') {
+        config::save('cycleFactor', '1.0', 'Nut_free');
+    }
+    if (config::byKey('debugInstallUpdates', 'Nut_free') == '') {
+        config::save('debugInstallUpdates', '0', 'Nut_free');
+    }
+    if (config::byKey('debugRestorePyEnv', 'Nut_free') == '') {
+        config::save('debugRestorePyEnv', '0', 'Nut_free');
     }
     if (config::byKey('debugRestoreVenv', 'Nut_free') == '') {
         config::save('debugRestoreVenv', '0', 'Nut_free');

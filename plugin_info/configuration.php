@@ -80,7 +80,36 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
             </div>
         </div>
 
+        <div class="form-group">
+            <label class="col-md-3 control-label">{{Version PyEnv}}
+                <sup><i class="fas fa-question-circle tooltips" title="{{Version de PyEnv utilisée par le plugin (à indiquer sur Community)}}"></i></sup>
+            </label>
+            <div class="col-md-1">
+                <input class="configKey form-control" data-l1key="pyenvVersion" readonly />
+            </div>
+        </div>
+
         <legend><i class="fas fa-code"></i> {{Dépendances}}</legend>
+
+        <div class="form-group">
+            <label class="col-md-3 control-label">{{Force les mises à jour Systèmes}}
+                <sup><i class="fas fa-ban tooltips" style="color:var(--al-danger-color)!important;" title="{{Les dépendances devront être relancées après la sauvegarde de ce paramètre}}"></i></sup>
+                <sup><i class="fas fa-question-circle tooltips" title="{{Permet de forcer l'installation des mises à jour systèmes}}"></i></sup>
+            </label>
+            <div class="col-md-1">
+                <input type="checkbox" class="configKey" data-l1key="debugInstallUpdates" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-3 control-label">{{Force la réinitialisation de PyEnv}}
+                <sup><i class="fas fa-ban tooltips" style="color:var(--al-danger-color)!important;" title="{{Les dépendances devront être relancées après la sauvegarde de ce paramètre}}"></i></sup>
+                <sup><i class="fas fa-question-circle tooltips" title="{{Permet de forcer la réinitialisation de l'environnement Python utilisé par le plugin}}"></i></sup>
+            </label>
+            <div class="col-md-1">
+                <input type="checkbox" class="configKey" data-l1key="debugRestorePyEnv" />
+            </div>
+        </div>
 
         <div class="form-group">
             <label class="col-md-3 control-label">{{Force la réinitialisation de Venv}}

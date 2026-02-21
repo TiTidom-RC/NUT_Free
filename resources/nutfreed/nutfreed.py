@@ -46,7 +46,6 @@ try:
     from PyNUTClient.PyNUT import PyNUTClient
 except ImportError as e:
     print(f'[DAEMON][IMPORT] ERREUR : pynutclient introuvable :: {e}')
-    print('[DAEMON][IMPORT] Installez le venv : resources/install.sh')
     sys.exit(1)
 
 # --- Import Jeedom lib ---
