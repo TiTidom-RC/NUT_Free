@@ -535,7 +535,7 @@ class Nut_free extends eqLogic {
     // =========================================================================
 
     public static function deamon_info() {
-        $return = array('log' => 'nutfreed', 'state' => 'nok', 'launchable' => 'ok');
+        $return = array('log' => 'Nut_free_daemon', 'state' => 'nok', 'launchable' => 'ok');
         $pidFile = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
         if (!file_exists($pidFile)) {
             $return['state'] = 'nok';
@@ -563,14 +563,15 @@ class Nut_free extends eqLogic {
             log::add('Nut_free', 'error', '[DAEMON][START][PythonDep] Exception :: ' . $e->getMessage());
         }
 
-        $python3    = realpath(self::VENV_PYTHON);
-        $script     = realpath(self::DAEMON_SCRIPT);
-        $pidFile    = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
-        $loglevel   = log::convertLogLevel(log::getLogLevel('Nut_free')) ?: 'error';
-        $apikey     = jeedom::getApiKey('Nut_free');
-        $socketport = config::byKey('socketport', 'Nut_free', self::DAEMON_PORT);
-        $callback   = network::getNetworkAccess('internal', 'http:127.0.0.1:port:comp') . '/plugins/Nut_free/core/php/jeeNut_free.php';
-        $cycle      = config::byKey('cycle', 'Nut_free', 60);
+        $python3       = realpath(self::VENV_PYTHON);
+        $script        = realpath(self::DAEMON_SCRIPT);
+        $pidFile       = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
+        $logLevel      = log::convertLogLevel(log::getLogLevel('Nut_free')) ?: 'error';
+        $apiKey        = jeedom::getApiKey('Nut_free');
+        $socketPort    = config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT);
+        $callbackUrl   = network::getNetworkAccess('internal', 'http:127.0.0.1:port:comp') . '/plugins/Nut_free/core/php/jeeNut_free.php';
+        $cyclePolling  = config::byKey('cyclePolling', 'Nut_free', 60);
+        $cycleFactor   = config::byKey('cycleFactor', 'Nut_free', '1.0');
 
         if (empty($python3) || !file_exists($python3)) {
             log::add('Nut_free', 'error', '[DAEMON] Python venv introuvable : ' . self::VENV_PYTHON);
@@ -584,13 +585,15 @@ class Nut_free extends eqLogic {
         @mkdir(dirname($pidFile), 0755, true);
 
         $cmd = $python3 . ' ' . escapeshellarg($script)
-            . ' --socketport ' . $socketport
-            . ' --callback '   . escapeshellarg($callback)
-            . ' --apikey '     . escapeshellarg($apikey)
-            . ' --loglevel '   . escapeshellarg($loglevel)
-            . ' --cyclepolling ' . escapeshellarg($cycle)
-            . ' --pid '        . escapeshellarg($pidFile)
-            . ' >> ' . log::getPathToLog('nutfreed') . ' 2>&1 &';
+            . ' --socketport '    . $socketPort
+            . ' --callback '      . escapeshellarg($callbackUrl)
+            . ' --apikey '        . escapeshellarg($apiKey)
+            . ' --loglevel '      . escapeshellarg($logLevel)
+            . ' --pluginversion ' . escapeshellarg(config::byKey('pluginVersion', 'Nut_free', '0.0.0'))
+            . ' --cyclepolling '  . escapeshellarg($cyclePolling)
+            . ' --cyclefactor '   . escapeshellarg($cycleFactor)
+            . ' --pid '           . escapeshellarg($pidFile)
+            . ' >> ' . log::getPathToLog('Nut_free_daemon') . ' 2>&1 &';
 
         log::add('Nut_free', 'info', '[DAEMON] Démarrage : ' . $cmd);
         exec($cmd);
@@ -644,7 +647,7 @@ class Nut_free extends eqLogic {
             unlink($pidFile);
         }
         system::kill('nutfreed.py');
-        system::fuserk(config::byKey('socketport', 'Nut_free', self::DAEMON_PORT));
+        system::fuserk(config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT));
         log::add('Nut_free', 'info', '[DAEMON] Arrêté');
     }
 
@@ -658,7 +661,7 @@ class Nut_free extends eqLogic {
         }
         socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 3, 'usec' => 0));
         socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 3, 'usec' => 0));
-        if (!@socket_connect($socket, '127.0.0.1', config::byKey('socketport', 'Nut_free', self::DAEMON_PORT))) {
+        if (!@socket_connect($socket, '127.0.0.1', config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT))) {
             log::add('Nut_free', 'warning', '[DAEMON] socket_connect impossible (daemon arrêté ?)');
             socket_close($socket);
             return false;

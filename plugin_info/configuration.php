@@ -100,7 +100,7 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
                 <sup><i class="fas fa-question-circle tooltips" title="{{[ATTENTION] Ne changez ce paramètre qu'en cas de nécessité. (Défaut = 55200)}}"></i></sup>
             </label>
             <div class="col-md-1">
-                <input class="configKey form-control" data-l1key="socketport" placeholder="55113" />
+                <input class="configKey form-control" data-l1key="socketPort" placeholder="55113" />
             </div>
         </div>
 
@@ -110,7 +110,17 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
                 <sup><i class="fas fa-question-circle tooltips" title="{{Intervalle en secondes entre chaque interrogation des UPS (Défaut = 60)}}"></i></sup>
             </label>
             <div class="col-md-1">
-                <input class="configKey form-control" data-l1key="cycle" placeholder="60" />
+                <input class="configKey form-control" data-l1key="cyclePolling" placeholder="60" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-3 control-label">{{Facteur de cycle interne}}
+                <sup><i class="fas fa-exclamation-triangle tooltips" style="color:var(--al-warning-color)!important;" title="{{Le démon devra être redémarré après la modification de ce paramètre}}"></i></sup>
+                <sup><i class="fas fa-question-circle tooltips" title="{{Facteur multiplicateur appliqué aux cycles internes du démon (Main/Comm/Event). Défaut = 1.0. Diminuer pour accélérer la réactivité}}"></i></sup>
+            </label>
+            <div class="col-md-1">
+                <input class="configKey form-control" data-l1key="cycleFactor" placeholder="1.0" />
             </div>
         </div>
 

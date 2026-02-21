@@ -21,21 +21,24 @@ from typing import Any
 class Config:
     IS_ENDING: bool = False
 
+    pluginVersion = '0.0.0'
     logLevel = 'error'
     socketPort = 55113
     socketHost = '127.0.0.1'
     pidFile = ''
     apiKey = ''
     callBack = ''
-    cyclePolling = 60.0
-    cycleMain = 0.5   # cycle de la boucle principale (tick détection IS_ENDING)
-    cycleEvent = 0.5  # cycle de la boucle events from Jeedom
-    cycleComm = 0.5   # cycle de la boucle comm vers Jeedom
 
-    HeartbeatFrequency = 600          # intervalle heartbeat en secondes
+    cyclePolling = 60.0
+    cycleMain = 0.5  # cycle de la boucle principale (tick détection IS_ENDING)
+    cycleEvent = 0.5  # cycle de la boucle events from Jeedom
+    cycleComm = 0.5  # cycle de la boucle comm vers Jeedom
+    cycleFactor = 1.0  # facteur multiplicateur appliqué aux cycles internes
+
+    HeartbeatFrequency = 600  # intervalle heartbeat en secondes
     HeartbeatLastTime = int(time.time())
 
-    devices: dict = {}       # dict[eqLogic_id, NutDevice]
+    devices: dict = {}  # dict[eqLogic_id, NutDevice]
     devicesLock = threading.Lock()
 
 

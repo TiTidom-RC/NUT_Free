@@ -345,7 +345,9 @@ parser.add_argument('--socketport', help="Port d'écoute socket TCP", type=str)
 parser.add_argument('--callback', help='URL callback Jeedom (jeeNut_free.php)', type=str)
 parser.add_argument('--apikey', help='Clé API Jeedom', type=str)
 parser.add_argument('--cyclepolling', help='Intervalle de polling en secondes', type=str)
+parser.add_argument('--cyclefactor', help='Facteur multiplicateur des cycles internes', type=str)
 parser.add_argument('--loglevel', help='Niveau de log (debug/info/warning/error)', type=str)
+parser.add_argument('--pluginversion', help='Version du plugin', type=str)
 parser.add_argument('--pid', help='Chemin du fichier PID', type=str)
 
 args = parser.parse_args()
@@ -358,19 +360,46 @@ if args.apikey:
     myConfig.apiKey = args.apikey
 if args.cyclepolling:
     myConfig.cyclePolling = float(args.cyclepolling)
+if args.cyclefactor:
+    myConfig.cycleFactor = float(args.cyclefactor)
 if args.loglevel:
     myConfig.logLevel = args.loglevel
+if args.pluginversion:
+    myConfig.pluginVersion = args.pluginversion
 if args.pid:
     myConfig.pidFile = args.pid
 
 jeedom_utils.set_log_level(myConfig.logLevel)
 
+# Application du cycleFactor sur les cycles internes
+if myConfig.cycleFactor == 0:
+    myConfig.cycleMain = 0.5
+    myConfig.cycleComm = 0.5
+    myConfig.cycleEvent = 0.5
+    logging.warning('[DAEMON] CycleFactor=0 => cycles internes réinitialisés aux valeurs par défaut')
+elif myConfig.cycleFactor < 0.5:
+    myConfig.cycleMain = max(0.1, myConfig.cycleMain * myConfig.cycleFactor)
+    myConfig.cycleComm = max(0.1, myConfig.cycleComm * myConfig.cycleFactor)
+    myConfig.cycleEvent = max(0.1, myConfig.cycleEvent * myConfig.cycleFactor)
+    logging.warning('[DAEMON] CycleFactor < 0.5 => cycles internes réduits')
+else:
+    myConfig.cycleMain = myConfig.cycleMain * myConfig.cycleFactor
+    myConfig.cycleComm = myConfig.cycleComm * myConfig.cycleFactor
+    myConfig.cycleEvent = myConfig.cycleEvent * myConfig.cycleFactor
+
 logging.info('[DAEMON] ==========================================')
 logging.info('[DAEMON] Démarrage NUT_Free daemon')
-logging.info('[DAEMON] socketport=%d | cycle=%ss | loglevel=%s',
-             myConfig.socketPort, myConfig.cyclePolling, myConfig.logLevel)
-logging.info('[DAEMON] callback=%s', myConfig.callBack)
-logging.info('[DAEMON] pid=%s', myConfig.pidFile)
+logging.info('[DAEMON] Plugin Version : %s', myConfig.pluginVersion)
+logging.info('[DAEMON] Python Version : %s', sys.version)
+logging.info('[DAEMON] Log level      : %s', myConfig.logLevel)
+logging.info('[DAEMON] Socket port    : %d', myConfig.socketPort)
+logging.info('[DAEMON] CyclePolling   : %ss', myConfig.cyclePolling)
+logging.info('[DAEMON] CycleFactor    : %s', myConfig.cycleFactor)
+logging.info('[DAEMON] CycleMain      : %s', myConfig.cycleMain)
+logging.info('[DAEMON] CycleComm      : %s', myConfig.cycleComm)
+logging.info('[DAEMON] CycleEvent     : %s', myConfig.cycleEvent)
+logging.info('[DAEMON] Callback       : %s', myConfig.callBack)
+logging.info('[DAEMON] PID file       : %s', myConfig.pidFile)
 
 signal.signal(signal.SIGTERM, handler)
 signal.signal(signal.SIGINT, handler)
