@@ -1,0 +1,64 @@
+# Plugin Configuration
+data/config/*.json
+
+# IDE & Editors
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.project
+
+# OS Generated Files
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+# Linux
+*~
+
+# Editor Temporary Files
+*.swp
+*.swo
+*~
+*.bak
+*.orig
+*.php~
+
+# PHP Temporary Files
+*.tmp
+*.cache
+.php_cs.cache
+.php-cs-fixer.cache
+
+# Python
+.venv/
+resources/venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Logs
+logs/
+*.log
+
+# Temporary Directories
+tmp/
+temp/
+cache/
+
+# Security & Credentials
+*.pem
+*.key
+id_rsa*
+.env
+.env.local
+
+# Documentation Interne
+resources/_docs/
+
+# Github Instructions
+.github/copilot-instructions.md
