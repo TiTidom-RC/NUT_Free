@@ -587,16 +587,13 @@ class Nut_free extends eqLogic {
     public static function deamon_info() {
         $return = array('log' => 'Nut_free_daemon', 'state' => 'nok', 'launchable' => 'ok');
         $pidFile = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
-        if (!file_exists($pidFile)) {
-            $return['state'] = 'nok';
-            return $return;
+        if (file_exists($pidFile)) {
+            if (@posix_getsid(trim(file_get_contents($pidFile)))) {
+                $return['state'] = 'ok';
+            } else {
+                shell_exec(system::getCmdSudo() . 'rm -rf ' . $pidFile . ' 2>&1 > /dev/null');
+            }
         }
-        $pid = intval(trim(file_get_contents($pidFile)));
-        if ($pid <= 0 || !posix_getsid($pid)) {
-            $return['state'] = 'nok';
-            return $return;
-        }
-        $return['state'] = 'ok';
         return $return;
     }
 
@@ -690,11 +687,7 @@ class Nut_free extends eqLogic {
         if (file_exists($pidFile)) {
             $pid = intval(trim(file_get_contents($pidFile)));
             if ($pid > 0) {
-                posix_kill($pid, SIGTERM);
-                sleep(1);
-                if (posix_getsid($pid)) {
-                    posix_kill($pid, SIGKILL);
-                }
+                system::kill($pid);
             }
             unlink($pidFile);
         }
