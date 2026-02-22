@@ -134,10 +134,28 @@ window.printEqLogic  = printEqLogic
 if (!window._nutFreeClickAttached) {
   window._nutFreeClickAttached = true
   document.body.addEventListener('click', (event) => {
-    const target = event.target.closest('.pluginAction[data-action=openLocation]')
-    if (target) {
-      const location = target.getAttribute('data-location')
+    const openTarget = event.target.closest('.pluginAction[data-action=openLocation]')
+    if (openTarget) {
+      const location = openTarget.getAttribute('data-location')
       if (location) window.open(location, '_blank', null)
+    }
+
+    if (event.target.closest('[data-action="createCommunityPost"]')) {
+      jeedom.plugin.createCommunityPost({
+        type: eqType,
+        error: function (error) {
+          jeedomUtils.showAlert({ message: error.message, level: 'danger' })
+        },
+        success: function (data) {
+          const link = document.createElement('a')
+          link.href = data.url
+          link.target = '_blank'
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }
+      })
     }
   })
 }

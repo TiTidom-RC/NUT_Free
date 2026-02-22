@@ -35,6 +35,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
                         <br/>
                         <span style="color:var(--txt-color)">{{Community}}</span>
                     </div>
+                    <div class="cursor eqLogicAction logoSecondary" data-action="createCommunityPost">
+                        <i class="fas fa-ambulance icon_blue"></i>
+                        <br/>
+                        <span style="color:var(--txt-color)">{{Post Community}}</span>
+                    </div>
                 </div>
             </div>
         </div>

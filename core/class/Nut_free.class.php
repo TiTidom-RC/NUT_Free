@@ -117,6 +117,30 @@ class Nut_free extends eqLogic {
 		return $pluginVersion;
 	}
 
+	public static function getConfigForCommunity() {
+		$isSSHMExist = class_exists('sshmanager');
+
+		$CommunityInfo = "```\n";
+		$CommunityInfo .= 'Debian : ' . system::getOsVersion() . "\n";
+		$CommunityInfo .= 'Plugin NUT Free (Version / Branche) : ' . config::byKey('pluginVersion', 'Nut_free', 'N/A') . ' / ' . config::byKey('pluginBranch', 'Nut_free', 'N/A') . "\n";
+		$CommunityInfo .= 'Plugin SSH Manager (Version / Branche) : ' . config::byKey('pluginVersion', 'sshmanager', 'N/A') . ' / ' . config::byKey('pluginBranch', 'sshmanager', 'N/A') . "\n";
+		$CommunityInfo .= 'Python : ' . config::byKey('pythonVersion', 'Nut_free', 'N/A') . "\n";
+		$CommunityInfo .= 'PyEnv : ' . config::byKey('pyenvVersion', 'Nut_free', 'N/A') . "\n";
+
+		$eqLogics = eqLogic::byType('Nut_free');
+		$nbTotal   = count($eqLogics);
+		$nbEnabled = count(array_filter($eqLogics, function($eq) { return $eq->getIsEnable(); }));
+		$CommunityInfo .= 'Équipements : ' . $nbEnabled . ' actif(s) / ' . $nbTotal . " total\n";
+
+		if (!$isSSHMExist) {
+			$CommunityInfo .= "\n";
+			$CommunityInfo .= 'Plugin SSH Manager non activé !' . "\n";
+		}
+
+		$CommunityInfo .= "```";
+		return $CommunityInfo;
+	}
+
 	public static function dependancy_info() {
 		$_logName = __CLASS__ . '_update';
 		$return = array();

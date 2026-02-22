@@ -9,6 +9,7 @@
         "pynutclient",
         "realpower",
         "signum",
+        "SSHM",
         "sshmanager",
         "upsd",
         "upsmon"
