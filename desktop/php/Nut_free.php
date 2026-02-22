@@ -140,7 +140,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     <label class="col-sm-4 control-label">{{Protocole de connexion}}</label>
                                     <div class="col-sm-6">
                                         <select id="selConnexionMode" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="connexionMode">
-                                            <option value="nut">{{NUT (protocole TCP direct)}}</option>
+                                            <option value="nut" selected>{{NUT (protocole TCP direct)}}</option>
                                             <option value="ssh">{{SSH (via SSH-Manager)}}</option>
                                         </select>
                                     </div>
@@ -207,7 +207,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     </label>
                                     <div class="col-sm-6">
                                         <select id="selUpsAuto" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="upsAutoSelect">
-                                            <option value="0">{{Oui (automatique)}}</option>
+                                            <option value="0" selected>{{Oui (automatique)}}</option>
                                             <option value="1">{{Non (manuel)}}</option>
                                         </select>
                                     </div>
