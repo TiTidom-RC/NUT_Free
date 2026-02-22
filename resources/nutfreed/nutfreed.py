@@ -138,21 +138,21 @@ def _resolve_ups_name(device: NutDevice) -> Optional[str]:
     try:
         client = PyNUTClient(host=device.host, port=device.port,
                              login=device.nutLogin, password=device.nutPassword)
-        ups_list = client.GetUPSList()
-        if not ups_list:
+        upsList = client.GetUPSList()
+        if not upsList:
             logging.warning('[DAEMON][%s] Aucun UPS trouvé sur %s:%d',
                             device.name, device.host, device.port)
             return None
-        ups_name = list(ups_list.keys())[0].decode('ascii') if isinstance(list(ups_list.keys())[0], bytes) else list(ups_list.keys())[0]
-        device.resolvedUpsName = ups_name
-        logging.debug('[DAEMON][%s] UPS auto-détecté et mis en cache : %s', device.name, ups_name)
+        upsName = list(upsList.keys())[0].decode('ascii') if isinstance(list(upsList.keys())[0], bytes) else list(upsList.keys())[0]
+        device.resolvedUpsName = upsName
+        logging.debug('[DAEMON][%s] UPS auto-détecté et mis en cache : %s', device.name, upsName)
         return device.resolvedUpsName
     except Exception as e:
         logging.error('[DAEMON][%s] _resolve_ups_name erreur :: %s', device.name, e)
         return None
 
 
-def _nut_get_var(host: str, port: int, ups_name: str, var_name: str,
+def _nut_get_var(host: str, port: int, upsName: str, varName: str,
                  login: Optional[str] = None, password: Optional[str] = None,
                  timeout: float = 5.0) -> Optional[str]:
     """
@@ -170,7 +170,7 @@ def _nut_get_var(host: str, port: int, ups_name: str, var_name: str,
             if password:
                 sock.sendall(f'PASSWORD {password}\n'.encode('ascii'))
                 sock.recv(256)  # attend OK
-            sock.sendall(f'GET VAR {ups_name} {var_name}\n'.encode('ascii'))
+            sock.sendall(f'GET VAR {upsName} {varName}\n'.encode('ascii'))
             buf = b''
             while b'\n' not in buf:
                 chunk = sock.recv(256)
@@ -185,7 +185,7 @@ def _nut_get_var(host: str, port: int, ups_name: str, var_name: str,
         logging.debug('[WATCHER] _nut_get_var réponse inattendue : %s', line)
         return None
     except Exception as e:
-        logging.debug('[WATCHER] _nut_get_var %s:%d %s=%s :: %s', host, port, ups_name, var_name, e)
+        logging.debug('[WATCHER] _nut_get_var %s:%d %s=%s :: %s', host, port, upsName, varName, e)
         return None
 
 
@@ -195,10 +195,10 @@ def get_ups_status_label(device: NutDevice) -> Optional[str]:
     Utilisé par le StatusWatcher pour détecter les changements d'état.
     Retourne la valeur brute (ex: 'OL', 'OB LB') ou None en cas d'erreur.
     """
-    ups_name = _resolve_ups_name(device)
-    if not ups_name:
+    upsName = _resolve_ups_name(device)
+    if not upsName:
         return None
-    return _nut_get_var(device.host, device.port, ups_name, 'ups.status',
+    return _nut_get_var(device.host, device.port, upsName, 'ups.status',
                         login=device.nutLogin, password=device.nutPassword)
 
 
@@ -208,8 +208,8 @@ def query_device(device: NutDevice) -> Optional[dict]:
     {logicalId: valeur} ou None en cas d'erreur de connexion.
     """
     # Résolution du nom UPS (depuis le cache ou via GetUPSList)
-    ups_name = _resolve_ups_name(device)
-    if not ups_name:
+    upsName = _resolve_ups_name(device)
+    if not upsName:
         logging.warning('[DAEMON][%s] Nom UPS non résolu, poll ignoré', device.name)
         return None
 
@@ -224,55 +224,48 @@ def query_device(device: NutDevice) -> Optional[dict]:
 
     # Lecture de toutes les variables NUT en une seule requête
     try:
-        all_vars_raw = client.GetUPSVars(ups_name)
+        allVarsRaw = client.GetUPSVars(upsName)
         # GetUPSVars retourne un dict à clés/valeurs bytes — normalisation en str
-        all_vars = {
+        allVars = {
             (k.decode('ascii') if isinstance(k, bytes) else k): (v.decode('ascii') if isinstance(v, bytes) else v)
-            for k, v in all_vars_raw.items()
+            for k, v in allVarsRaw.items()
         }
     except Exception as e:
-        logging.error('[DAEMON][%s] GetUPSVars(%s) erreur :: %s', device.name, ups_name, e)
+        logging.error('[DAEMON][%s] GetUPSVars(%s) erreur :: %s', device.name, upsName, e)
         return None
 
     results: dict = {}
-    not_online = False
-    marque = ''
+    notOnline = False
 
     for var in NUT_VARS:
-        logical_id = var['logicalId']
-        nut_var = var['nut_var']
-        raw = all_vars.get(nut_var)
+        logicalId = var['logicalId']
+        nutVar = var['nut_var']
+        raw = allVars.get(nutVar)
 
         if raw is None:
-            logging.debug('[DAEMON][%s] %s (%s) : non supporté', device.name, logical_id, nut_var)
+            logging.debug('[DAEMON][%s] %s (%s) : non supporté', device.name, logicalId, nutVar)
             continue
 
         value = str(raw).strip()
 
-        # Concaténation Marque + Modèle sur une ligne
-        if logical_id == 'device_mfr':
-            marque = value
-        elif logical_id == 'device_model':
-            value = f'{marque} {value}'.strip()
-
         # Détection mode batterie
-        if logical_id == 'ups_status':
-            not_online = 'OL' not in value.upper()
-            logging.debug('[DAEMON][%s] ups_status=%s not_online=%s', device.name, value, not_online)
+        if logicalId == 'ups_status':
+            notOnline = 'OL' not in value.upper()
+            logging.debug('[DAEMON][%s] ups_status=%s (notOnline=%s)', device.name, value, notOnline)
 
         # Tension entrée forcée à 0 si sur batterie
-        if logical_id == 'input_voltage' and not_online:
+        if logicalId == 'input_voltage' and notOnline:
             value = '0'
 
         # Conversion secondes → minutes
-        if logical_id in ('batt_runtime_min', 'timer_shutdown_min'):
+        if logicalId in ('batt_runtime_min', 'timer_shutdown_min'):
             try:
                 value = str(int(float(value) / 60))
             except (ValueError, TypeError):
                 pass
 
-        results[logical_id] = value
-        logging.debug('[DAEMON][%s] %s = %s', device.name, logical_id, value)
+        results[logicalId] = value
+        logging.debug('[DAEMON][%s] %s = %s', device.name, logicalId, value)
 
     return results
 

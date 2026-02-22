@@ -428,7 +428,7 @@ class Nut_free extends eqLogic {
         }
 
         // --- Collecte des valeurs NUT via SSH ---
-        $Not_Online = 0;
+        $notOnline = 0;
 
         foreach ($this->getCmd() as $cmd) {
             $logicalId = $cmd->getLogicalId();
@@ -437,19 +437,19 @@ class Nut_free extends eqLogic {
 
             $result = '';
             try {
-                $cmdline = 'upsc ' . escapeshellarg($ups) . ' ' . escapeshellarg($nutVar) . " 2>&1 | grep -v '^Init SSL'";
-                $result  = trim((string) sshmanager::executeCmds($sshHostId, $cmdline));
+                $cmdLine = 'upsc ' . escapeshellarg($ups) . ' ' . escapeshellarg($nutVar) . " 2>&1 | grep -v '^Init SSL'";
+                $result  = trim((string) sshmanager::executeCmds($sshHostId, $cmdLine));
             } catch (\Exception $e) {
                 log::add('Nut_free', 'warning', '[' . $equipment . '] ' . $cmd->getName() . ' erreur : ' . $e->getMessage());
                 continue;
             }
 
-            $errorresult = (strpos($result, 'not supported by UPS') !== false) ? $result : '';
+            $errorResult = (strpos($result, 'not supported by UPS') !== false) ? $result : '';
 
             // Mode ligne / batterie
             if ($logicalId === 'ups_status') {
-                $Not_Online = (stripos($result, 'OL') === false) ? 1 : 0;
-                log::add('Nut_free', 'debug', '[' . $equipment . '] ups_status Not_Online=' . $Not_Online . ' result=' . $result);
+                $notOnline = (stripos($result, 'OL') === false) ? 1 : 0;
+                log::add('Nut_free', 'debug', '[' . $equipment . '] ups_status=' . $result . ' (notOnline=' . $notOnline . ')');
             }
 
             // Statut UPS traduit en français
@@ -458,7 +458,7 @@ class Nut_free extends eqLogic {
             }
 
             // Tension entrée forcée à 0 quand sur batterie
-            if ($logicalId === 'input_voltage' && $Not_Online === 1) {
+            if ($logicalId === 'input_voltage' && $notOnline === 1) {
                 $result = 0;
                 log::add('Nut_free', 'debug', '[' . $equipment . '] input_voltage forcé à 0 (mode batterie)');
             }
@@ -468,7 +468,7 @@ class Nut_free extends eqLogic {
                 $result = (int) ((float) $result / 60);
             }
 
-            if ($errorresult !== '') {
+            if ($errorResult !== '') {
                 log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : non supporté par l\'UPS');
                 $cmd->setIsVisible(0);
                 $cmd->setEqLogic_id($this->getId());
