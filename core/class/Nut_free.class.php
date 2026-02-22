@@ -36,20 +36,8 @@ class Nut_free extends eqLogic {
             if (!$eqLogic->getIsEnable()) continue;
             $mode = $eqLogic->getConfiguration('connexionMode', 'nut');
             if ($mode === 'nut') {
-                // Mode local : le daemon Python gère le polling automatiquement.
-                // On s'assure simplement que l'équipement est enregistré dans le daemon.
-                self::sendToDaemon(array(
-                    'action'      => 'add_device',
-                    'device'      => array(
-                        'eqLogicId'   => $eqLogic->getId(),
-                        'host'        => $eqLogic->getConfiguration('addressIp', '127.0.0.1'),
-                        'port'        => (int) $eqLogic->getConfiguration('nutPort', 3493),
-                        'upsName'     => $eqLogic->getConfiguration('ups', ''),
-                        'autoDetect'  => ($eqLogic->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
-                        'nutLogin'    => $eqLogic->getConfiguration('nutLogin', ''),
-                        'nutPassword' => $eqLogic->getConfiguration('nutPassword', ''),
-                    ),
-                ));
+                // Mode NUT : le daemon gère son propre polling (cyclePolling + statusWatcher).
+                continue;
             } else {
                 // Mode SSH : collecte via SSH-Manager directement en PHP
                 $eqLogic->getInfosSSH();
@@ -246,6 +234,7 @@ class Nut_free extends eqLogic {
 				'action' => 'add_device',
 				'device' => array(
 					'eqLogicId'   => $this->getId(),
+					'eqName'      => $this->getName(),
 					'host'        => $this->getConfiguration('addressIp', '127.0.0.1'),
 					'port'        => (int) $this->getConfiguration('nutPort', 3493),
 					'upsName'     => $this->getConfiguration('ups', ''),
@@ -541,6 +530,7 @@ class Nut_free extends eqLogic {
                         'action' => 'add_device',
                         'device' => array(
                             'eqLogicId'   => $eqLogic->getId(),
+                            'eqName'      => $eqLogic->getName(),
                             'host'        => $eqLogic->getConfiguration('addressIp', '127.0.0.1'),
                             'port'        => (int) $eqLogic->getConfiguration('nutPort', 3493),
                             'upsName'     => $eqLogic->getConfiguration('ups', ''),
