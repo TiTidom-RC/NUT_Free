@@ -222,7 +222,12 @@ def query_device(device: NutDevice) -> Optional[dict]:
 
     # Lecture de toutes les variables NUT en une seule requête
     try:
-        all_vars = client.GetUPSVars(ups_name)
+        all_vars_raw = client.GetUPSVars(ups_name)
+        # GetUPSVars retourne un dict à clés/valeurs bytes — normalisation en str
+        all_vars = {
+            (k.decode('ascii') if isinstance(k, bytes) else k): (v.decode('ascii') if isinstance(v, bytes) else v)
+            for k, v in all_vars_raw.items()
+        }
     except Exception as e:
         logging.error('[DAEMON][%s] GetUPSVars(%s) erreur :: %s', device.eqLogicId, ups_name, e)
         return None

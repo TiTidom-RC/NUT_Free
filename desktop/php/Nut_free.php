@@ -236,9 +236,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
                         <thead>
                             <tr>
                                 <th class="hidden-xs" style="min-width:50px;width:70px;">{{Id}}</th>
-                                <th style="min-width:220px;width:250px;">{{Nom}}</th>
-                                <th style="min-width:100px;">{{Options}}</th>
-                                <th style="min-width:200px;">{{État}}</th>
+                                <th style="min-width:150px;width:250px;">{{Nom}}</th>
+                                <th style="min-width:300px;">{{Commande}}</th>
+                                <th style="min-width:50px;width:80px;">{{Unité}}</th>
+                                <th style="min-width:150px;width:200px;">{{Options}}</th>
+                                <th style="min-width:200px;width:250px;">{{État}}</th>
                                 <th style="min-width:130px;width:150px;">{{Actions}}</th>
                             </tr>
                         </thead>

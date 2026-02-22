@@ -59,6 +59,12 @@ function addCmdToTable(_cmd) {
       </div>
     </td>
     <td>
+      <span class="cmdAttr label label-default" data-l1key="configuration" data-l2key="nutCmd" style="font-size:0.9em;display:inline-block;"></span>
+    </td>
+    <td>
+      ${canBeHistorized ? '<input class="cmdAttr form-control input-sm" data-l1key="unite" placeholder="{{Unité}}" style="width:80px;">' : ''}
+    </td>
+    <td>
       ${canBeVisible    ? '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isVisible"/> {{Afficher}}</label>' : ''}
       ${canBeHistorized ? '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/> {{Historiser}}</label>' : ''}
     </td>
@@ -78,21 +84,8 @@ function addCmdToTable(_cmd) {
   if (!tbody) return
 
   tbody.appendChild(row)
-
-  const eqLogicId = document.querySelector('.eqLogicAttr[data-l1key=id]')
-  if (!eqLogicId) return
-
-  jeedom.eqLogic.buildSelectCmd({
-    id: eqLogicId.jeeValue(),
-    filter: { type: 'info' },
-    error: function(error) {
-      jeedomUtils.showAlert({ message: error.message, level: 'danger' })
-    },
-    success: function(result) {
-      row.setJeeValues(_cmd, '.cmdAttr')
-      jeedom.cmd.changeType(row, init(_cmd.subType))
-    }
-  })
+  row.setJeeValues(_cmd, '.cmdAttr')
+  jeedom.cmd.changeType(row, init(_cmd.subType))
 }
 
 /**

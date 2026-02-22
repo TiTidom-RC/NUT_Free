@@ -85,6 +85,9 @@ function Nut_free_install() {
             message::add('Nut_free', __('Une erreur est survenue à la mise à jour automatique des dépendances. Vérifiez les logs et relancez les dépendances manuellement', __FILE__));
         }
     }
+
+    // Mise à jour des commandes de tous les équipements existants
+    Nut_free::createCmd();
 }
 
 function Nut_free_update() {
@@ -186,6 +189,9 @@ function Nut_free_update() {
         $cron->setTimeout(1);
         $cron->save();
     }
+
+    // Mise à jour des commandes de tous les équipements existants (propage nutCmd, unité, etc.)
+    Nut_free::createCmd();
 }
 
 function Nut_free_remove() {
