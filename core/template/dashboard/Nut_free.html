@@ -4,12 +4,19 @@
 		<span id="iconUPS_line#id#" style="float: left;width:25px"></span>
 		<span id="iconSSH#id#" style="float: right;width:25px"></span>
 		<span style="float: right;margin-right:4px;">
-			<span data-cmd_id="#refreshid#" data-cmd_type="action" data-cmd_subtype="other" class="cmd cursor" title="Rafraîchir">
+			<span data-cmd_id="#refreshid#" class="cmd refresh cursor" title="Rafraîchir">
 				<i class="fas fa-sync-alt" style="font-size:0.9em;"></i>
 			</span>
 		</span>
 
 		<script>
+			// Bouton Rafraîchir
+			if ('#refreshid#' !== '') {
+				$('[data-cmd_id="#refreshid#"].refresh').off('click').on('click', function() {
+					jeedom.cmd.execute({ id: '#refreshid#' });
+				});
+			}
+
 			// Icône connexion SSH (mode SSH uniquement)
 			if ('#cnx_ssh#' === 'OK') {
 				if ('#ssh_op#' === '1') {
