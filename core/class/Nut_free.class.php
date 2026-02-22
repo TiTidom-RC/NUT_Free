@@ -338,20 +338,20 @@ class Nut_free extends eqLogic {
 
 	public static function translateUpsStatus(string $raw): string {
 		$map = array(
-			'OL'      => 'Sur secteur',
-			'OB'      => 'Sur batterie',
-			'LB'      => 'Batterie faible',
-			'HB'      => 'Batterie chargée',
-			'RB'      => 'Remplacer batterie',
-			'CHRG'    => 'En charge',
-			'DISCHRG' => 'En décharge',
+			'OL'      => 'Sur Secteur',
+			'OB'      => 'Sur Batterie',
+			'LB'      => 'Batterie Faible',
+			'HB'      => 'Batterie Chargée',
+			'RB'      => 'Remplacer Batterie',
+			'CHRG'    => 'En Charge',
+			'DISCHRG' => 'En Décharge',
 			'BYPASS'  => 'Bypass',
 			'CAL'     => 'Calibration',
-			'OFF'     => 'Hors tension',
+			'OFF'     => 'Hors Tension',
 			'OVER'    => 'Surchargé',
-			'TRIM'    => 'Régulation basse',
-			'BOOST'   => 'Régulation haute',
-			'FSD'     => 'Arrêt forcé',
+			'TRIM'    => 'Régulation Basse',
+			'BOOST'   => 'Régulation Haute',
+			'FSD'     => 'Arrêt Forcé',
 			'ALARM'   => 'Alarme',
 		);
 		$flags  = array_filter(explode(' ', strtoupper(trim($raw))));
