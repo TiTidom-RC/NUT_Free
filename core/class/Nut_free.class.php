@@ -281,9 +281,9 @@ class Nut_free extends eqLogic {
 			'batt_temp'          => array('name' => 'Température Batterie',      'unite' => '°C',                'nutCmd' => 'battery.temperature', 'icon' => '<i class="fas fa-thermometer-half icon_blue"></i>'),
 			'ups_temp'           => array('name' => 'Température Onduleur',      'unite' => '°C',                'nutCmd' => 'ups.temperature',     'icon' => '<i class="fas fa-thermometer-half icon_green"></i>'),
 			'ups_load'           => array('name' => 'Charge Onduleur',           'unite' => '%',                 'nutCmd' => 'ups.load',            'icon' => '<i class="fas fa-chart-bar icon_green"></i>'),
-			'batt_runtime'       => array('name' => 'Autonomie Batterie',        'unite' => 's',                 'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock icon_blue"></i>'),
+			'batt_runtime'       => array('name' => 'Autonomie Batterie',        'unite' => 'sec',                 'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock icon_blue"></i>'),
 			'batt_runtime_min'   => array('name' => 'Autonomie Batterie (min)',  'unite' => 'min',               'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock icon_green"></i>'),
-			'timer_shutdown'     => array('name' => 'Minuterie Arrêt',           'unite' => 's',                 'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off icon_blue"></i>'),
+			'timer_shutdown'     => array('name' => 'Minuterie Arrêt',           'unite' => 'sec',                 'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off icon_blue"></i>'),
 			'timer_shutdown_min' => array('name' => 'Minuterie Arrêt (min)',     'unite' => 'min',               'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off icon_green"></i>'),
 			'beeper_status'      => array('name' => 'Beeper',                                                'subtype' => 'string', 'nutCmd' => 'ups.beeper.status',   'icon' => '<i class="fas fa-volume-up icon_green"></i>'),
 		);
