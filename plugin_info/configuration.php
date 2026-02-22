@@ -165,7 +165,7 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
         <div class="form-group">
             <label class="col-md-3 control-label">{{Fréquence des cycles}}
                 <sup><i class="fas fa-exclamation-triangle tooltips" style="color:var(--al-warning-color)!important;" title="{{Le démon devra être redémarré après la modification de ce paramètre}}"></i></sup>
-                <sup><i class="fas fa-question-circle tooltips" title="{{Facteur multiplicateur des cycles internes du démon (Main/Comm/Event). Défaut = Normal (x1)}}"></i></sup>
+                <sup><i class="fas fa-question-circle tooltips" title="{{Facteur multiplicateur des cycles internes du démon (Main=2s / Comm=1s / Event=1s). N'affecte pas le polling NUT ni la surveillance de statut. Défaut = Normal (x1)}}"></i></sup>
             </label>
             <div class="col-md-1">
                 <select class="configKey form-control" data-l1key="cycleFactor">

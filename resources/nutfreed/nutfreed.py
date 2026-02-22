@@ -533,9 +533,9 @@ jeedom_utils.set_log_level(myConfig.logLevel)
 
 # Application du cycleFactor sur les cycles internes
 if myConfig.cycleFactor == 0:
-    myConfig.cycleMain = 0.5
-    myConfig.cycleComm = 0.5
-    myConfig.cycleEvent = 0.5
+    myConfig.cycleMain = 2.0
+    myConfig.cycleComm = 1.0
+    myConfig.cycleEvent = 1.0
     logging.warning('[DAEMON] CycleFactor=0 => cycles internes réinitialisés aux valeurs par défaut')
 elif myConfig.cycleFactor < 0.5:
     myConfig.cycleMain = max(0.1, myConfig.cycleMain * myConfig.cycleFactor)

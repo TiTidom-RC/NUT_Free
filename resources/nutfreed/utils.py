@@ -30,9 +30,9 @@ class Config:
     callBack = ''
 
     cyclePolling = 60.0
-    cycleMain = 0.5  # cycle de la boucle principale (tick détection IS_ENDING)
-    cycleEvent = 0.5  # cycle de la boucle events from Jeedom
-    cycleComm = 0.5  # cycle de la boucle comm vers Jeedom
+    cycleMain = 2.0  # cycle de la boucle principale (tick détection IS_ENDING)
+    cycleEvent = 1.0  # cycle de la boucle events from Jeedom
+    cycleComm = 1.0  # cycle de la boucle comm vers Jeedom
     cycleFactor = 1.0  # facteur multiplicateur appliqué aux cycles internes
     cycleWatcher = 5.0    # cycle du status watcher par équipement (normal)
     cycleWatcherAlert = 2.0  # cycle réduit quand UPS sur batterie (OB)
