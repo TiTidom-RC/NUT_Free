@@ -548,7 +548,7 @@ else:
     myConfig.cycleEvent = myConfig.cycleEvent * myConfig.cycleFactor
 
 logging.info('[DAEMON] ==========================================')
-logging.info('[DAEMON] Démarrage NUT_Free daemon')
+logging.info('[DAEMON] Démarrage Démon NUT Free')
 logging.info('[DAEMON] Plugin Version : %s', myConfig.pluginVersion)
 logging.info('[DAEMON] Python Version : %s', sys.version)
 logging.info('[DAEMON] Log level      : %s', myConfig.logLevel)
