@@ -98,31 +98,78 @@ function updateUpsManualDisplay(value) {
 
 /**
  * Appelé par Jeedom lors du chargement d'un équipement dans le formulaire
+ * Jeedom remplit les eqLogicAttr AVANT d'appeler cette fonction.
+ * Pour les selects, si la valeur est vide (nouvel équipement), on force le défaut.
  */
 function printEqLogic(_eqLogic) {
   if (!_eqLogic) return
 
-  // Affichage mode protocole
-  const connexionMode = _eqLogic.configuration?.connexionMode ?? 'nut'
-  updateConnexionModeDisplay(connexionMode)
-
-  // Affichage nom UPS manuel
-  const upsAuto = _eqLogic.configuration?.upsAutoSelect ?? '0'
-  updateUpsManualDisplay(upsAuto)
-
-  // Événements dynamiques
+  // Mode protocole — lire depuis le DOM (déjà rempli par Jeedom), forcer le défaut si vide
   const selConnexionMode = document.querySelector('#selConnexionMode')
   if (selConnexionMode) {
-    selConnexionMode.addEventListener('change', function () {
-      updateConnexionModeDisplay(this.value)
-    })
+    if (!selConnexionMode.value) selConnexionMode.value = 'nut'
+    updateConnexionModeDisplay(selConnexionMode.value)
+    selConnexionMode.removeEventListener('change', handleConnexionModeChange)
+    selConnexionMode.addEventListener('change', handleConnexionModeChange)
   }
 
+  // Auto-détection UPS — lire depuis le DOM, forcer le défaut si vide
   const selUpsAuto = document.querySelector('#selUpsAuto')
   if (selUpsAuto) {
-    selUpsAuto.addEventListener('change', function () {
-      updateUpsManualDisplay(this.value)
-    })
+    if (!selUpsAuto.value) selUpsAuto.value = '0'
+    updateUpsManualDisplay(selUpsAuto.value)
+    selUpsAuto.removeEventListener('change', handleUpsAutoChange)
+    selUpsAuto.addEventListener('change', handleUpsAutoChange)
+  }
+
+  // Liste des hôtes SSH — peuplée via buildSelectHost (fourni par sshmanager.helper.js)
+  if (typeof window.buildSelectHost === 'function') {
+    const buildPromise = window.buildSelectHost(_eqLogic.configuration?.SSHHostId)
+    const sshHostSelect = document.querySelector('.sshmanagerHelper[data-helper="list"]')
+    if (sshHostSelect) {
+      sshHostSelect.removeEventListener('change', toggleSSHButtons)
+      sshHostSelect.addEventListener('change', toggleSSHButtons)
+      if (buildPromise && buildPromise.then) {
+        buildPromise.then(() => {
+          toggleSSHButtons(_eqLogic.configuration?.SSHHostId)
+        })
+      } else {
+        toggleSSHButtons(_eqLogic.configuration?.SSHHostId)
+      }
+    }
+  }
+}
+
+function handleConnexionModeChange() {
+  updateConnexionModeDisplay(this.value)
+}
+
+function handleUpsAutoChange() {
+  updateUpsManualDisplay(this.value)
+}
+
+/**
+ * Gestion des boutons Ajouter/Éditer selon la sélection de l'hôte SSH
+ * @param {Event|string|number} eventOrValue
+ */
+function toggleSSHButtons(eventOrValue) {
+  let selectedValue
+  if (typeof eventOrValue === 'string' || typeof eventOrValue === 'number') {
+    selectedValue = eventOrValue
+  } else if (eventOrValue?.target || eventOrValue?.currentTarget) {
+    selectedValue = eventOrValue.target?.value ?? eventOrValue.currentTarget?.value
+  }
+  if (!selectedValue) {
+    selectedValue = document.querySelector('.sshmanagerHelper[data-helper="list"]')?.value
+  }
+  const addBtn  = document.querySelector('.sshmanagerHelper[data-helper="add"]')
+  const editBtn = document.querySelector('.sshmanagerHelper[data-helper="edit"]')
+  if (selectedValue && selectedValue !== '') {
+    if (addBtn)  addBtn.style.display  = 'none'
+    if (editBtn) editBtn.style.display = 'block'
+  } else {
+    if (addBtn)  addBtn.style.display  = 'block'
+    if (editBtn) editBtn.style.display = 'none'
   }
 }
 
