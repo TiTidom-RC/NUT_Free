@@ -28,6 +28,8 @@ class Nut_free extends eqLogic {
 	const DAEMON_PORT    = 55113;
 	const PYENV_PATH     = '/opt/pyenv/bin/pyenv';
 
+	public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
+
 	public static $_infosMap = array(
 		//on crée un tableau contenant la liste des infos a traiter 
 		//chaque info a un sous tableau avec les paramètres 
@@ -452,48 +454,11 @@ class Nut_free extends eqLogic {
 			}
 		}
 		
-		
-		///////////////////////////////////////////////////////////////////
-		/*
-		/////////////////////////////////////////////////////////////
-		//('action')
-		foreach ($this->getCmd('action') as $cmd) {
-			$replace['#cmd_' . $cmd->getLogicalId() . '_id#'] = $cmd->getId();
-		}
-		////////////////////////////////////////////////////////////////
-		*/
 		$html = template_replace($replace, getTemplate('core', $_version, 'Nut_free','Nut_free'));
-		//cache::set('Nut_freeWidget' . $_version . $this->getId(), $html, 0);
 		
 		return $html;
 	}
-	/*
-	public function toHtml($_version = 'dashboard') {
-		$replace = $this->preToHtml($_version);
-		if (!is_array($replace)) {
-			return $replace;
-		}
-		$_version = jeedom::versionAlias($_version);
-		$cmd_html = '';
-		$br_before = 0;
-		foreach ($this->getCmd(null, null, true) as $cmd) {
-			if (isset($replace['#refresh_id#']) && $cmd->getId() == $replace['#refresh_id#']) {
-				continue;
-			}
-			if ($br_before == 0 && $cmd->getDisplay('forceReturnLineBefore', 0) == 1) {
-				$cmd_html .= '<br/>';
-			}
-			$cmd_html .= $cmd->toHtml($_version, '', $replace['#cmd-background-color#']);
-			$br_before = 0;
-			if ($cmd->getDisplay('forceReturnLineAfter', 0) == 1) {
-				$cmd_html .= '<br/>';
-				$br_before = 1;
-			}
-		}
-		$replace['#cmd#'] = $cmd_html;
-		return template_replace($replace, getTemplate('core', $_version, 'worxLandroid', 'worxLandroid'));
-	}
-	*/
+	
     public function getInfosSSH() {
         if (!$this->getIsEnable()) return;
 
@@ -595,10 +560,6 @@ class Nut_free extends eqLogic {
 
         log::add('Nut_free', 'debug', '--- [' . $equipement . '] Fin collecte NUT ---');
     }
-
-    // =========================================================================
-    // Méthodes daemon Python (mode local)
-    // =========================================================================
 
     public static function deamon_info() {
         $return = array('log' => 'Nut_free_daemon', 'state' => 'nok', 'launchable' => 'ok');
