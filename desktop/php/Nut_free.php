@@ -38,10 +38,10 @@ $eqLogics = eqLogic::byType($plugin->getId());
                 </div>
             </div>
         </div>
-        <legend><i class="fas fa-plug"></i> {{Mes NUT_Free}}</legend>
+        <legend><i class="fas fa-plug"></i> {{Mes NUT Free}}</legend>
         <?php
         if (count($eqLogics) == 0) {
-            echo '<br><div class="text-center" style="font-size:1.2em;font-weight:bold;">{{Aucun équipement NUT_Free trouvé, cliquer sur "Ajouter" pour commencer}}</div>';
+            echo '<br><div class="text-center" style="font-size:1.2em;font-weight:bold;">{{Aucun équipement NUT Free trouvé, cliquer sur "Ajouter" pour commencer}}</div>';
         } else {
             echo '<div class="input-group" style="margin:5px;">';
             echo '<input class="form-control roundedLeft" placeholder="{{Rechercher}}" id="in_searchEqlogic">';

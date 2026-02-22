@@ -55,29 +55,29 @@ class Nut_free extends eqLogic {
 	);
 
     public static function cron() {
-        foreach (eqLogic::byType('Nut_free') as $Nut_free) {
-            /** @var Nut_free $Nut_free */
-            if (!$Nut_free->getIsEnable()) continue;
-            $mode = $Nut_free->getConfiguration('connexionMode', 'nut');
+        foreach (eqLogic::byType('Nut_free') as $eqLogic) {
+            /** @var Nut_free $eqLogic */
+            if (!$eqLogic->getIsEnable()) continue;
+            $mode = $eqLogic->getConfiguration('connexionMode', 'nut');
             if ($mode === 'nut') {
                 // Mode local : le daemon Python gère le polling automatiquement.
                 // On s'assure simplement que l'équipement est enregistré dans le daemon.
                 self::sendToDaemon(array(
                     'action'      => 'add_device',
                     'device'      => array(
-                        'eqLogicId'   => $Nut_free->getId(),
-                        'host'        => $Nut_free->getConfiguration('addressIp', '127.0.0.1'),
-                        'port'        => (int) $Nut_free->getConfiguration('nutPort', 3493),
-                        'upsName'     => $Nut_free->getConfiguration('ups', ''),
-                        'autoDetect'  => ($Nut_free->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
-                        'nutLogin'    => $Nut_free->getConfiguration('nutLogin', ''),
-                        'nutPassword' => $Nut_free->getConfiguration('nutPassword', ''),
+                        'eqLogicId'   => $eqLogic->getId(),
+                        'host'        => $eqLogic->getConfiguration('addressIp', '127.0.0.1'),
+                        'port'        => (int) $eqLogic->getConfiguration('nutPort', 3493),
+                        'upsName'     => $eqLogic->getConfiguration('ups', ''),
+                        'autoDetect'  => ($eqLogic->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
+                        'nutLogin'    => $eqLogic->getConfiguration('nutLogin', ''),
+                        'nutPassword' => $eqLogic->getConfiguration('nutPassword', ''),
                     ),
                 ));
             } else {
                 // Mode distant : collecte via SSH-Manager directement en PHP
-                $Nut_free->getInfosSSH();
-                $Nut_free->refreshWidget();
+                $eqLogic->getInfosSSH();
+                $eqLogic->refreshWidget();
             }
         }
     }
