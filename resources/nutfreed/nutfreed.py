@@ -64,18 +64,18 @@ from utils import Config, Comm
 # Les entrées sans 'nut_var' (ssh_op, cnx_ssh) sont ignorées car gérées en PHP
 # ---------------------------------------------------------------------------
 NUT_VARS: list[dict] = [
-    {'logicalId': 'Marque', 'nut_var': 'device.mfr'},
-    {'logicalId': 'Model', 'nut_var': 'device.model'},
+    {'logicalId': 'device_mfr', 'nut_var': 'device.mfr'},
+    {'logicalId': 'device_model', 'nut_var': 'device.model'},
     {'logicalId': 'ups_serial', 'nut_var': 'ups.serial'},
-    {'logicalId': 'ups_line', 'nut_var': 'ups.status'},
-    {'logicalId': 'input_volt', 'nut_var': 'input.voltage'},
+    {'logicalId': 'ups_status', 'nut_var': 'ups.status'},
+    {'logicalId': 'input_voltage', 'nut_var': 'input.voltage'},
     {'logicalId': 'input_freq', 'nut_var': 'input.frequency'},
-    {'logicalId': 'output_volt', 'nut_var': 'output.voltage'},
+    {'logicalId': 'output_voltage', 'nut_var': 'output.voltage'},
     {'logicalId': 'output_freq', 'nut_var': 'output.frequency'},
     {'logicalId': 'output_power', 'nut_var': 'ups.power'},
     {'logicalId': 'output_real_power', 'nut_var': 'ups.realpower'},
     {'logicalId': 'batt_charge', 'nut_var': 'battery.charge'},
-    {'logicalId': 'batt_volt', 'nut_var': 'battery.voltage'},
+    {'logicalId': 'batt_voltage', 'nut_var': 'battery.voltage'},
     {'logicalId': 'batt_temp', 'nut_var': 'battery.temperature'},
     {'logicalId': 'ups_temp', 'nut_var': 'ups.temperature'},
     {'logicalId': 'ups_load', 'nut_var': 'ups.load'},
@@ -83,7 +83,7 @@ NUT_VARS: list[dict] = [
     {'logicalId': 'batt_runtime_min', 'nut_var': 'battery.runtime'},  # converti en minutes
     {'logicalId': 'timer_shutdown', 'nut_var': 'ups.timer.shutdown'},
     {'logicalId': 'timer_shutdown_min', 'nut_var': 'ups.timer.shutdown'},  # converti en minutes
-    {'logicalId': 'beeper_stat', 'nut_var': 'ups.beeper.status'},
+    {'logicalId': 'beeper_status', 'nut_var': 'ups.beeper.status'},
 ]
 
 
@@ -189,7 +189,7 @@ def _nut_get_var(host: str, port: int, ups_name: str, var_name: str,
         return None
 
 
-def get_ups_status(device: NutDevice) -> Optional[str]:
+def get_ups_status_label(device: NutDevice) -> Optional[str]:
     """
     Lecture légère de ups.status uniquement via GET VAR (protocole brut).
     Utilisé par le StatusWatcher pour détecter les changements d'état.
@@ -250,18 +250,18 @@ def query_device(device: NutDevice) -> Optional[dict]:
         value = str(raw).strip()
 
         # Concaténation Marque + Modèle sur une ligne
-        if logical_id == 'Marque':
+        if logical_id == 'device_mfr':
             marque = value
-        elif logical_id == 'Model':
+        elif logical_id == 'device_model':
             value = f'{marque} {value}'.strip()
 
         # Détection mode batterie
-        if logical_id == 'ups_line':
+        if logical_id == 'ups_status':
             not_online = 'OL' not in value.upper()
-            logging.debug('[DAEMON][%s] ups_line=%s not_online=%s', device.name, value, not_online)
+            logging.debug('[DAEMON][%s] ups_status=%s not_online=%s', device.name, value, not_online)
 
         # Tension entrée forcée à 0 si sur batterie
-        if logical_id == 'input_volt' and not_online:
+        if logical_id == 'input_voltage' and not_online:
             value = '0'
 
         # Conversion secondes → minutes
@@ -404,7 +404,7 @@ class Loops:
         first_poll = True
 
         while not stop_event.is_set() and not myConfig.IS_ENDING:
-            status = get_ups_status(device)
+            status = get_ups_status_label(device)
 
             if status is not None:
                 last = myConfig.deviceLastStatus.get(device.eqLogicId, '')

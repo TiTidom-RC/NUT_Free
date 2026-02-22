@@ -122,6 +122,17 @@ try {
                 log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] ' . $logicalId . ' = ' . $value);
         }
 
+        // Dériver ups_status_label depuis ups_status
+        if (isset($values['ups_status'])) {
+            $cmdFr = $eqLogic->getCmd('info', 'ups_status_label');
+            if (is_object($cmdFr)) {
+                $translated = Nut_free::translateUpsStatus($values['ups_status']);
+                $cmdFr->event($translated);
+                $updated = true;
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] ups_status_label = ' . $translated);
+            }
+        }
+
         if ($updated) {
             $eqLogic->refreshWidget();
             log::add('Nut_free', 'info', '[CALLBACK] Widget rafraîchi pour eqLogic ' . $eqLogicId);

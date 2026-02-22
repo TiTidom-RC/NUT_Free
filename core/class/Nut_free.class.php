@@ -265,26 +265,27 @@ class Nut_free extends eqLogic {
 			// Commande action
 			'refresh'            => array('name' => 'Rafraîchir',                        'type' => 'action', 'subtype' => 'other',   'isVisible' => 0, 'icon' => '<i class="fas fa-sync-alt"></i>'),
 			// Commandes info
-			'Marque'             => array('name' => 'Marque_Model',  'template_dashboard' => 'line', 'subtype' => 'string', 'nutCmd' => 'device.mfr',         'icon' => '<i class="fas fa-tag"></i>'),
-			'Model'              => array('name' => 'Model',                                              'subtype' => 'string', 'nutCmd' => 'device.model',        'icon' => '<i class="fas fa-tag"></i>'),
-			'ups_serial'         => array('name' => 'Serial',                                             'subtype' => 'string', 'nutCmd' => 'ups.serial',          'icon' => '<i class="fas fa-barcode"></i>'),
-			'ups_line'           => array('name' => 'UPS MODE',                                           'subtype' => 'string', 'nutCmd' => 'ups.status',          'icon' => '<i class="fas fa-plug"></i>'),
-			'input_volt'         => array('name' => 'Tension en entrée',         'unite' => 'V',                                'nutCmd' => 'input.voltage',       'icon' => '<i class="fas fa-bolt"></i>'),
-			'input_freq'         => array('name' => 'Fréquence en entrée',       'unite' => 'Hz',                               'nutCmd' => 'input.frequency',     'icon' => '<i class="fas fa-wave-square"></i>'),
-			'output_volt'        => array('name' => 'Tension en sortie',         'unite' => 'V',                                'nutCmd' => 'output.voltage',      'icon' => '<i class="fas fa-bolt"></i>'),
-			'output_freq'        => array('name' => 'Fréquence en sortie',       'unite' => 'Hz',                               'nutCmd' => 'output.frequency',    'icon' => '<i class="fas fa-wave-square"></i>'),
-			'output_power'       => array('name' => 'Puissance en sortie',       'unite' => 'VA',                               'nutCmd' => 'ups.power',           'icon' => '<i class="fas fa-tachometer-alt"></i>'),
-			'output_real_power'  => array('name' => 'Puissance en sortie réelle','unite' => 'W',                                'nutCmd' => 'ups.realpower',       'icon' => '<i class="fas fa-tachometer-alt"></i>'),
-			'batt_charge'        => array('name' => 'Niveau de charge batterie', 'unite' => '%',                                'nutCmd' => 'battery.charge',      'icon' => '<i class="fas fa-battery-three-quarters"></i>'),
-			'batt_volt'          => array('name' => 'Tension de la batterie',    'unite' => 'V',                                'nutCmd' => 'battery.voltage',     'icon' => '<i class="fas fa-bolt"></i>'),
-			'batt_temp'          => array('name' => 'Température de la batterie','unite' => '°C',                               'nutCmd' => 'battery.temperature', 'icon' => '<i class="fas fa-thermometer-half"></i>'),
-			'ups_temp'           => array('name' => 'Température ups',           'unite' => '°C',                               'nutCmd' => 'ups.temperature',     'icon' => '<i class="fas fa-thermometer-half"></i>'),
-			'ups_load'           => array('name' => 'Charge onduleur',           'unite' => '%',                                'nutCmd' => 'ups.load',            'icon' => '<i class="fas fa-chart-bar"></i>'),
-			'batt_runtime'       => array('name' => 'Temps restant batterie s',  'unite' => 's',                                'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock"></i>'),
-			'batt_runtime_min'   => array('name' => 'Temps restant batterie min','unite' => 'min',                              'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock"></i>'),
-			'timer_shutdown'     => array('name' => 'Temps avant arrêt s',       'unite' => 's',                                'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off"></i>'),
-			'timer_shutdown_min' => array('name' => 'Temps avant arrêt min',     'unite' => 'min',                              'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off"></i>'),
-			'beeper_stat'        => array('name' => 'Beeper',                                             'subtype' => 'string', 'nutCmd' => 'ups.beeper.status',   'icon' => '<i class="fas fa-volume-up"></i>'),
+			'device_mfr'         => array('name' => 'Fabricant',              'template_dashboard' => 'line', 'subtype' => 'string', 'nutCmd' => 'device.mfr',         'icon' => '<i class="fas fa-tag"></i>'),
+			'device_model'       => array('name' => 'Modèle',                                                   'subtype' => 'string', 'nutCmd' => 'device.model',        'icon' => '<i class="fas fa-tag"></i>'),
+			'ups_serial'         => array('name' => 'Numéro de série',                                           'subtype' => 'string', 'nutCmd' => 'ups.serial',          'icon' => '<i class="fas fa-barcode"></i>'),
+			'ups_status'         => array('name' => 'Statut NUT',                                                'subtype' => 'string', 'nutCmd' => 'ups.status',          'icon' => '<i class="fas fa-plug"></i>'),
+			'ups_status_label'   => array('name' => 'Statut onduleur',                                           'subtype' => 'string', 'nutCmd' => 'ups.status',          'icon' => '<i class="fas fa-info-circle"></i>'),
+			'input_voltage'      => array('name' => 'Tension entrée',            'unite' => 'V',                 'nutCmd' => 'input.voltage',       'icon' => '<i class="fas fa-bolt"></i>'),
+			'input_freq'         => array('name' => 'Fréquence entrée',          'unite' => 'Hz',                'nutCmd' => 'input.frequency',     'icon' => '<i class="fas fa-wave-square"></i>'),
+			'output_voltage'     => array('name' => 'Tension sortie',            'unite' => 'V',                 'nutCmd' => 'output.voltage',      'icon' => '<i class="fas fa-bolt"></i>'),
+			'output_freq'        => array('name' => 'Fréquence sortie',          'unite' => 'Hz',                'nutCmd' => 'output.frequency',    'icon' => '<i class="fas fa-wave-square"></i>'),
+			'output_power'       => array('name' => 'Puissance sortie',          'unite' => 'VA',                'nutCmd' => 'ups.power',           'icon' => '<i class="fas fa-tachometer-alt"></i>'),
+			'output_real_power'  => array('name' => 'Puissance sortie réelle',   'unite' => 'W',                 'nutCmd' => 'ups.realpower',       'icon' => '<i class="fas fa-tachometer-alt"></i>'),
+			'batt_charge'        => array('name' => 'Charge batterie',           'unite' => '%',                 'nutCmd' => 'battery.charge',      'icon' => '<i class="fas fa-battery-three-quarters"></i>'),
+			'batt_voltage'       => array('name' => 'Tension batterie',          'unite' => 'V',                 'nutCmd' => 'battery.voltage',     'icon' => '<i class="fas fa-bolt"></i>'),
+			'batt_temp'          => array('name' => 'Température batterie',      'unite' => '°C',                'nutCmd' => 'battery.temperature', 'icon' => '<i class="fas fa-thermometer-half"></i>'),
+			'ups_temp'           => array('name' => 'Température onduleur',      'unite' => '°C',                'nutCmd' => 'ups.temperature',     'icon' => '<i class="fas fa-thermometer-half"></i>'),
+			'ups_load'           => array('name' => 'Charge onduleur',           'unite' => '%',                 'nutCmd' => 'ups.load',            'icon' => '<i class="fas fa-chart-bar"></i>'),
+			'batt_runtime'       => array('name' => 'Autonomie batterie',        'unite' => 's',                 'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock"></i>'),
+			'batt_runtime_min'   => array('name' => 'Autonomie batterie (min)',  'unite' => 'min',               'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock"></i>'),
+			'timer_shutdown'     => array('name' => 'Minuterie arrêt',           'unite' => 's',                 'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off"></i>'),
+			'timer_shutdown_min' => array('name' => 'Minuterie arrêt (min)',     'unite' => 'min',               'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off"></i>'),
+			'beeper_status'      => array('name' => 'Beeper',                                                'subtype' => 'string', 'nutCmd' => 'ups.beeper.status',   'icon' => '<i class="fas fa-volume-up"></i>'),
 		);
 
 		$targets = is_object($eqLogic) ? array($eqLogic) : eqLogic::byType('Nut_free');
@@ -333,6 +334,32 @@ class Nut_free extends eqLogic {
 	public function encrypt() {
 		$this->setConfiguration('nutLogin', utils::encrypt($this->getConfiguration('nutLogin')));
 		$this->setConfiguration('nutPassword', utils::encrypt($this->getConfiguration('nutPassword')));
+	}
+
+	public static function translateUpsStatus(string $raw): string {
+		$map = array(
+			'OL'      => 'Sur secteur',
+			'OB'      => 'Sur batterie',
+			'LB'      => 'Batterie faible',
+			'HB'      => 'Batterie chargée',
+			'RB'      => 'Remplacer batterie',
+			'CHRG'    => 'En charge',
+			'DISCHRG' => 'En décharge',
+			'BYPASS'  => 'Bypass',
+			'CAL'     => 'Calibration',
+			'OFF'     => 'Hors tension',
+			'OVER'    => 'Surchargé',
+			'TRIM'    => 'Régulation basse',
+			'BOOST'   => 'Régulation haute',
+			'FSD'     => 'Arrêt forcé',
+			'ALARM'   => 'Alarme',
+		);
+		$flags  = array_filter(explode(' ', strtoupper(trim($raw))));
+		$labels = array();
+		foreach ($flags as $flag) {
+			$labels[] = isset($map[$flag]) ? $map[$flag] : $flag;
+		}
+		return implode(' / ', $labels) ?: $raw;
 	}
 
 	public function toHtml($_version = 'dashboard') {
@@ -402,7 +429,6 @@ class Nut_free extends eqLogic {
 
         // --- Collecte des valeurs NUT via SSH ---
         $Not_Online = 0;
-        $Marque     = '';
 
         foreach ($this->getCmd() as $cmd) {
             $logicalId = $cmd->getLogicalId();
@@ -420,24 +446,21 @@ class Nut_free extends eqLogic {
 
             $errorresult = (strpos($result, 'not supported by UPS') !== false) ? $result : '';
 
-            // Marque + Modèle concaténés
-            if ($logicalId === 'Marque') {
-                $Marque = $result;
-            }
-            if ($logicalId === 'Model') {
-                $result = trim($Marque . ' ' . $result);
+            // Mode ligne / batterie
+            if ($logicalId === 'ups_status') {
+                $Not_Online = (stripos($result, 'OL') === false) ? 1 : 0;
+                log::add('Nut_free', 'debug', '[' . $equipment . '] ups_status Not_Online=' . $Not_Online . ' result=' . $result);
             }
 
-            // Mode ligne / batterie
-            if ($logicalId === 'ups_line') {
-                $Not_Online = (stripos($result, 'OL') === false) ? 1 : 0;
-                log::add('Nut_free', 'debug', '[' . $equipment . '] ups_line Not_Online=' . $Not_Online . ' result=' . $result);
+            // Statut UPS traduit en français
+            if ($logicalId === 'ups_status_label') {
+                $result = Nut_free::translateUpsStatus($result);
             }
 
             // Tension entrée forcée à 0 quand sur batterie
-            if ($logicalId === 'input_volt' && $Not_Online === 1) {
+            if ($logicalId === 'input_voltage' && $Not_Online === 1) {
                 $result = 0;
-                log::add('Nut_free', 'debug', '[' . $equipment . '] input_volt forcé à 0 (mode batterie)');
+                log::add('Nut_free', 'debug', '[' . $equipment . '] input_voltage forcé à 0 (mode batterie)');
             }
 
             // Conversion secondes → minutes
