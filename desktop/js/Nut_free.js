@@ -81,14 +81,14 @@ function addCmdToTable(_cmd) {
 }
 
 /**
- * Affichage conditionnel des sections local/distant et UPS manuel
+ * Affichage conditionnel des sections NUT/SSH et UPS manuel
  */
-function updateLocalDistantDisplay(value) {
-  const localEl   = document.querySelector('.nut-local')
-  const distantEl = document.querySelector('.nut-distant')
-  const isDistant = value === 'distant'
-  if (localEl)   localEl.style.display   = isDistant ? 'none' : ''
-  if (distantEl) distantEl.style.display = isDistant ? '' : 'none'
+function updateConnexionModeDisplay(value) {
+  const nutEl = document.querySelector('.nut-protocol')
+  const sshEl = document.querySelector('.nut-ssh')
+  const isSsh = value === 'ssh'
+  if (nutEl) nutEl.style.display = isSsh ? 'none' : ''
+  if (sshEl) sshEl.style.display = isSsh ? '' : 'none'
 }
 
 function updateUpsManualDisplay(value) {
@@ -102,23 +102,23 @@ function updateUpsManualDisplay(value) {
 function printEqLogic(_eqLogic) {
   if (!_eqLogic) return
 
-  // Affichage local/distant
-  const localDistant = _eqLogic.configuration?.localoudistant ?? 'local'
-  updateLocalDistantDisplay(localDistant)
+  // Affichage mode protocole
+  const connexionMode = _eqLogic.configuration?.connexionMode ?? 'nut'
+  updateConnexionModeDisplay(connexionMode)
 
   // Affichage nom UPS manuel
-  const upsAuto = _eqLogic.configuration?.UPS_auto_select ?? '0'
+  const upsAuto = _eqLogic.configuration?.upsAutoSelect ?? '0'
   updateUpsManualDisplay(upsAuto)
 
   // Événements dynamiques
-  const selLocalDistant = document.querySelector('#sel_localoudistant')
-  if (selLocalDistant) {
-    selLocalDistant.addEventListener('change', function () {
-      updateLocalDistantDisplay(this.value)
+  const selConnexionMode = document.querySelector('#selConnexionMode')
+  if (selConnexionMode) {
+    selConnexionMode.addEventListener('change', function () {
+      updateConnexionModeDisplay(this.value)
     })
   }
 
-  const selUpsAuto = document.querySelector('#sel_ups_auto')
+  const selUpsAuto = document.querySelector('#selUpsAuto')
   if (selUpsAuto) {
     selUpsAuto.addEventListener('change', function () {
       updateUpsManualDisplay(this.value)

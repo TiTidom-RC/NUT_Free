@@ -58,20 +58,20 @@ class Nut_free extends eqLogic {
         foreach (eqLogic::byType('Nut_free') as $Nut_free) {
             /** @var Nut_free $Nut_free */
             if (!$Nut_free->getIsEnable()) continue;
-            $mode = $Nut_free->getConfiguration('localoudistant', 'local');
-            if ($mode === 'local') {
+            $mode = $Nut_free->getConfiguration('connexionMode', 'nut');
+            if ($mode === 'nut') {
                 // Mode local : le daemon Python gère le polling automatiquement.
                 // On s'assure simplement que l'équipement est enregistré dans le daemon.
                 self::sendToDaemon(array(
                     'action'      => 'add_device',
                     'device'      => array(
-                        'eqLogic_id'  => $Nut_free->getId(),
-                        'host'        => $Nut_free->getConfiguration('addressip', '127.0.0.1'),
-                        'port'        => (int) $Nut_free->getConfiguration('nut_port', 3493),
-                        'ups_name'    => $Nut_free->getConfiguration('UPS', ''),
-                        'auto_detect' => ($Nut_free->getConfiguration('UPS_auto_select', '0') === '0') ? 1 : 0,
-                        'nut_login'   => $Nut_free->getConfiguration('nut_login', ''),
-                        'nut_password'=> $Nut_free->getConfiguration('nut_password', ''),
+                        'eqLogicId'   => $Nut_free->getId(),
+                        'host'        => $Nut_free->getConfiguration('addressIp', '127.0.0.1'),
+                        'port'        => (int) $Nut_free->getConfiguration('nutPort', 3493),
+                        'upsName'     => $Nut_free->getConfiguration('ups', ''),
+                        'autoDetect'  => ($Nut_free->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
+                        'nutLogin'    => $Nut_free->getConfiguration('nutLogin', ''),
+                        'nutPassword' => $Nut_free->getConfiguration('nutPassword', ''),
                     ),
                 ));
             } else {
@@ -240,18 +240,18 @@ class Nut_free extends eqLogic {
 		static::createCmd($this);
 
 		// Déclencher une première collecte selon le mode de connexion
-		$mode = $this->getConfiguration('localoudistant', 'local');
-		if ($mode === 'local') {
+		$mode = $this->getConfiguration('connexionMode', 'nut');
+		if ($mode === 'nut') {
 			self::sendToDaemon(array(
 				'action' => 'add_device',
 				'device' => array(
-					'eqLogic_id'  => $this->getId(),
-					'host'        => $this->getConfiguration('addressip', '127.0.0.1'),
-					'port'        => (int) $this->getConfiguration('nut_port', 3493),
-					'ups_name'    => $this->getConfiguration('UPS', ''),
-					'auto_detect' => ($this->getConfiguration('UPS_auto_select', '0') === '0') ? 1 : 0,
-					'nut_login'   => $this->getConfiguration('nut_login', ''),
-					'nut_password'=> $this->getConfiguration('nut_password', ''),
+					'eqLogicId'   => $this->getId(),
+					'host'        => $this->getConfiguration('addressIp', '127.0.0.1'),
+					'port'        => (int) $this->getConfiguration('nutPort', 3493),
+					'upsName'     => $this->getConfiguration('ups', ''),
+					'autoDetect'  => ($this->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
+					'nutLogin'    => $this->getConfiguration('nutLogin', ''),
+					'nutPassword' => $this->getConfiguration('nutPassword', ''),
 				),
 			));
 		} else {
@@ -303,12 +303,12 @@ class Nut_free extends eqLogic {
 	 * Permet de crypter/décrypter automatiquement des champs de configuration des équipements
 	 */
 	public function decrypt() {
-		$this->setConfiguration('nut_login', utils::decrypt($this->getConfiguration('nut_login')));
-		$this->setConfiguration('nut_password', utils::decrypt($this->getConfiguration('nut_password')));
+		$this->setConfiguration('nutLogin', utils::decrypt($this->getConfiguration('nutLogin')));
+		$this->setConfiguration('nutPassword', utils::decrypt($this->getConfiguration('nutPassword')));
 	}
 	public function encrypt() {
-		$this->setConfiguration('nut_login', utils::encrypt($this->getConfiguration('nut_login')));
-		$this->setConfiguration('nut_password', utils::encrypt($this->getConfiguration('nut_password')));
+		$this->setConfiguration('nutLogin', utils::encrypt($this->getConfiguration('nutLogin')));
+		$this->setConfiguration('nutPassword', utils::encrypt($this->getConfiguration('nutPassword')));
 	}
 
  	public function toHtml($_version = 'dashboard')	{
@@ -334,9 +334,9 @@ class Nut_free extends eqLogic {
         if (!$this->getIsEnable()) return;
 
         $equipement      = $this->getName();
-        $UPS_auto_select = $this->getConfiguration('UPS_auto_select', '0');
-        $ups             = trim($this->getConfiguration('UPS', ''));
-        $sshHostId       = $this->getConfiguration('SSHHostId', '');
+        $upsAutoSelect = $this->getConfiguration('upsAutoSelect', '0');
+        $ups           = trim($this->getConfiguration('ups', ''));
+        $sshHostId     = $this->getConfiguration('SSHHostId', '');
 
         log::add('Nut_free', 'debug', '--- [' . $equipement . '] Début collecte NUT via SSH ---');
 
@@ -350,8 +350,8 @@ class Nut_free extends eqLogic {
             return false;
         }
 
-        // --- Résolution du nom de l'UPS (auto-détection si UPS_auto_select = 0) ---
-        if ($UPS_auto_select === '0' || $ups === '') {
+        // --- Résolution du nom de l'UPS (auto-détection si upsAutoSelect = '0') ---
+        if ($upsAutoSelect === '0' || $ups === '') {
             try {
                 $upsListCmd = "upsc -l 2>&1 | grep -v '^Init SSL'";
                 $ups = trim((string) sshmanager::executeCmds($sshHostId, $upsListCmd));
@@ -512,17 +512,17 @@ class Nut_free extends eqLogic {
             log::add('Nut_free', 'info', '[DAEMON] Démarré avec succès');
             // Enregistrer tous les équipements locaux actifs
             foreach (eqLogic::byType('Nut_free') as $eqLogic) {
-                if ($eqLogic->getIsEnable() && $eqLogic->getConfiguration('localoudistant', 'local') === 'local') {
+                if ($eqLogic->getIsEnable() && $eqLogic->getConfiguration('connexionMode', 'nut') === 'nut') {
                     self::sendToDaemon(array(
                         'action' => 'add_device',
                         'device' => array(
-                            'eqLogic_id'  => $eqLogic->getId(),
-                            'host'        => $eqLogic->getConfiguration('addressip', '127.0.0.1'),
-                            'port'        => (int) $eqLogic->getConfiguration('nut_port', 3493),
-                            'ups_name'    => $eqLogic->getConfiguration('UPS', ''),
-                            'auto_detect' => ($eqLogic->getConfiguration('UPS_auto_select', '0') === '0') ? 1 : 0,
-                            'nut_login'   => $eqLogic->getConfiguration('nut_login', ''),
-                            'nut_password'=> $eqLogic->getConfiguration('nut_password', ''),
+                            'eqLogicId'   => $eqLogic->getId(),
+                            'host'        => $eqLogic->getConfiguration('addressIp', '127.0.0.1'),
+                            'port'        => (int) $eqLogic->getConfiguration('nutPort', 3493),
+                            'upsName'     => $eqLogic->getConfiguration('ups', ''),
+                            'autoDetect'  => ($eqLogic->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
+                            'nutLogin'    => $eqLogic->getConfiguration('nutLogin', ''),
+                            'nutPassword' => $eqLogic->getConfiguration('nutPassword', ''),
                         ),
                     ));
                 }
@@ -589,8 +589,8 @@ class Nut_freeCmd extends cmd {
         }
 
         $eqLogic        = $this->getEqLogic();
-        $connexionType  = $eqLogic->getConfiguration('localoudistant', 'local');
-        $ups            = trim($eqLogic->getConfiguration('UPS', ''));
+        $connexionType  = $eqLogic->getConfiguration('connexionMode', 'nut');
+        $ups            = trim($eqLogic->getConfiguration('ups', ''));
         $sshHostId      = $eqLogic->getConfiguration('SSHHostId', '');
         $logicalId      = $this->getLogicalId();
         $equipement     = $eqLogic->getName();
@@ -601,7 +601,7 @@ class Nut_freeCmd extends cmd {
         log::add('Nut_free', 'info', '[' . $equipement . '] Action : ' . $nutCmd . ' (mode=' . $connexionType . ')');
 
         try {
-            if ($connexionType === 'local') {
+            if ($connexionType === 'nut') {
                 $fullCmd = $nutCmd . ' 2>&1';
                 $result  = trim((string) exec($fullCmd));
             } else {

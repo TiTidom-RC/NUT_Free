@@ -132,22 +132,30 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             <fieldset>
                                 <legend>{{Connexion NUT}}</legend>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">{{Local ou Distant ?}}</label>
+                                    <label class="col-sm-4 control-label">{{Protocole de connexion}}</label>
                                     <div class="col-sm-6">
-                                        <select id="sel_localoudistant" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="localoudistant">
-                                            <option value="local">{{Local}}</option>
-                                            <option value="distant">{{Distant (SSH)}}</option>
+                                        <select id="selConnexionMode" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="connexionMode">
+                                            <option value="nut">{{NUT (protocole TCP direct)}}</option>
+                                            <option value="ssh">{{SSH (via SSH-Manager)}}</option>
                                         </select>
                                     </div>
                                 </div>
-                                <!-- Mode Local -->
-                                <div class="nut-local">
+                                <!-- Mode NUT (protocole TCP direct) -->
+                                <div class="nut-protocol">
                                     <div class="form-group">
                                         <label class="col-sm-4 control-label">{{Adresse IP du serveur NUT}}
                                             <sup><i class="fas fa-question-circle tooltips" title="{{Adresse IP ou hostname de la machine hébergeant le serveur NUT}}"></i></sup>
                                         </label>
                                         <div class="col-sm-6">
-                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="addressip" type="text" placeholder="{{ex: 192.168.1.100}}"/>
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="addressIp" type="text" placeholder="{{ex: 192.168.1.100}}"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{{Port NUT}}
+                                            <sup><i class="fas fa-question-circle tooltips" title="{{Port TCP du serveur NUT (défaut : 3493)}}"></i></sup>
+                                        </label>
+                                        <div class="col-sm-3">
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutPort" type="number" min="1" max="65535" placeholder="3493"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -155,7 +163,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                             <sup><i class="fas fa-question-circle tooltips" title="{{Login d\'authentification upsd (optionnel, laisser vide si le serveur NUT ne l\'exige pas)}}"></i></sup>
                                         </label>
                                         <div class="col-sm-6">
-                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nut_login" type="text" placeholder="{{optionnel}}"/>
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutLogin" type="text" placeholder="{{optionnel}}"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -163,12 +171,12 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                             <sup><i class="fas fa-question-circle tooltips" title="{{Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l\'exige pas)}}"></i></sup>
                                         </label>
                                         <div class="col-sm-6">
-                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nut_password" type="password" placeholder="{{optionnel}}"/>
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutPassword" type="password" placeholder="{{optionnel}}"/>
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Mode Distant (SSH-Manager) -->
-                                <div class="nut-distant" style="display:none;">
+                                <!-- Mode SSH (via SSH-Manager) -->
+                                <div class="nut-ssh" style="display:none;">
                                     <div class="form-group">
                                         <label class="col-sm-4 control-label help" data-help="{{Choisir un hôte SSH dans la liste ou en créer un nouveau}}">{{Hôte SSH}}</label>
                                         <div class="col-sm-6">
@@ -187,13 +195,13 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                         </div>
                                     </div>
                                 </div>
-                                <!-- Commun Local + Distant -->
+                                <!-- Commun NUT + SSH -->
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label">{{Auto-détection UPS ?}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Si activé, le nom de l'UPS sera détecté automatiquement via upsc -l}}"></i></sup>
                                     </label>
                                     <div class="col-sm-6">
-                                        <select id="sel_ups_auto" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="UPS_auto_select">
+                                        <select id="selUpsAuto" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="upsAutoSelect">
                                             <option value="0">{{Oui (automatique)}}</option>
                                             <option value="1">{{Non (manuel)}}</option>
                                         </select>
@@ -205,7 +213,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                             <sup><i class="fas fa-question-circle tooltips" title="{{Nom retourné par la commande upsc -l sur le serveur NUT}}"></i></sup>
                                         </label>
                                         <div class="col-sm-6">
-                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="UPS" type="text" placeholder="{{ex: myups}}"/>
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="ups" type="text" placeholder="{{ex: myups}}"/>
                                         </div>
                                     </div>
                                 </div>

@@ -37,14 +37,14 @@ class Config:
     cycleWatcher = 5.0    # cycle du status watcher par équipement (normal)
     cycleWatcherAlert = 2.0  # cycle réduit quand UPS sur batterie (OB)
 
-    HeartbeatFrequency = 600  # intervalle heartbeat en secondes
-    HeartbeatLastTime = int(time.time())
+    heartbeatFrequency = 600  # intervalle heartbeat en secondes
+    heartbeatLastTime = int(time.time())
 
-    devices: dict = {}  # dict[eqLogic_id, NutDevice]
+    devices: dict = {}  # dict[eqLogicId, NutDevice]
     devicesLock = threading.Lock()
 
-    watcherStopEvents: dict = {}   # dict[eqLogic_id, threading.Event]
-    deviceLastStatus: dict = {}    # dict[eqLogic_id, str] — dernier ups.status connu
+    watcherStopEvents: dict = {}   # dict[eqLogicId, threading.Event]
+    deviceLastStatus: dict = {}    # dict[eqLogicId, str] — dernier ups.status connu
 
 
 class Comm:

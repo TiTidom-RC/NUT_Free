@@ -22,7 +22,7 @@
  * {
  *   "apikey": "...",
  *   "update": {
- *     "<eqLogic_id>": {
+ *     "<eqLogicId>": {
  *       "<logicalId>": "<value>",
  *       ...
  *     },
@@ -80,7 +80,7 @@ try {
 
     if (isset($data['heartbeat'])) {
         if ($data['heartbeat'] == '1') {
-            log::add('Nut_free', 'info', '[CALLBACK] NUT_Free Daemon Heartbeat (' . config::byKey('HeartbeatFrequency', 'Nut_free', 600) . 's)');
+            log::add('Nut_free', 'info', '[CALLBACK] NUT_Free Daemon Heartbeat (' . config::byKey('heartbeatFrequency', 'Nut_free', 600) . 's)');
         }
         echo json_encode(['status' => 'ok']);
         exit;
@@ -93,20 +93,20 @@ try {
         exit;
     }
 
-    foreach ($data['update'] as $eqLogic_id => $values) {
+    foreach ($data['update'] as $eqLogicId => $values) {
         if (!is_array($values)) {
             continue;
         }
 
         /** @var Nut_free $eqLogic */
-        $eqLogic = Nut_free::byId($eqLogic_id);
+        $eqLogic = Nut_free::byId($eqLogicId);
         if (!is_object($eqLogic)) {
-            log::add('Nut_free', 'warning', '[CALLBACK] eqLogic introuvable : ' . $eqLogic_id);
+            log::add('Nut_free', 'warning', '[CALLBACK] eqLogic introuvable : ' . $eqLogicId);
             continue;
         }
 
         if (!$eqLogic->getIsEnable()) {
-            log::add('Nut_free', 'debug', '[CALLBACK] eqLogic désactivé, ignore : ' . $eqLogic_id);
+            log::add('Nut_free', 'debug', '[CALLBACK] eqLogic désactivé, ignore : ' . $eqLogicId);
             continue;
         }
 
@@ -114,17 +114,17 @@ try {
         foreach ($values as $logicalId => $value) {
             $cmd = $eqLogic->getCmd('info', $logicalId);
             if (!is_object($cmd)) {
-                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogic_id . '] Commande introuvable : ' . $logicalId);
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] Commande introuvable : ' . $logicalId);
                 continue;
             }
             $cmd->event($value);
             $updated = true;
-                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogic_id . '] ' . $logicalId . ' = ' . $value);
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] ' . $logicalId . ' = ' . $value);
         }
 
         if ($updated) {
             $eqLogic->refreshWidget();
-            log::add('Nut_free', 'info', '[CALLBACK] Widget rafraîchi pour eqLogic ' . $eqLogic_id);
+            log::add('Nut_free', 'info', '[CALLBACK] Widget rafraîchi pour eqLogic ' . $eqLogicId);
         }
     }
 

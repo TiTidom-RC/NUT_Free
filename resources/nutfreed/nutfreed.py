@@ -91,28 +91,28 @@ NUT_VARS: list[dict] = [
 
 @dataclass
 class NutDevice:
-    eqLogic_id: str
+    eqLogicId: str
     host: str
     port: int
-    ups_name: str      # vide = auto-détection via GetUPSList()
-    auto_detect: bool
-    nut_login: Optional[str] = None    # login upsd (None = pas d'authentification)
-    nut_password: Optional[str] = None  # mot de passe upsd (None = pas d'authentification)
-    resolved_ups_name: Optional[str] = None  # nom résolu et mis en cache après la première détection
+    upsName: str       # vide = auto-détection via GetUPSList()
+    autoDetect: bool
+    nutLogin: Optional[str] = None    # login upsd (None = pas d'authentification)
+    nutPassword: Optional[str] = None  # mot de passe upsd (None = pas d'authentification)
+    resolvedUpsName: Optional[str] = None  # nom résolu et mis en cache après la première détection
 
     @classmethod
     def from_dict(cls, d: dict) -> 'NutDevice':
-        login = str(d.get('nut_login', '')).strip() or None
-        password = str(d.get('nut_password', '')).strip() or None
+        login = str(d.get('nutLogin', '')).strip() or None
+        password = str(d.get('nutPassword', '')).strip() or None
         return cls(
-            eqLogic_id=str(d['eqLogic_id']),
+            eqLogicId=str(d['eqLogicId']),
             host=str(d.get('host', '127.0.0.1')),
             port=int(d.get('port', 3493)),
-            ups_name=str(d.get('ups_name', '')).strip(),
-            auto_detect=bool(int(d.get('auto_detect', '1'))),
-            nut_login=login,
-            nut_password=password,
-            resolved_ups_name=None,
+            upsName=str(d.get('upsName', '')).strip(),
+            autoDetect=bool(int(d.get('autoDetect', '1'))),
+            nutLogin=login,
+            nutPassword=password,
+            resolvedUpsName=None,
         )
 
 
@@ -124,29 +124,29 @@ def _resolve_ups_name(device: NutDevice) -> Optional[str]:
     Si déjà résolu (cache), retourne directement sans connexion.
     Sinon appelle GetUPSList() via PyNUTClient et met en cache le résultat.
     """
-    if device.resolved_ups_name:
-        return device.resolved_ups_name
+    if device.resolvedUpsName:
+        return device.resolvedUpsName
 
     # Nom statique configuré : pas besoin de détection
-    if not device.auto_detect and device.ups_name:
-        device.resolved_ups_name = device.ups_name
-        return device.resolved_ups_name
+    if not device.autoDetect and device.upsName:
+        device.resolvedUpsName = device.upsName
+        return device.resolvedUpsName
 
     # Auto-détection via LIST UPS
     try:
         client = PyNUTClient(host=device.host, port=device.port,
-                             login=device.nut_login, password=device.nut_password)
+                             login=device.nutLogin, password=device.nutPassword)
         ups_list = client.GetUPSList()
         if not ups_list:
             logging.warning('[DAEMON][%s] Aucun UPS trouvé sur %s:%d',
-                            device.eqLogic_id, device.host, device.port)
+                            device.eqLogicId, device.host, device.port)
             return None
         name = list(ups_list.keys())[0].decode('ascii') if isinstance(list(ups_list.keys())[0], bytes) else list(ups_list.keys())[0]
-        device.resolved_ups_name = name
-        logging.debug('[DAEMON][%s] UPS auto-détecté et mis en cache : %s', device.eqLogic_id, name)
-        return device.resolved_ups_name
+        device.resolvedUpsName = name
+        logging.debug('[DAEMON][%s] UPS auto-détecté et mis en cache : %s', device.eqLogicId, name)
+        return device.resolvedUpsName
     except Exception as e:
-        logging.error('[DAEMON][%s] _resolve_ups_name erreur :: %s', device.eqLogic_id, e)
+        logging.error('[DAEMON][%s] _resolve_ups_name erreur :: %s', device.eqLogicId, e)
         return None
 
 
@@ -197,7 +197,7 @@ def get_ups_status(device: NutDevice) -> Optional[str]:
     if not ups_name:
         return None
     return _nut_get_var(device.host, device.port, ups_name, 'ups.status',
-                        login=device.nut_login, password=device.nut_password)
+                        login=device.nutLogin, password=device.nutPassword)
 
 
 def query_device(device: NutDevice) -> Optional[dict]:
@@ -208,23 +208,23 @@ def query_device(device: NutDevice) -> Optional[dict]:
     # Résolution du nom UPS (depuis le cache ou via GetUPSList)
     ups_name = _resolve_ups_name(device)
     if not ups_name:
-        logging.warning('[DAEMON][%s] Nom UPS non résolu, poll ignoré', device.eqLogic_id)
+        logging.warning('[DAEMON][%s] Nom UPS non résolu, poll ignoré', device.eqLogicId)
         return None
 
     # Connexion pour le poll complet (LIST VAR — toutes les variables)
     try:
         client = PyNUTClient(host=device.host, port=device.port,
-                             login=device.nut_login, password=device.nut_password)
+                             login=device.nutLogin, password=device.nutPassword)
     except Exception as e:
         logging.error('[DAEMON][%s] Connexion NUT %s:%d impossible :: %s',
-                      device.eqLogic_id, device.host, device.port, e)
+                      device.eqLogicId, device.host, device.port, e)
         return None
 
     # Lecture de toutes les variables NUT en une seule requête
     try:
         all_vars = client.GetUPSVars(ups_name)
     except Exception as e:
-        logging.error('[DAEMON][%s] GetUPSVars(%s) erreur :: %s', device.eqLogic_id, ups_name, e)
+        logging.error('[DAEMON][%s] GetUPSVars(%s) erreur :: %s', device.eqLogicId, ups_name, e)
         return None
 
     results: dict = {}
@@ -237,7 +237,7 @@ def query_device(device: NutDevice) -> Optional[dict]:
         raw = all_vars.get(nut_var)
 
         if raw is None:
-            logging.debug('[DAEMON][%s] %s (%s) : non supporté', device.eqLogic_id, logical_id, nut_var)
+            logging.debug('[DAEMON][%s] %s (%s) : non supporté', device.eqLogicId, logical_id, nut_var)
             continue
 
         value = str(raw).strip()
@@ -251,7 +251,7 @@ def query_device(device: NutDevice) -> Optional[dict]:
         # Détection mode batterie
         if logical_id == 'ups_line':
             not_online = 'OL' not in value.upper()
-            logging.debug('[DAEMON][%s] ups_line=%s not_online=%s', device.eqLogic_id, value, not_online)
+            logging.debug('[DAEMON][%s] ups_line=%s not_online=%s', device.eqLogicId, value, not_online)
 
         # Tension entrée forcée à 0 si sur batterie
         if logical_id == 'input_volt' and not_online:
@@ -265,7 +265,7 @@ def query_device(device: NutDevice) -> Optional[dict]:
                 pass
 
         results[logical_id] = value
-        logging.debug('[DAEMON][%s] %s = %s', device.eqLogic_id, logical_id, value)
+        logging.debug('[DAEMON][%s] %s = %s', device.eqLogicId, logical_id, value)
 
     return results
 
@@ -301,7 +301,7 @@ class Loops:
                         Loops._stop_all_watchers()
                         with myConfig.devicesLock:
                             myConfig.devices = {
-                                NutDevice.from_dict(d).eqLogic_id: NutDevice.from_dict(d)
+                                NutDevice.from_dict(d).eqLogicId: NutDevice.from_dict(d)
                                 for d in message.get('devices', [])
                             }
                             devices_snapshot = dict(myConfig.devices)
@@ -314,26 +314,26 @@ class Loops:
                         if device_data:
                             device = NutDevice.from_dict(device_data)
                             with myConfig.devicesLock:
-                                myConfig.devices[device.eqLogic_id] = device
+                                myConfig.devices[device.eqLogicId] = device
                             Loops._start_watcher(device)
-                            logging.info('[DAEMON] Équipement ajouté/mis à jour : eqLogic_id=%s host=%s:%d',
-                                         device.eqLogic_id, device.host, device.port)
+                            logging.info('[DAEMON] Équipement ajouté/mis à jour : eqLogicId=%s host=%s:%d',
+                                         device.eqLogicId, device.host, device.port)
 
                     elif action == 'remove_device':
-                        eqLogic_id = str(message.get('eqLogic_id', ''))
-                        Loops._stop_watcher(eqLogic_id)
+                        eqLogicId = str(message.get('eqLogicId', ''))
+                        Loops._stop_watcher(eqLogicId)
                         with myConfig.devicesLock:
-                            myConfig.devices.pop(eqLogic_id, None)
-                        logging.info('[DAEMON] Équipement retiré : %s', eqLogic_id)
+                            myConfig.devices.pop(eqLogicId, None)
+                        logging.info('[DAEMON] Équipement retiré : %s', eqLogicId)
 
                     elif action == 'query_now':
-                        eqLogic_id = str(message.get('eqLogic_id', ''))
+                        eqLogicId = str(message.get('eqLogicId', ''))
                         with myConfig.devicesLock:
-                            device = myConfig.devices.get(eqLogic_id)
+                            device = myConfig.devices.get(eqLogicId)
                         if device:
                             threading.Thread(target=Loops._poll_device, args=(device,), daemon=True).start()
                         else:
-                            logging.warning('[DAEMON][SOCKET] query_now : équipement %s inconnu', eqLogic_id)
+                            logging.warning('[DAEMON][SOCKET] query_now : équipement %s inconnu', eqLogicId)
 
                     elif action == 'shutdown':
                         logging.info('[DAEMON] Arrêt demandé via socket')
@@ -365,10 +365,10 @@ class Loops:
             currentTime = int(time.time())
 
             # Heartbeat
-            if (myConfig.HeartbeatLastTime + myConfig.HeartbeatFrequency) <= currentTime:
+            if (myConfig.heartbeatLastTime + myConfig.heartbeatFrequency) <= currentTime:
                 logging.info('[DAEMON][MAINLOOP] Heartbeat = 1')
                 Comm.sendToJeedom.send_change_immediate({'heartbeat': '1'})
-                myConfig.HeartbeatLastTime = currentTime
+                myConfig.heartbeatLastTime = currentTime
 
             if currentTime - lastPoll >= myConfig.cyclePolling:
                 lastPoll = currentTime
@@ -392,7 +392,7 @@ class Loops:
         Cycle adaptatif : cycleWatcherAlert (2s) si OB, cycleWatcher (5s) sinon.
         """
         logging.info('[WATCHER][%s] Démarrage surveillance statut (cycle=%ss / alert=%ss)',
-                     device.eqLogic_id, myConfig.cycleWatcher, myConfig.cycleWatcherAlert)
+                     device.eqLogicId, myConfig.cycleWatcher, myConfig.cycleWatcherAlert)
         current_cycle = myConfig.cycleWatcher
         first_poll = True
 
@@ -400,17 +400,17 @@ class Loops:
             status = get_ups_status(device)
 
             if status is not None:
-                last = myConfig.deviceLastStatus.get(device.eqLogic_id, '')
+                last = myConfig.deviceLastStatus.get(device.eqLogicId, '')
                 if status != last:
                     if first_poll:
-                        logging.info('[WATCHER][%s] Statut initial : %s', device.eqLogic_id, status)
+                        logging.info('[WATCHER][%s] Statut initial : %s', device.eqLogicId, status)
                     else:
                         logging.info('[WATCHER][%s] Changement statut : \'%s\' → \'%s\'',
-                                     device.eqLogic_id, last, status)
+                                     device.eqLogicId, last, status)
                         threading.Thread(
                             target=Loops._poll_device, args=(device,), daemon=True
                         ).start()
-                    myConfig.deviceLastStatus[device.eqLogic_id] = status
+                    myConfig.deviceLastStatus[device.eqLogicId] = status
                     first_poll = False
 
                 # Cycle adaptatif : réduit si sur batterie
@@ -420,28 +420,28 @@ class Loops:
 
             stop_event.wait(current_cycle)
 
-        logging.info('[WATCHER][%s] Arrêt surveillance statut', device.eqLogic_id)
+        logging.info('[WATCHER][%s] Arrêt surveillance statut', device.eqLogicId)
 
     @staticmethod
     def _start_watcher(device: NutDevice) -> None:
         """Démarre un thread StatusWatcher pour un équipement."""
-        Loops._stop_watcher(device.eqLogic_id)  # stoppe l'éventuel thread précédent
+        Loops._stop_watcher(device.eqLogicId)  # stoppe l'éventuel thread précédent
         stop_event = threading.Event()
-        myConfig.watcherStopEvents[device.eqLogic_id] = stop_event
+        myConfig.watcherStopEvents[device.eqLogicId] = stop_event
         threading.Thread(
             target=Loops.statusWatcher,
             args=(device, stop_event),
             daemon=True,
-            name=f'watcher-{device.eqLogic_id}'
+            name=f'watcher-{device.eqLogicId}'
         ).start()
 
     @staticmethod
-    def _stop_watcher(eqLogic_id: str) -> None:
+    def _stop_watcher(eqLogicId: str) -> None:
         """Arrête le thread StatusWatcher d'un équipement."""
-        ev = myConfig.watcherStopEvents.pop(eqLogic_id, None)
+        ev = myConfig.watcherStopEvents.pop(eqLogicId, None)
         if ev:
             ev.set()
-            myConfig.deviceLastStatus.pop(eqLogic_id, None)
+            myConfig.deviceLastStatus.pop(eqLogicId, None)
 
     @staticmethod
     def _stop_all_watchers() -> None:
@@ -452,13 +452,13 @@ class Loops:
     # *** Polling d'un équipement ***
     @staticmethod
     def _poll_device(device: NutDevice) -> None:
-        logging.debug('[DAEMON][%s] Interrogation NUT %s:%d', device.eqLogic_id, device.host, device.port)
+        logging.debug('[DAEMON][%s] Interrogation NUT %s:%d', device.eqLogicId, device.host, device.port)
         results = query_device(device)
         if results:
-            Comm.sendToJeedom.add_changes(f'update::{device.eqLogic_id}', results)
-            logging.info('[DAEMON][%s] Envoi de %d valeur(s) vers Jeedom', device.eqLogic_id, len(results))
+            Comm.sendToJeedom.add_changes(f'update::{device.eqLogicId}', results)
+            logging.info('[DAEMON][%s] Envoi de %d valeur(s) vers Jeedom', device.eqLogicId, len(results))
         elif results is None:
-            logging.warning('[DAEMON][%s] Aucune donnée retournée (erreur connexion)', device.eqLogic_id)
+            logging.warning('[DAEMON][%s] Aucune donnée retournée (erreur connexion)', device.eqLogicId)
 
 
 # ---------------------------------------------------------------------------
