@@ -19,19 +19,19 @@
 
 // Commandes pouvant être historisées
 const HISTORIZED_COMMANDS = Object.freeze([
-  'input_volt', 'input_freq', 'output_volt', 'output_freq',
-  'output_power', 'output_real_power', 'batt_charge', 'batt_volt',
+  'input_voltage', 'input_freq', 'output_voltage', 'output_freq',
+  'output_power', 'output_real_power', 'batt_charge', 'batt_voltage',
   'batt_temp', 'ups_temp', 'ups_load', 'batt_runtime', 'batt_runtime_min',
   'timer_shutdown', 'timer_shutdown_min'
 ])
 
 // Commandes affichables (visibles par défaut)
 const VISIBLE_COMMANDS = Object.freeze([
-  'Marque', 'Model', 'ups_serial', 'ups_line',
-  'input_volt', 'input_freq', 'output_volt', 'output_freq',
-  'output_power', 'output_real_power', 'batt_charge', 'batt_volt',
+  'device_mfr', 'device_model', 'ups_serial', 'ups_status', 'ups_status_label',
+  'input_voltage', 'input_freq', 'output_voltage', 'output_freq',
+  'output_power', 'output_real_power', 'batt_charge', 'batt_voltage',
   'batt_temp', 'ups_temp', 'ups_load', 'batt_runtime', 'batt_runtime_min',
-  'timer_shutdown', 'timer_shutdown_min', 'beeper_stat'
+  'timer_shutdown', 'timer_shutdown_min', 'beeper_status'
 ])
 
 /**
