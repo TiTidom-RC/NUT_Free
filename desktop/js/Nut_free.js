@@ -89,6 +89,20 @@ function addCmdToTable(_cmd) {
 }
 
 /**
+ * Toggle affichage mot de passe (pattern SSH-Manager)
+ */
+document.addEventListener('click', function(event) {
+  const toggleBtn = event.target.closest('a.bt_togglePass')
+  if (!toggleBtn) return
+  event.stopPropagation()
+  const input = toggleBtn.closest('.input-group').querySelector('input')
+  const icon = toggleBtn.querySelector('.fas')
+  input.type = input.type === 'password' ? 'text' : 'password'
+  icon.classList.toggle('fa-eye')
+  icon.classList.toggle('fa-eye-slash')
+})
+
+/**
  * Affichage conditionnel des sections NUT/SSH et UPS manuel
  */
 function updateConnexionModeDisplay(value) {
