@@ -176,7 +176,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                             <sup><i class="fas fa-question-circle tooltips" title="{{Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)}}"></i></sup>
                                         </label>
                                         <div class="col-sm-6">
-                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutPassword" type="password" placeholder="{{optionnel}}"/>
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutPassword" type="password" placeholder="{{optionnel}}" autocomplete="new-password"/>
                                         </div>
                                     </div>
                                 </div>
