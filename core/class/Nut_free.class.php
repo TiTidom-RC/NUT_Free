@@ -75,7 +75,7 @@ class Nut_free extends eqLogic {
                     ),
                 ));
             } else {
-                // Mode distant : collecte via SSH-Manager directement en PHP
+                // Mode SSH : collecte via SSH-Manager directement en PHP
                 $eqLogic->getInfosSSH();
                 $eqLogic->refreshWidget();
             }
@@ -255,6 +255,7 @@ class Nut_free extends eqLogic {
 				),
 			));
 		} else {
+			// Mode SSH : collecte via SSH-Manager directement en PHP
 			$this->getInfosSSH();
 			$this->refreshWidget();
 		}
