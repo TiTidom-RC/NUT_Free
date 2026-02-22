@@ -260,7 +260,7 @@ def query_device(device: NutDevice) -> Optional[dict]:
         # Conversion secondes → minutes
         if logicalId in ('batt_runtime_min', 'timer_shutdown_min'):
             try:
-                value = str(int(float(value) / 60))
+                value = str(round(float(value) / 60, 2))
             except (ValueError, TypeError):
                 pass
 

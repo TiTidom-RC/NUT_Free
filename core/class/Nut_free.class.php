@@ -465,7 +465,7 @@ class Nut_free extends eqLogic {
 
             // Conversion secondes → minutes
             if ($logicalId === 'batt_runtime_min' || $logicalId === 'timer_shutdown_min') {
-                $result = (int) ((float) $result / 60);
+                $result = round((float) $result / 60, 2);
             }
 
             if ($errorResult !== '') {
