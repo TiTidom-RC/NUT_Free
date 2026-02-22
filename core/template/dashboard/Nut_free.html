@@ -4,12 +4,23 @@
 	}
 	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-left {
 		display: flex; flex: 0 1 auto; float: left; justify-content: flex-start; align-items: center;
+		box-sizing: border-box;
 	}
 	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name.nut-name-center {
 		display: flex; flex: 1 1 auto; justify-content: center; text-align: center;
+		padding-left: 5px; padding-right: 5px; box-sizing: border-box;
+	}
+	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name {
+		overflow: auto;
 	}
 	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-right {
 		display: flex; flex: 0 1 auto; float: right; justify-content: flex-end; align-items: center;
+		box-sizing: border-box;
+	}
+	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-right .cmd.refresh {
+		margin-top: unset !important;
+		padding-right: 5px;
+		color: inherit !important;
 	}
 	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds {
 		display: block; text-align: left; padding-left: 5px; overflow: auto;
