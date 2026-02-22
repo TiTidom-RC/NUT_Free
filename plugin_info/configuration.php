@@ -75,7 +75,7 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
             <label class="col-md-3 control-label">{{Version Python}}
                 <sup><i class="fas fa-question-circle tooltips" title="{{Version de Python utilisée par le plugin (à indiquer sur Community)}}"></i></sup>
             </label>
-            <div class="col-md-1">
+            <div class="col-md-2">
                 <input class="configKey form-control" data-l1key="pythonVersion" readonly />
             </div>
         </div>
@@ -84,7 +84,7 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
             <label class="col-md-3 control-label">{{Version PyEnv}}
                 <sup><i class="fas fa-question-circle tooltips" title="{{Version de PyEnv utilisée par le plugin (à indiquer sur Community)}}"></i></sup>
             </label>
-            <div class="col-md-1">
+            <div class="col-md-2">
                 <input class="configKey form-control" data-l1key="pyenvVersion" readonly />
             </div>
         </div>
@@ -167,7 +167,7 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
                 <sup><i class="fas fa-exclamation-triangle tooltips" style="color:var(--al-warning-color)!important;" title="{{Le démon devra être redémarré après la modification de ce paramètre}}"></i></sup>
                 <sup><i class="fas fa-question-circle tooltips" title="{{Facteur multiplicateur des cycles internes du démon (Main/Comm/Event). Défaut = Normal (x1)}}"></i></sup>
             </label>
-            <div class="col-md-1">
+            <div class="col-md-2" style="max-width:150px;">
                 <select class="configKey form-control" data-l1key="cycleFactor">
                     <option value="0.1">{{Rapide +++ (x0.1)}}</option>
                     <option value="0.25">{{Rapide ++ (x0.25)}}</option>
