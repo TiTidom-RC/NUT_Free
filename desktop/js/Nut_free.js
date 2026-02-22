@@ -62,6 +62,7 @@ function addCmdToTable(_cmd) {
       ${canBeVisible    ? '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isVisible"/> {{Afficher}}</label>' : ''}
       ${canBeHistorized ? '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/> {{Historiser}}</label>' : ''}
     </td>
+    <td><span class="cmdAttr" data-l1key="htmlstate"></span></td>
     <td>
       ${testButtons}
       <i class="fas fa-minus-circle pull-right cmdAction cursor" data-action="remove" title="{{Supprimer la commande}}"></i>
@@ -77,7 +78,21 @@ function addCmdToTable(_cmd) {
   if (!tbody) return
 
   tbody.appendChild(row)
-  row.setJeeValues(_cmd, '.cmdAttr')
+
+  const eqLogicId = document.querySelector('.eqLogicAttr[data-l1key=id]')
+  if (!eqLogicId) return
+
+  jeedom.eqLogic.buildSelectCmd({
+    id: eqLogicId.jeeValue(),
+    filter: { type: 'info' },
+    error: function(error) {
+      jeedomUtils.showAlert({ message: error.message, level: 'danger' })
+    },
+    success: function(result) {
+      row.setJeeValues(_cmd, '.cmdAttr')
+      jeedom.cmd.changeType(row, init(_cmd.subType))
+    }
+  })
 }
 
 /**
