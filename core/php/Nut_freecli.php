@@ -47,7 +47,7 @@ switch ($argv[1]) {
             log::add($_logName, 'warning', '[DEP-INSTALL] ' . $e->getMessage());
             log::add($_logName, 'info', '[DEP-INSTALL] Lancement de l\'installation du plugin SSH-Manager');
 
-            // Installation de SSH-Manager depuis la même source que NUT_Free
+            // Installation de SSH-Manager depuis la même source que NUT Free
             $_pluginSource    = update::byLogicalId('Nut_free');
             $_pluginToInstall = update::byLogicalId('sshmanager');
             if (!is_object($_pluginToInstall)) {

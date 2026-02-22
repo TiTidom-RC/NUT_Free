@@ -14,7 +14,7 @@
 # along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
 
 """
-NUT_Free daemon — nutfreed.py
+Démon NUT Free — nutfreed.py
 Connexion TCP directe vers les serveurs NUT (mode local uniquement).
 Le mode SSH distant est géré entièrement par PHP et SSH-Manager.
 
@@ -497,7 +497,7 @@ def shutdown():
     sys.exit(0)
 
 
-parser = argparse.ArgumentParser(description='NUT_Free daemon - Connexion TCP directe vers serveurs NUT')
+parser = argparse.ArgumentParser(description='Démon NUT Free - Connexion TCP directe vers serveurs NUT')
 parser.add_argument('--socketport', help="Port d'écoute socket TCP", type=str)
 parser.add_argument('--callback', help='URL callback Jeedom (jeeNut_free.php)', type=str)
 parser.add_argument('--apikey', help='Clé API Jeedom', type=str)

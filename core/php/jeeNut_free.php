@@ -72,7 +72,7 @@ try {
     // ----- Traitement des événements daemon -----
     if (isset($data['daemonStarted'])) {
         if ($data['daemonStarted'] == '1') {
-            log::add('Nut_free', 'info', '[CALLBACK] NUT_Free Daemon démarré');
+            log::add('Nut_free', 'info', '[CALLBACK] Démon démarré');
         }
         echo json_encode(['status' => 'ok']);
         exit;
@@ -80,7 +80,7 @@ try {
 
     if (isset($data['heartbeat'])) {
         if ($data['heartbeat'] == '1') {
-            log::add('Nut_free', 'info', '[CALLBACK] NUT_Free Daemon Heartbeat (' . config::byKey('heartbeatFrequency', 'Nut_free', 600) . 's)');
+            log::add('Nut_free', 'info', '[CALLBACK] Démon :: Heartbeat (' . config::byKey('heartbeatFrequency', 'Nut_free', 600) . 's)');
         }
         echo json_encode(['status' => 'ok']);
         exit;
