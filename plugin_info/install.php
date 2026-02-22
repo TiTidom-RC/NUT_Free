@@ -42,6 +42,9 @@ function Nut_free_install() {
     if (config::byKey('cyclePolling', 'Nut_free') == '') {
         config::save('cyclePolling', '60', 'Nut_free');
     }
+    if (config::byKey('cycleWatcher', 'Nut_free') == '') {
+        config::save('cycleWatcher', '5', 'Nut_free');
+    }
     if (config::byKey('cycleFactor', 'Nut_free') == '') {
         config::save('cycleFactor', '1.0', 'Nut_free');
     }
@@ -109,6 +112,9 @@ function Nut_free_update() {
     }
     if (config::byKey('cyclePolling', 'Nut_free') == '') {
         config::save('cyclePolling', '60', 'Nut_free');
+    }
+    if (config::byKey('cycleWatcher', 'Nut_free') == '') {
+        config::save('cycleWatcher', '5', 'Nut_free');
     }
     if (config::byKey('cycleFactor', 'Nut_free') == '') {
         config::save('cycleFactor', '1.0', 'Nut_free');
