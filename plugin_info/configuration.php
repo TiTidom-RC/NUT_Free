@@ -145,10 +145,20 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
         <div class="form-group">
             <label class="col-md-3 control-label">{{Intervalle de polling (secondes)}}
                 <sup><i class="fas fa-exclamation-triangle tooltips" style="color:var(--al-warning-color)!important;" title="{{Le démon devra être redémarré après la modification de ce paramètre}}"></i></sup>
-                <sup><i class="fas fa-question-circle tooltips" title="{{Intervalle en secondes entre chaque interrogation des UPS (Défaut = 60)}}"></i></sup>
+                <sup><i class="fas fa-question-circle tooltips" title="{{Intervalle en secondes entre chaque interrogation complète des UPS (toutes les métriques). Défaut = 60}}"></i></sup>
             </label>
             <div class="col-md-1">
                 <input class="configKey form-control" data-l1key="cyclePolling" placeholder="60" />
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="col-md-3 control-label">{{Intervalle du surveillant de statut (secondes)}}
+                <sup><i class="fas fa-exclamation-triangle tooltips" style="color:var(--al-warning-color)!important;" title="{{Le démon devra être redémarré après la modification de ce paramètre}}"></i></sup>
+                <sup><i class="fas fa-question-circle tooltips" title="{{Intervalle en secondes de la surveillance ups.status (détection coupure secteur). Défaut = 5. Réduit automatiquement à 2s si l'UPS est sur batterie}}"></i></sup>
+            </label>
+            <div class="col-md-1">
+                <input class="configKey form-control" data-l1key="cycleWatcher" placeholder="5" />
             </div>
         </div>
 

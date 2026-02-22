@@ -182,6 +182,8 @@ class Nut_free extends eqLogic {
                         'port'        => (int) $Nut_free->getConfiguration('nut_port', 3493),
                         'ups_name'    => $Nut_free->getConfiguration('UPS', ''),
                         'auto_detect' => ($Nut_free->getConfiguration('UPS_auto_select', '0') === '0') ? 1 : 0,
+                        'nut_login'   => $Nut_free->getConfiguration('nut_login', ''),
+                        'nut_password'=> $Nut_free->getConfiguration('nut_password', ''),
                     ),
                 ));
             } else {
@@ -395,13 +397,27 @@ class Nut_free extends eqLogic {
 					'port'        => (int) $this->getConfiguration('nut_port', 3493),
 					'ups_name'    => $this->getConfiguration('UPS', ''),
 					'auto_detect' => ($this->getConfiguration('UPS_auto_select', '0') === '0') ? 1 : 0,
+					'nut_login'   => $this->getConfiguration('nut_login', ''),
+					'nut_password'=> $this->getConfiguration('nut_password', ''),
 				),
 			));
 		} else {
 			$this->getInfosSSH();
 		}
 	}
-	
+
+	/*
+	 * Permet de crypter/décrypter automatiquement des champs de configuration des équipements
+	 */
+	public function decrypt() {
+		$this->setConfiguration('nut_login', utils::decrypt($this->getConfiguration('nut_login')));
+		$this->setConfiguration('nut_password', utils::decrypt($this->getConfiguration('nut_password')));
+	}
+	public function encrypt() {
+		$this->setConfiguration('nut_login', utils::encrypt($this->getConfiguration('nut_login')));
+		$this->setConfiguration('nut_password', utils::encrypt($this->getConfiguration('nut_password')));
+	}
+
  	public function toHtml($_version = 'dashboard')	{
 		$replace = $this->preToHtml($_version);
 		if (!is_array($replace)) {
@@ -620,6 +636,7 @@ class Nut_free extends eqLogic {
         $socketPort    = config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT);
         $callbackUrl   = network::getNetworkAccess('internal', 'http:127.0.0.1:port:comp') . '/plugins/Nut_free/core/php/jeeNut_free.php';
         $cyclePolling  = config::byKey('cyclePolling', 'Nut_free', 60);
+        $cycleWatcher  = config::byKey('cycleWatcher', 'Nut_free', 5);
         $cycleFactor   = config::byKey('cycleFactor', 'Nut_free', '1.0');
 
         if (!file_exists($python3)) {
@@ -640,6 +657,7 @@ class Nut_free extends eqLogic {
             . ' --loglevel '      . escapeshellarg($logLevel)
             . ' --pluginversion ' . escapeshellarg(config::byKey('pluginVersion', 'Nut_free', '0.0.0'))
             . ' --cyclepolling '  . escapeshellarg($cyclePolling)
+            . ' --cyclewatcher '  . escapeshellarg($cycleWatcher)
             . ' --cyclefactor '   . escapeshellarg($cycleFactor)
             . ' --pid '           . escapeshellarg($pidFile)
             . ' >> ' . log::getPathToLog('Nut_free_daemon') . ' 2>&1 &';

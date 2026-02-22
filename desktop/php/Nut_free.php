@@ -150,6 +150,22 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                             <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="addressip" type="text" placeholder="{{ex: 192.168.1.100}}"/>
                                         </div>
                                     </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{{Login NUT}}
+                                            <sup><i class="fas fa-question-circle tooltips" title="{{Login d\'authentification upsd (optionnel, laisser vide si le serveur NUT ne l\'exige pas)}}"></i></sup>
+                                        </label>
+                                        <div class="col-sm-6">
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nut_login" type="text" placeholder="{{optionnel}}"/>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{{Mot de passe NUT}}
+                                            <sup><i class="fas fa-question-circle tooltips" title="{{Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l\'exige pas)}}"></i></sup>
+                                        </label>
+                                        <div class="col-sm-6">
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nut_password" type="password" placeholder="{{optionnel}}"/>
+                                        </div>
+                                    </div>
                                 </div>
                                 <!-- Mode Distant (SSH-Manager) -->
                                 <div class="nut-distant" style="display:none;">

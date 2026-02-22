@@ -33,6 +33,7 @@ Actions reçues via socket :
 import logging
 import sys
 import os
+import socket
 import time
 import signal
 import json
@@ -95,46 +96,129 @@ class NutDevice:
     port: int
     ups_name: str      # vide = auto-détection via GetUPSList()
     auto_detect: bool
+    nut_login: Optional[str] = None    # login upsd (None = pas d'authentification)
+    nut_password: Optional[str] = None # mot de passe upsd (None = pas d'authentification)
+    resolved_ups_name: Optional[str] = None  # nom résolu et mis en cache après la première détection
 
     @classmethod
     def from_dict(cls, d: dict) -> 'NutDevice':
+        login = str(d.get('nut_login', '')).strip() or None
+        password = str(d.get('nut_password', '')).strip() or None
         return cls(
             eqLogic_id=str(d['eqLogic_id']),
             host=str(d.get('host', '127.0.0.1')),
             port=int(d.get('port', 3493)),
             ups_name=str(d.get('ups_name', '')).strip(),
             auto_detect=bool(int(d.get('auto_detect', '1'))),
+            nut_login=login,
+            nut_password=password,
+            resolved_ups_name=None,
         )
 
 
 # ---------------------------------------------------------------------------
+
+def _resolve_ups_name(device: NutDevice) -> Optional[str]:
+    """
+    Retourne le nom UPS effectif pour ce device.
+    Si déjà résolu (cache), retourne directement sans connexion.
+    Sinon appelle GetUPSList() via PyNUTClient et met en cache le résultat.
+    """
+    if device.resolved_ups_name:
+        return device.resolved_ups_name
+
+    # Nom statique configuré : pas besoin de détection
+    if not device.auto_detect and device.ups_name:
+        device.resolved_ups_name = device.ups_name
+        return device.resolved_ups_name
+
+    # Auto-détection via LIST UPS
+    try:
+        client = PyNUTClient(host=device.host, port=device.port,
+                             login=device.nut_login, password=device.nut_password)
+        ups_list = client.GetUPSList()
+        if not ups_list:
+            logging.warning('[DAEMON][%s] Aucun UPS trouvé sur %s:%d',
+                            device.eqLogic_id, device.host, device.port)
+            return None
+        name = list(ups_list.keys())[0].decode('ascii') if isinstance(list(ups_list.keys())[0], bytes) else list(ups_list.keys())[0]
+        device.resolved_ups_name = name
+        logging.debug('[DAEMON][%s] UPS auto-détecté et mis en cache : %s', device.eqLogic_id, name)
+        return device.resolved_ups_name
+    except Exception as e:
+        logging.error('[DAEMON][%s] _resolve_ups_name erreur :: %s', device.eqLogic_id, e)
+        return None
+
+
+def _nut_get_var(host: str, port: int, ups_name: str, var_name: str,
+                 login: Optional[str] = None, password: Optional[str] = None,
+                 timeout: float = 5.0) -> Optional[str]:
+    """
+    Lecture directe d'une seule variable NUT via le protocole brut.
+    Envoie : GET VAR <ups> <var>\n
+    Attend  : VAR <ups> <var> "<value>"\n
+    Supporte l'authentification upsd (USERNAME / PASSWORD) si fournie.
+    Beaucoup plus léger que PyNUTClient + LIST VAR (toutes les vars).
+    """
+    try:
+        with socket.create_connection((host, port), timeout=timeout) as sock:
+            if login:
+                sock.sendall(f'USERNAME {login}\n'.encode('ascii'))
+                sock.recv(256)  # attend OK
+            if password:
+                sock.sendall(f'PASSWORD {password}\n'.encode('ascii'))
+                sock.recv(256)  # attend OK
+            sock.sendall(f'GET VAR {ups_name} {var_name}\n'.encode('ascii'))
+            buf = b''
+            while b'\n' not in buf:
+                chunk = sock.recv(256)
+                if not chunk:
+                    break
+                buf += chunk
+        line = buf.split(b'\n')[0].decode('ascii').strip()
+        # Réponse attendue : VAR <ups> <var> "<value>"
+        if line.startswith('VAR '):
+            parts = line.split('"')
+            return parts[1] if len(parts) >= 2 else None
+        logging.debug('[WATCHER] _nut_get_var réponse inattendue : %s', line)
+        return None
+    except Exception as e:
+        logging.debug('[WATCHER] _nut_get_var %s:%d %s=%s :: %s', host, port, ups_name, var_name, e)
+        return None
+
+
+def get_ups_status(device: NutDevice) -> Optional[str]:
+    """
+    Lecture légère de ups.status uniquement via GET VAR (protocole brut).
+    Utilisé par le StatusWatcher pour détecter les changements d'état.
+    Retourne la valeur brute (ex: 'OL', 'OB LB') ou None en cas d'erreur.
+    """
+    ups_name = _resolve_ups_name(device)
+    if not ups_name:
+        return None
+    return _nut_get_var(device.host, device.port, ups_name, 'ups.status',
+                        login=device.nut_login, password=device.nut_password)
+
 
 def query_device(device: NutDevice) -> Optional[dict]:
     """
     Interroge un serveur NUT en TCP direct et retourne
     {logicalId: valeur} ou None en cas d'erreur de connexion.
     """
+    # Résolution du nom UPS (depuis le cache ou via GetUPSList)
+    ups_name = _resolve_ups_name(device)
+    if not ups_name:
+        logging.warning('[DAEMON][%s] Nom UPS non résolu, poll ignoré', device.eqLogic_id)
+        return None
+
+    # Connexion pour le poll complet (LIST VAR — toutes les variables)
     try:
-        client = PyNUTClient(host=device.host, port=device.port)
+        client = PyNUTClient(host=device.host, port=device.port,
+                             login=device.nut_login, password=device.nut_password)
     except Exception as e:
         logging.error('[DAEMON][%s] Connexion NUT %s:%d impossible :: %s',
                       device.eqLogic_id, device.host, device.port, e)
         return None
-
-    # Résolution du nom UPS
-    ups_name = device.ups_name
-    if device.auto_detect or not ups_name:
-        try:
-            ups_list = client.GetUPSList()
-            if not ups_list:
-                logging.warning('[DAEMON][%s] Aucun UPS trouvé sur %s:%d',
-                                device.eqLogic_id, device.host, device.port)
-                return {}
-            ups_name = list(ups_list.keys())[0]
-            logging.debug('[DAEMON][%s] UPS auto-détecté : %s', device.eqLogic_id, ups_name)
-        except Exception as e:
-            logging.error('[DAEMON][%s] GetUPSList erreur :: %s', device.eqLogic_id, e)
-            return None
 
     # Lecture de toutes les variables NUT en une seule requête
     try:
@@ -214,11 +298,15 @@ class Loops:
                     logging.info('[DAEMON][SOCKET] Action reçue : %s', action)
 
                     if action == 'update_devices':
+                        Loops._stop_all_watchers()
                         with myConfig.devicesLock:
                             myConfig.devices = {
                                 NutDevice.from_dict(d).eqLogic_id: NutDevice.from_dict(d)
                                 for d in message.get('devices', [])
                             }
+                            devices_snapshot = dict(myConfig.devices)
+                        for dev in devices_snapshot.values():
+                            Loops._start_watcher(dev)
                         logging.info('[DAEMON] Liste mise à jour : %d équipement(s)', len(myConfig.devices))
 
                     elif action == 'add_device':
@@ -227,11 +315,13 @@ class Loops:
                             device = NutDevice.from_dict(device_data)
                             with myConfig.devicesLock:
                                 myConfig.devices[device.eqLogic_id] = device
+                            Loops._start_watcher(device)
                             logging.info('[DAEMON] Équipement ajouté/mis à jour : eqLogic_id=%s host=%s:%d',
                                          device.eqLogic_id, device.host, device.port)
 
                     elif action == 'remove_device':
                         eqLogic_id = str(message.get('eqLogic_id', ''))
+                        Loops._stop_watcher(eqLogic_id)
                         with myConfig.devicesLock:
                             myConfig.devices.pop(eqLogic_id, None)
                         logging.info('[DAEMON] Équipement retiré : %s', eqLogic_id)
@@ -293,6 +383,72 @@ class Loops:
 
         logging.info('[DAEMON][MAINLOOP] MainLoop terminée')
 
+    # *** StatusWatcher — surveillance ups.status par équipement (upsmon-style) ***
+    @staticmethod
+    def statusWatcher(device: NutDevice, stop_event: threading.Event) -> None:
+        """
+        Thread par équipement. Surveille ups.status toutes les cycleWatcher secondes.
+        Sur changement détecté → déclenche un poll complet immédiat.
+        Cycle adaptatif : cycleWatcherAlert (2s) si OB, cycleWatcher (5s) sinon.
+        """
+        logging.info('[WATCHER][%s] Démarrage surveillance statut (cycle=%ss / alert=%ss)',
+                     device.eqLogic_id, myConfig.cycleWatcher, myConfig.cycleWatcherAlert)
+        current_cycle = myConfig.cycleWatcher
+        first_poll = True
+
+        while not stop_event.is_set() and not myConfig.IS_ENDING:
+            status = get_ups_status(device)
+
+            if status is not None:
+                last = myConfig.deviceLastStatus.get(device.eqLogic_id, '')
+                if status != last:
+                    if first_poll:
+                        logging.info('[WATCHER][%s] Statut initial : %s', device.eqLogic_id, status)
+                    else:
+                        logging.info('[WATCHER][%s] Changement statut : \'%s\' → \'%s\'',
+                                     device.eqLogic_id, last, status)
+                        threading.Thread(
+                            target=Loops._poll_device, args=(device,), daemon=True
+                        ).start()
+                    myConfig.deviceLastStatus[device.eqLogic_id] = status
+                    first_poll = False
+
+                # Cycle adaptatif : réduit si sur batterie
+                current_cycle = myConfig.cycleWatcherAlert if 'OB' in status.upper() else myConfig.cycleWatcher
+            else:
+                current_cycle = myConfig.cycleWatcher  # erreur connexion → cycle normal
+
+            stop_event.wait(current_cycle)
+
+        logging.info('[WATCHER][%s] Arrêt surveillance statut', device.eqLogic_id)
+
+    @staticmethod
+    def _start_watcher(device: NutDevice) -> None:
+        """Démarre un thread StatusWatcher pour un équipement."""
+        Loops._stop_watcher(device.eqLogic_id)  # stoppe l'éventuel thread précédent
+        stop_event = threading.Event()
+        myConfig.watcherStopEvents[device.eqLogic_id] = stop_event
+        threading.Thread(
+            target=Loops.statusWatcher,
+            args=(device, stop_event),
+            daemon=True,
+            name=f'watcher-{device.eqLogic_id}'
+        ).start()
+
+    @staticmethod
+    def _stop_watcher(eqLogic_id: str) -> None:
+        """Arrête le thread StatusWatcher d'un équipement."""
+        ev = myConfig.watcherStopEvents.pop(eqLogic_id, None)
+        if ev:
+            ev.set()
+            myConfig.deviceLastStatus.pop(eqLogic_id, None)
+
+    @staticmethod
+    def _stop_all_watchers() -> None:
+        """Arrête tous les threads StatusWatcher."""
+        for eid in list(myConfig.watcherStopEvents.keys()):
+            Loops._stop_watcher(eid)
+
     # *** Polling d'un équipement ***
     @staticmethod
     def _poll_device(device: NutDevice) -> None:
@@ -321,6 +477,7 @@ def handler(signum=None, frame=None):
 def shutdown():
     logging.info('[DAEMON] Shutdown :: Début arrêt...')
     myConfig.IS_ENDING = True
+    Loops._stop_all_watchers()
     try:
         if my_jeedom_socket is not None:
             my_jeedom_socket.close()
@@ -345,6 +502,7 @@ parser.add_argument('--socketport', help="Port d'écoute socket TCP", type=str)
 parser.add_argument('--callback', help='URL callback Jeedom (jeeNut_free.php)', type=str)
 parser.add_argument('--apikey', help='Clé API Jeedom', type=str)
 parser.add_argument('--cyclepolling', help='Intervalle de polling en secondes', type=str)
+parser.add_argument('--cyclewatcher', help='Intervalle du status watcher en secondes (défaut: 5)', type=str)
 parser.add_argument('--cyclefactor', help='Facteur multiplicateur des cycles internes', type=str)
 parser.add_argument('--loglevel', help='Niveau de log (debug/info/warning/error)', type=str)
 parser.add_argument('--pluginversion', help='Version du plugin', type=str)
@@ -360,6 +518,8 @@ if args.apikey:
     myConfig.apiKey = args.apikey
 if args.cyclepolling:
     myConfig.cyclePolling = float(args.cyclepolling)
+if args.cyclewatcher:
+    myConfig.cycleWatcher = float(args.cyclewatcher)
 if args.cyclefactor:
     myConfig.cycleFactor = float(args.cyclefactor)
 if args.loglevel:
@@ -394,6 +554,7 @@ logging.info('[DAEMON] Python Version : %s', sys.version)
 logging.info('[DAEMON] Log level      : %s', myConfig.logLevel)
 logging.info('[DAEMON] Socket port    : %d', myConfig.socketPort)
 logging.info('[DAEMON] CyclePolling   : %ss', myConfig.cyclePolling)
+logging.info('[DAEMON] CycleWatcher   : %ss (alert: %ss)', myConfig.cycleWatcher, myConfig.cycleWatcherAlert)
 logging.info('[DAEMON] CycleFactor    : %s', myConfig.cycleFactor)
 logging.info('[DAEMON] CycleMain      : %s', myConfig.cycleMain)
 logging.info('[DAEMON] CycleComm      : %s', myConfig.cycleComm)
