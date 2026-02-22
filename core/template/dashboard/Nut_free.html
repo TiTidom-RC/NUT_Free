@@ -31,11 +31,11 @@
 			// Icône statut UPS
 			var upsStatus = '#ups_status#';
 			if (upsStatus.indexOf('OL') > -1) {
-				$('#iconUPS_status#id#').append('<i title="Sur secteur" class="techno techno-plug2 tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
+				$('#iconUPS_status#id#').append('<i title="#ups_status_label#" class="techno techno-plug2 tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
 			} else if (upsStatus.indexOf('DISCHRG') > -1) {
-				$('#iconUPS_status#id#').append('<i title="Sur batterie" class="techno techno-low2 tooltips" style="font-size:1.1em;color:#FEB95E;"></i>');
+				$('#iconUPS_status#id#').append('<i title="#ups_status_label#" class="techno techno-low2 tooltips" style="font-size:1.1em;color:#FEB95E;"></i>');
 			} else {
-				$('#iconUPS_status#id#').append('<i title="NUT : pas de réponse" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
+				$('#iconUPS_status#id#').append('<i title="Pas de Réponse" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
 			}
 		</script>
 	</center>
@@ -59,7 +59,7 @@
 	</div>
 
 	<div class="tooltips" data-cmd_id="#ups_statusid#" style="margin-left:5px;display:#ups_status_display#;">
-		<span title="Statut NUT<br><i>Date de valeur : #ups_status_value#<br>Date de collecte : #ups_status_collect#</i>"
+		<span title="Code NUT<br><i>Date de valeur : #ups_status_value#<br>Date de collecte : #ups_status_collect#</i>"
 			style="width:15px;max-width:15px;max-height:15px;">#ups_status_icon#</span>
 		<span data-cmd_id="#ups_statusid#" class="history cursor">#ups_status#</span>
 	</div>
