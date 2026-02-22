@@ -165,7 +165,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     </div>
                                     <div class="form-group">
                                         <label class="col-sm-4 control-label">{{Login NUT}}
-                                            <sup><i class="fas fa-question-circle tooltips" title="{{Login d\'authentification upsd (optionnel, laisser vide si le serveur NUT ne l\'exige pas)}}"></i></sup>
+                                            <sup><i class="fas fa-question-circle tooltips" title="{{Login d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)}}"></i></sup>
                                         </label>
                                         <div class="col-sm-6">
                                             <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutLogin" type="text" placeholder="{{optionnel}}"/>
@@ -173,7 +173,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     </div>
                                     <div class="form-group">
                                         <label class="col-sm-4 control-label">{{Mot de passe NUT}}
-                                            <sup><i class="fas fa-question-circle tooltips" title="{{Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l\'exige pas)}}"></i></sup>
+                                            <sup><i class="fas fa-question-circle tooltips" title="{{Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)}}"></i></sup>
                                         </label>
                                         <div class="col-sm-6">
                                             <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutPassword" type="password" placeholder="{{optionnel}}"/>
