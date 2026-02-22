@@ -523,7 +523,7 @@ class Nut_free extends eqLogic {
 
         if ($ok) {
             log::add('Nut_free', 'info', '[DAEMON] Démarré avec succès');
-            // Enregistrer tous les équipements locaux actifs
+            // Enregistrer tous les équipements NUT actifs
             foreach (eqLogic::byType('Nut_free') as $eqLogic) {
                 if ($eqLogic->getIsEnable() && $eqLogic->getConfiguration('connexionMode', 'nut') === 'nut') {
                     self::sendToDaemon(array(

@@ -1,209 +1,125 @@
 <div id="plugin_container" class="eqLogic-widget eqLogic allowResize" style="width:#width#;height:#height#;border:#border#;border-radius:#border-radius#;background-color: #background-color#;color: #color#; #style#" data-translate-category="#translate_category#" data-category="#category#" data-eqLogic_id="#id#" data-version="#version#" >
-    <center class="widget-name" style="padding-right: 0px;"><a href="#eqLink#" style="font-size : 1.1em;#hideEqLogicName#">#name_display#<span style="font-size: 0.85em;position: relative;top:-2px;display:none;" class="object_name">#object_name#</span></a>
-		
-		<span id="iconUPS_line#id#" style="float: left;width:25px"></span><span id="iconSSH#id#" style="float: right;width:25px"></span>
-		
+	<center class="widget-name" style="padding-right: 0px;"><a href="#eqLink#" style="font-size : 1.1em;#hideEqLogicName#">#name_display#<span style="font-size: 0.85em;position: relative;top:-2px;display:none;" class="object_name">#object_name#</span></a>
+
+		<span id="iconUPS_line#id#" style="float: left;width:25px"></span>
+		<span id="iconSSH#id#" style="float: right;width:25px"></span>
+
 		<script>
-			if ('#cnx_ssh#' == 'OK') {
-				if ('#ssh_op#' == '1'){
-				$('#iconSSH#id#').append('<i title="Connexion SSH OK" class="techno techno-tv tooltips" style="font-size : 1.1em;color: #00FF00;" ></i>');
-			} 
-			} 
-			if ('#cnx_ssh#' == 'OK'){
-			if (('#ssh_op#' == '0')||('#ssh_op#' == '')){
-				$('#iconSSH#id#').append('<i title="Sans connexion SSH" class="fa fa-sitemap tooltips" style="font-size : 1.1em;color: #00FF00;" ></i>');
-			} 
+			// Icône connexion SSH (mode SSH uniquement)
+			if ('#cnx_ssh#' === 'OK') {
+				if ('#ssh_op#' === '1') {
+					$('#iconSSH#id#').append('<i title="Connexion SSH OK" class="techno techno-tv tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
+				} else {
+					$('#iconSSH#id#').append('<i title="Sans connexion SSH" class="fa fa-sitemap tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
+				}
+			} else if ('#cnx_ssh#' === 'KO') {
+				$('#iconSSH#id#').append('<i title="Connexion SSH KO" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
 			}
-			if ('#cnx_ssh#' == 'KO') {
-				$('#iconSSH#id#').append('<i title="Connexion SSH KO" class="fa fa-times tooltips" style="font-size : 1.1em;color: #FF0000;"></i>');
-			}
-		
-			if (('#ups_line#' == 'OL CHRG')||('#ups_line#' == 'OL')||('#ups_line#'.search('OL')>-1)) {
-				
-				$('#iconUPS_line#id#').append('<i title="Sur secteur" class="techno techno-plug2 tooltips" style="font-size : 1.1em;color: #00FF00;" ></i>');
-			} 
-			else if ('#ups_line#'.search('DISCHRG')>-1) {
-				
-				$('#iconUPS_line#id#').append('<i title="Sur batterie " class="techno techno-low2 tooltips" style="font-size : 1.1em;color: #FEB95E;" ></i>');
-			} 
-			
-			else {
-			$('#iconUPS_line#id#').append('<i title="Nut: pas de reponses" class="fa fa-times tooltips" style="font-size : 1.1em;color: #FF0000;" ></i>');
-			}
-			
-		</script>        
-</center>
 
-	
+			// Icône statut UPS
+			var upsLine = '#ups_line#';
+			if (upsLine.indexOf('OL') > -1) {
+				$('#iconUPS_line#id#').append('<i title="Sur secteur" class="techno techno-plug2 tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
+			} else if (upsLine.indexOf('DISCHRG') > -1) {
+				$('#iconUPS_line#id#').append('<i title="Sur batterie" class="techno techno-low2 tooltips" style="font-size:1.1em;color:#FEB95E;"></i>');
+			} else {
+				$('#iconUPS_line#id#').append('<i title="NUT : pas de réponse" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
+			}
+		</script>
+	</center>
 
-	<div class="tooltips" data-cmd_id="#Modelid#" style="margin-left:5px;display: #Model_display#;">
-			<span title="UPS Model" style="min-width:15px">Marque:</span>
-			<span>#Model#</span>
+	<div class="tooltips" data-cmd_id="#Modelid#" style="margin-left:5px;display:#Model_display#;">
+		<span title="UPS Model">Marque:</span>
+		<span data-cmd_id="#Modelid#" class="history cursor">#Model#</span>
 	</div>
-	<div class="tooltips" data-cmd_id="#ups_serialid#" style="margin-left:5px;display: #ups_serial_display#;">
-			<span title="Numero de serie" style="width:15px;">N/S:</span>
-			<span id="ups_serial#id#"></span>
+
+	<div class="tooltips" data-cmd_id="#ups_serialid#" style="margin-left:5px;display:#ups_serial_display#;">
+		<span title="Numéro de série">N/S:</span>
+		<span data-cmd_id="#ups_serialid#" class="history cursor">#ups_serial#</span>
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#ups_serial#id#').append('<span data-cmd_id="#ups_serialid#" class="history cursor">#ups_serial#</span>');
-		}
-    </script>
-	<div class="tooltips" data-cmd_id="#ups_lineid#" style="margin-left:5px;display: #ups_line_display#;">
-			<span title="UPS MODE" style="width:15px;">Mode:</span>
-			<span id="ups_line#id#"></span>
+
+	<div class="tooltips" data-cmd_id="#ups_lineid#" style="margin-left:5px;display:#ups_line_display#;">
+		<span title="UPS MODE">Mode:</span>
+		<span data-cmd_id="#ups_lineid#" class="history cursor">#ups_line#</span>
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#ups_line#id#').append('<span data-cmd_id="#ups_lineid#" class="history cursor">#ups_line#</span>');
-		}
-    </script>
-	<div class="tooltips" data-cmd_id="#input_voltid#" style="margin-left:5px;display: #input_volt_display#;">
-			<span title="Tension en entrée" style="width:15px;">Tension en entrée:</span>
-			<span id="input_volt#id#"></span><span> V</span>
+
+	<div class="tooltips" data-cmd_id="#input_voltid#" style="margin-left:5px;display:#input_volt_display#;">
+		<span title="Tension en entrée">Tension en entrée:</span>
+		<span data-cmd_id="#input_voltid#" class="history cursor">#input_volt#</span> V
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#input_volt#id#').append('<span data-cmd_id="#input_voltid#" class="history cursor">#input_volt#</span>');
-		}
-    </script>
-	
-	<div class="tooltips" data-cmd_id="#input_freqid#" style="margin-left:5px;display: #input_freq_display#;">
-			<span title="Fréquence d'entrée (input_freq)" style="width:15px;">Fréquence d'entrée: </span>
-			<span id="input_freq#id#"></span><span> Hz</span>
+
+	<div class="tooltips" data-cmd_id="#input_freqid#" style="margin-left:5px;display:#input_freq_display#;">
+		<span title="Fréquence d'entrée">Fréquence d'entrée:</span>
+		<span data-cmd_id="#input_freqid#" class="history cursor">#input_freq#</span> Hz
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#input_freq#id#').append('<span data-cmd_id="#input_freqid#"class="history cursor">#input_freq#</span>');
-		}
-    </script>
-	<div class="tooltips" data-cmd_id="#output_voltid#" style="margin-left:5px;display: #output_volt_display#;">
-			<span title="Tension de sortie (output_volt)" style="min-width:15px;">Tension de sortie: </span>
-			<span id="output_volt#id#"></span><span> V</span>
+
+	<div class="tooltips" data-cmd_id="#output_voltid#" style="margin-left:5px;display:#output_volt_display#;">
+		<span title="Tension de sortie">Tension de sortie:</span>
+		<span data-cmd_id="#output_voltid#" class="history cursor">#output_volt#</span> V
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#output_volt#id#').append('<span data-cmd_id="#output_voltid#" class="history cursor">#output_volt#</span>');
-		}
-    </script>
-	<div class="tooltips"  data-cmd_id="#output_freqid#" style="margin-left:5px;display: #output_freq_display#;">
-			<span title="Fréquence de sortie (output_freq)" style="width:15px;">Fréquence de sortie: </span>
-			<span id="output_freq#id#"></span><span> Hz</span>
+
+	<div class="tooltips" data-cmd_id="#output_freqid#" style="margin-left:5px;display:#output_freq_display#;">
+		<span title="Fréquence de sortie">Fréquence de sortie:</span>
+		<span data-cmd_id="#output_freqid#" class="history cursor">#output_freq#</span> Hz
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#output_freq#id#').append('<span data-cmd_id="#output_freqid#" class="history cursor">#output_freq#</span>');
-		}
-    </script>
-	
-	<div class="tooltips"  data-cmd_id="#output_powerid#" style="margin-left:5px;display: #output_power_display#;">
-			<span title="Puissance de sortie (output_power)" style="width:15px;">Puissance de sortie: </span>
-			<span id="output_power#id#"></span><span> VA</span>
+
+	<div class="tooltips" data-cmd_id="#output_powerid#" style="margin-left:5px;display:#output_power_display#;">
+		<span title="Puissance de sortie">Puissance de sortie:</span>
+		<span data-cmd_id="#output_powerid#" class="history cursor">#output_power#</span> VA
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#output_power#id#').append('<span data-cmd_id="#output_powerid#" class="history cursor">#output_power#</span>');
-		}
-    </script>
-	
-	<div class="tooltips"  data-cmd_id="#output_real_powerid#" style="margin-left:5px;display: #output_real_power_display#;">
-			<span title="Puissance de sortie (output_real_power)" style="width:15px;">Puissance de sortie réelle: </span>
-			<span id="output_real_power#id#"></span><span> W</span>
+
+	<div class="tooltips" data-cmd_id="#output_real_powerid#" style="margin-left:5px;display:#output_real_power_display#;">
+		<span title="Puissance de sortie réelle">Puissance de sortie réelle:</span>
+		<span data-cmd_id="#output_real_powerid#" class="history cursor">#output_real_power#</span> W
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#output_real_power#id#').append('<span data-cmd_id="#output_real_powerid#" class="history cursor">#output_real_power#</span>');
-		}
-    </script>	
-	
-	<div class="tooltips"  data-cmd_id="#batt_chargeid#" style="margin-left:5px;display: #batt_charge_display#;">
-			<span title="Niveau de charge batterie (batt_charge)" style="width:15px;">Niveau de charge batterie: </span>
-			<span id="batt_charge#id#"></span><span> %</span>
+
+	<div class="tooltips" data-cmd_id="#batt_chargeid#" style="margin-left:5px;display:#batt_charge_display#;">
+		<span title="Niveau de charge batterie">Niveau de charge batterie:</span>
+		<span data-cmd_id="#batt_chargeid#" class="history cursor">#batt_charge#</span> %
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#batt_charge#id#').append('<span data-cmd_id="#batt_chargeid#" class="history cursor">#batt_charge#</span>');
-		}
-    </script>
-	<div class="tooltips"  data-cmd_id="#batt_voltid#" style="margin-left:5px;display: #batt_volt_display#;">
-			<span title="Tension de la batterie (batt_volt)" style="width:15px;">Tension de la batterie: </span>
-			<span id="batt_volt#id#"></span><span> V</span>
+
+	<div class="tooltips" data-cmd_id="#batt_voltid#" style="margin-left:5px;display:#batt_volt_display#;">
+		<span title="Tension de la batterie">Tension de la batterie:</span>
+		<span data-cmd_id="#batt_voltid#" class="history cursor">#batt_volt#</span> V
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#batt_volt#id#').append('<span data-cmd_id="#batt_voltid#" class="history cursor">#batt_volt#</span>');
-		}
-    </script>
-	<div class="tooltips"  data-cmd_id="#batt_tempid#" style="margin-left:5px;display: #batt_temp_display#;">
-			<span title="Température de la batterie (batt_temp)" style="width:15px;">Température de la batterie: </span>
-			<span id="batt_temp#id#"></span><span> °C</span>
+
+	<div class="tooltips" data-cmd_id="#batt_tempid#" style="margin-left:5px;display:#batt_temp_display#;">
+		<span title="Température de la batterie">Température de la batterie:</span>
+		<span data-cmd_id="#batt_tempid#" class="history cursor">#batt_temp#</span> °C
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#batt_temp#id#').append('<span data-cmd_id="#batt_tempid#" class="history cursor">#batt_temp#</span>');
-		}
-    </script>
-	<div class="tooltips"  data-cmd_id="#ups_tempid#" style="margin-left:5px;display: #ups_temp_display#;">
-		<span title="Température de l'onduleur (ups_temp)" style="width:15px;">Température de l'onduleur': </span>
-		<span id="ups_temp#id#"></span><span> °C</span>
+
+	<div class="tooltips" data-cmd_id="#ups_tempid#" style="margin-left:5px;display:#ups_temp_display#;">
+		<span title="Température de l'onduleur">Température de l'onduleur:</span>
+		<span data-cmd_id="#ups_tempid#" class="history cursor">#ups_temp#</span> °C
 	</div>
-	<script>
-	if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-		$('#ups_temp#id#').append('<span data-cmd_id="#ups_tempid#" class="history cursor">#ups_temp#</span>');
-	}
-	</script>
-	<div class="tooltips"  data-cmd_id="#ups_loadid#" style="margin-left:5px;display: #ups_load_display#;">
-			<span title="Charge Onduleur (ups_load)" style="width:15px;">Charge de l'onduleur: </span>
-			<span id="ups_load#id#"></span><span> %</span>
+
+	<div class="tooltips" data-cmd_id="#ups_loadid#" style="margin-left:5px;display:#ups_load_display#;">
+		<span title="Charge de l'onduleur">Charge de l'onduleur:</span>
+		<span data-cmd_id="#ups_loadid#" class="history cursor">#ups_load#</span> %
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#ups_load#id#').append('<span data-cmd_id="#ups_loadid#" class="history cursor">#ups_load#</span>');
-		}
-    </script>
-	<div class="tooltips"  data-cmd_id="#batt_runtimeid#" style="margin-left:5px;display: #batt_runtime_display#;">
-			<span title="Temps restant sur batterie (batt_runtime) en secondes" style="width:15px;">Temps restant sur batterie: </span>
-			<span id="batt_runtime#id#"></span><span> s</span>
+
+	<div class="tooltips" data-cmd_id="#batt_runtimeid#" style="margin-left:5px;display:#batt_runtime_display#;">
+		<span title="Temps restant sur batterie en secondes">Temps restant sur batterie:</span>
+		<span data-cmd_id="#batt_runtimeid#" class="history cursor">#batt_runtime#</span> s
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#batt_runtime#id#').append('<span data-cmd_id="#batt_runtimeid#" class="history cursor">#batt_runtime#</span>');
-		}
-    </script>
-  	<div class="tooltips"  data-cmd_id="#batt_runtime_minid#" style="margin-left:5px;display: #batt_runtime_min_display#;">
-			<span title="Temps restant sur batterie (batt_runtime) en minutes" style="width:15px;">Temps restant sur batterie: </span>
-			<span id="batt_runtime_min#id#"></span><span> min</span>
+
+	<div class="tooltips" data-cmd_id="#batt_runtime_minid#" style="margin-left:5px;display:#batt_runtime_min_display#;">
+		<span title="Temps restant sur batterie en minutes">Temps restant sur batterie:</span>
+		<span data-cmd_id="#batt_runtime_minid#" class="history cursor">#batt_runtime_min#</span> min
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#batt_runtime_min#id#').append('<span data-cmd_id="#batt_runtime_minid#" class="history cursor">#batt_runtime_min#</span>');
-		}
-    </script>
-	<div class="tooltips"  data-cmd_id="#timer_shutdownid#" style="margin-left:5px;display: #timer_shutdown_display#;">
-			<span title="Temps restant avant arrêt (timer_shutdown) en secondes" style="width:15px;">Temps restant avant arrêt: </span>
-			<span id="timer_shutdown#id#"></span><span> s</span>
+
+	<div class="tooltips" data-cmd_id="#timer_shutdownid#" style="margin-left:5px;display:#timer_shutdown_display#;">
+		<span title="Temps restant avant arrêt en secondes">Temps restant avant arrêt:</span>
+		<span data-cmd_id="#timer_shutdownid#" class="history cursor">#timer_shutdown#</span> s
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#timer_shutdown#id#').append('<span data-cmd_id="#timer_shutdownid#" class="history cursor">#timer_shutdown#</span>');
-		}
-    </script>
-  	<div class="tooltips"  data-cmd_id="#timer_shutdown_minid#" style="margin-left:5px;display: #timer_shutdown_min_display#;">
-			<span title="Temps restant avant arrêt (timer_shutdown) en minutes" style="width:15px;">Temps restant avant arrêt: </span>
-			<span id="timer_shutdown_min#id#"></span><span> min</span>
+
+	<div class="tooltips" data-cmd_id="#timer_shutdown_minid#" style="margin-left:5px;display:#timer_shutdown_min_display#;">
+		<span title="Temps restant avant arrêt en minutes">Temps restant avant arrêt:</span>
+		<span data-cmd_id="#timer_shutdown_minid#" class="history cursor">#timer_shutdown_min#</span> min
 	</div>
- 	 <script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#timer_shutdown_min#id#').append('<span data-cmd_id="#timer_shutdown_minid#" class="history cursor">#timer_shutdown_min#</span>');
-		}
-    </script>
-	<div class="tooltips" data-cmd_id="#beeper_statid#" style="margin-left:5px;display: #beeper_stat_display#;">
-			<span title="Beeper Status" style="width:15px;">Beeper: </span>
-			<span id="beeper_stat#id#"></span>
+
+	<div class="tooltips" data-cmd_id="#beeper_statid#" style="margin-left:5px;display:#beeper_stat_display#;">
+		<span title="Beeper Status">Beeper:</span>
+		<span data-cmd_id="#beeper_statid#" class="history cursor">#beeper_stat#</span>
 	</div>
-	<script>
-		if ('#cnx_ssh#' == 'OK' || '#cnx_ssh#' == 'No') {
-			$('#beeper_stat#id#').append('<span data-cmd_id="#beeper_statid#" class="history cursor">#beeper_stat#</span>');
-		}
-    </script>
 </div>
