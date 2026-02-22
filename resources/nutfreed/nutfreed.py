@@ -97,7 +97,7 @@ class NutDevice:
     ups_name: str      # vide = auto-détection via GetUPSList()
     auto_detect: bool
     nut_login: Optional[str] = None    # login upsd (None = pas d'authentification)
-    nut_password: Optional[str] = None # mot de passe upsd (None = pas d'authentification)
+    nut_password: Optional[str] = None  # mot de passe upsd (None = pas d'authentification)
     resolved_ups_name: Optional[str] = None  # nom résolu et mis en cache après la première détection
 
     @classmethod

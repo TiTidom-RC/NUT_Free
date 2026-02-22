@@ -30,142 +30,28 @@ class Nut_free extends eqLogic {
 
 	public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
 
+	// Clés = logicalId ; chaque entrée décrit une variable NUT et la commande Jeedom associée.
 	public static $_infosMap = array(
-		//on crée un tableau contenant la liste des infos a traiter 
-		//chaque info a un sous tableau avec les paramètres 
-		// dans postSave() il faut le parcourir pour créer les cmd
-		// 		array(
-		// 			'name' =>'Nom de l\'équipement info'
-		// 			'logicalId'=>'Id de l\'équipement',
-		// 			'type'=>'info', //on peut ne pas spécifier cette valeur et alors dans la boucle mettre celle par défaut
-		// 			'subType'=>'string', //idem
-		// 			'order' => 1, // ici on pourrait utiliser l'index du tableau et l'ordre serait le même que ce tableau
-		// 			'template_dashboard'=> 'line'
-		//			'cmd' => 'ups.status', //commande à exécuter
-		// 		),
-	
-		array(
-			'name' =>'Marque_Model',
-			'logicalId'=>'Marque',
-			'template_dashboard'=> 'line',
-			'subtype'=>'string',
-			'cmd'=>'device.mfr',
-		),
-		array(
-			'name' =>'Model',
-			'logicalId'=>'Model',
-			'subtype'=>'string',
-			'cmd'=>'device.model',
-		),
-		array(
-			'name' =>'Serial',
-			'logicalId'=>'ups_serial',
-			'cmd' => 'ups.serial',
-			'subtype'=>'string',
-		),
-		array(
-			'name' =>'UPS MODE',
-			'logicalId'=>'ups_line',
-			'cmd' => 'ups.status',
-			'subtype'=>'string',
-		),
-		array(
-			'name' =>'Tension en entrée',
-			'logicalId'=>'input_volt',
-			'cmd'=>'input.voltage',
-			'unite'=>'V',
-		),
-		array(
-			'name' =>'Fréquence en entrée',
-			'logicalId'=>'input_freq',
-			'cmd'=>'input.frequency',
-			'unite'=>'Hz',
-		),
-		array(
-			'name' =>'Tension en sortie',
-			'logicalId'=>'output_volt',
-			'cmd'=>'output.voltage',
-			'unite'=>'V',
-		),
-		array(
-			'name' =>'Fréquence en sortie',
-			'logicalId'=>'output_freq',
-			'cmd'=>'output.frequency',
-			'unite'=>'Hz',
-		),
-		array(
-			'name' =>'Puissance en sortie',
-			'logicalId'=>'output_power',
-			'cmd'=>'ups.power',
-			'unite'=>'VA',
-		),
-		array(
-			'name' =>'Puissance en sortie réel',
-			'logicalId'=>'output_real_power',
-			'cmd'=>'ups.realpower',
-			'unite'=>'W',
-		),
-		array(
-			'name' =>'Niveau de charge batterie',
-			'logicalId'=>'batt_charge',
-			'cmd'=>'battery.charge',
-			'unite'=>'%',
-		),
-		array(
-			'name' =>'Tension de la batterie',
-			'logicalId'=>'batt_volt',
-			'cmd'=>'battery.voltage',
-			'unite'=>'V',
-		),
-		array(
-		  	'name'      => 'Température de la batterie',
-		  	'logicalId' => 'batt_temp',
-		  	'cmd'       => 'battery.temperature',
-		  	'unite'     => '°C',
-		),
-		array(
-			'name'      => 'Température ups',
-			'logicalId' => 'ups_temp',
-			'cmd'       => 'ups.temperature',
-			'unite'     => '°C',
-	  ),
-		array(
-			'name' =>'Charge onduleur',
-			'logicalId'=>'ups_load',
-			'cmd'=>'ups.load',
-			'unite'=>'%',
-		),
-		array(
-			'name' =>'Temps restant sur batterie en s',
-			'logicalId'=>'batt_runtime',
-			'cmd'=>'battery.runtime',
-			'unite'=>'s',
-		),
-     		 array(
-			'name' =>'Temps restant sur batterie en min',
-			'logicalId'=>'batt_runtime_min',
-			'cmd'=>'battery.runtime',
-			'unite'=>'min',
-		),
-		array(
-			'name' =>'Temps restant avant arrêt en s',
-			'logicalId'=>'timer_shutdown',
-			'cmd'=>'ups.timer.shutdown',
-			'unite'=>'s',
-		),
-      		array(
-			'name' =>'Temps restant avant arrêt en min',
-			'logicalId'=>'timer_shutdown_min',
-			'cmd'=>'ups.timer.shutdown',
-			'unite'=>'min',
-		),
-		array(
-			'name' =>'Beeper',
-			'logicalId'=>'beeper_stat',
-			'subtype'=>'string',
-			'cmd'=>'ups.beeper.status',
-		),
-
+		'Marque'             => array('name' => 'Marque_Model',                    'template_dashboard' => 'line', 'subtype' => 'string', 'cmd' => 'device.mfr'),
+		'Model'              => array('name' => 'Model',                                                           'subtype' => 'string', 'cmd' => 'device.model'),
+		'ups_serial'         => array('name' => 'Serial',                                                         'subtype' => 'string', 'cmd' => 'ups.serial'),
+		'ups_line'           => array('name' => 'UPS MODE',                                                       'subtype' => 'string', 'cmd' => 'ups.status'),
+		'input_volt'         => array('name' => 'Tension en entrée',               'unite' => 'V',                                        'cmd' => 'input.voltage'),
+		'input_freq'         => array('name' => 'Fréquence en entrée',             'unite' => 'Hz',                                       'cmd' => 'input.frequency'),
+		'output_volt'        => array('name' => 'Tension en sortie',               'unite' => 'V',                                        'cmd' => 'output.voltage'),
+		'output_freq'        => array('name' => 'Fréquence en sortie',             'unite' => 'Hz',                                       'cmd' => 'output.frequency'),
+		'output_power'       => array('name' => 'Puissance en sortie',             'unite' => 'VA',                                       'cmd' => 'ups.power'),
+		'output_real_power'  => array('name' => 'Puissance en sortie réel',        'unite' => 'W',                                        'cmd' => 'ups.realpower'),
+		'batt_charge'        => array('name' => 'Niveau de charge batterie',       'unite' => '%',                                        'cmd' => 'battery.charge'),
+		'batt_volt'          => array('name' => 'Tension de la batterie',          'unite' => 'V',                                        'cmd' => 'battery.voltage'),
+		'batt_temp'          => array('name' => 'Température de la batterie',      'unite' => '°C',                                       'cmd' => 'battery.temperature'),
+		'ups_temp'           => array('name' => 'Température ups',                 'unite' => '°C',                                       'cmd' => 'ups.temperature'),
+		'ups_load'           => array('name' => 'Charge onduleur',                 'unite' => '%',                                        'cmd' => 'ups.load'),
+		'batt_runtime'       => array('name' => 'Temps restant sur batterie en s', 'unite' => 's',                                        'cmd' => 'battery.runtime'),
+		'batt_runtime_min'   => array('name' => 'Temps restant sur batterie en min','unite' => 'min',                                     'cmd' => 'battery.runtime'),
+		'timer_shutdown'     => array('name' => 'Temps restant avant arrêt en s',  'unite' => 's',                                        'cmd' => 'ups.timer.shutdown'),
+		'timer_shutdown_min' => array('name' => 'Temps restant avant arrêt en min','unite' => 'min',                                     'cmd' => 'ups.timer.shutdown'),
+		'beeper_stat'        => array('name' => 'Beeper',                                                         'subtype' => 'string', 'cmd' => 'ups.beeper.status'),
 	);
 
     public static function cron() {
@@ -351,42 +237,7 @@ class Nut_free extends eqLogic {
 	}
 
 	public function postSave() {
-				
-		$idx = 0;
-		// parcours du tableau $idx contient l'index commençant a 0 et $info contient le sous tableau de  paramètres l'info
-		foreach(self::$_infosMap as $idx=>$info)
-		{
-			$Nut_freeCmd = $this->getCmd(null, $info['logicalId']); // on récupère nos valeurs
-			if (!is_object($Nut_freeCmd)) {
-				$Nut_freeCmd = new Nut_freeCmd();
-				$Nut_freeCmd->setLogicalId( $info['logicalId']);
-				$Nut_freeCmd->setName(__( $info['name'], __FILE__));
-					if(isset($info['unite'])){
-						$Nut_freeCmd->setUnite($info['unite']);
-				}
-				$Nut_freeCmd->setOrder($idx+1); //+1 car $idx commence a 0
-					
-				if(isset($info['template_dashboard'])) //on vérifie si on a spécifié un template, si oui on l'affecte, on peu créer une autre clé $info['template_mobile'] si besoin
-					$Nut_freeCmd->setTemplate('dashboard', $info['template_dashboard']);
-			}
-			
-			$Nut_freeCmd->setType($info['type'] ?? 'info');
-			
-			//$Nut_freeCmd->setSubType($params['subtype'] ?: 'string');
-			if (isset($info['subtype'])) {
-				$Nut_freeCmd->setSubType($info['subtype']);
-			} else {
-				$Nut_freeCmd->setSubType('numeric');
-			}
-			
-			if (isset($info['isVisible'])) {
-				$Nut_freeCmd->setIsVisible($info['isVisible']);
-			}
-			$Nut_freeCmd->setEqLogic_id($this->getId());
-			// sur le même modèle tu peux ajouter d'autres paramètres qu'il faudrait changer par info
-			
-			$Nut_freeCmd->save();
-		}
+		static::createCmd($this);
 
 		// Déclencher une première collecte selon le mode de connexion
 		$mode = $this->getConfiguration('localoudistant', 'local');
@@ -405,6 +256,46 @@ class Nut_free extends eqLogic {
 			));
 		} else {
 			$this->getInfosSSH();
+			$this->refreshWidget();
+		}
+	}
+
+	public function postUpdate() {
+		static::createCmd($this);
+	}
+
+	/**
+	 * Crée ou met à jour toutes les commandes de l'équipement à partir de $_infosMap.
+	 * Idempotent : peut être appelé plusieurs fois sans effet de bord.
+	 */
+	public static function createCmd($eqLogic) {
+		$order = 0;
+		foreach (self::$_infosMap as $logicalId => $info) {
+			$cmd = $eqLogic->getCmd(null, $logicalId);
+			if (!is_object($cmd)) {
+				$cmd = new Nut_freeCmd();
+				$cmd->setLogicalId($logicalId);
+			}
+			$cmd->setEqLogic_id($eqLogic->getId());
+			$cmd->setName(__($info['name'], __FILE__));
+			$cmd->setType($info['type'] ?? 'info');
+			$cmd->setSubType($info['subtype'] ?? 'numeric');
+			$cmd->setOrder($order);
+			if (isset($info['unite'])) {
+				$cmd->setUnite($info['unite']);
+			}
+			if (isset($info['template_dashboard'])) {
+				$cmd->setTemplate('dashboard', $info['template_dashboard']);
+			}
+			if (isset($info['isVisible'])) {
+				$cmd->setIsVisible($info['isVisible']);
+			}
+			try {
+				$cmd->save();
+			} catch (\Throwable $th) {
+				log::add('Nut_free', 'error', '[createCmd] Erreur sauvegarde commande ' . $logicalId . ' : ' . $th->getMessage());
+			}
+			$order++;
 		}
 	}
 
@@ -426,32 +317,12 @@ class Nut_free extends eqLogic {
 			return $replace;
 		}
 		$_version = jeedom::versionAlias($_version);
-		$cmd_html = '';
-		$br_before = 0;
 		
-		foreach(self::$_infosMap as $idx=>$info)
-		{
-			$cmd = $this->getCmd(null,$info['logicalId']);
-			$replace['#'.$info['logicalId'].'#'] = (is_object($cmd)) ? $cmd->execCmd() : '';
-			$replace['#'.$info['logicalId'].'id#'] = is_object($cmd) ? $cmd->getId() : '';
-			$replace['#'.$info['logicalId'].'_display#'] = (is_object($cmd) && $cmd->getIsVisible()) ? '#'.$info['logicalId'].'_display#' : "none";
-		}
-		////////////////////////////////////////////////////////////////////
-		foreach ($this->getCmd(null, null, true) as $cmd) {
-			if (isset($replace['#refresh_id#']) && $cmd->getId() == $replace['#refresh_id#']) {
-				continue;
-			}
-			if ($br_before == 0 && $cmd->getDisplay('forceReturnLineBefore', 0) == 1) {
-				$cmd_html .= '<br/>';
-			}
-			if (isset($replace['#background-color#'])) {
-			$cmd_html .= $cmd->toHtml($_version, '', $replace['#background-color#']);
-			}
-			$br_before = 0;
-			if ($cmd->getDisplay('forceReturnLineAfter', 0) == 1) {
-				$cmd_html .= '<br/>';
-				$br_before = 1;
-			}
+		foreach (self::$_infosMap as $logicalId => $info) {
+			$cmd = $this->getCmd(null, $logicalId);
+			$replace['#' . $logicalId . '#']          = (is_object($cmd)) ? $cmd->execCmd() : '';
+			$replace['#' . $logicalId . 'id#']        = is_object($cmd) ? $cmd->getId() : '';
+			$replace['#' . $logicalId . '_display#']  = (is_object($cmd) && $cmd->getIsVisible()) ? '#' . $logicalId . '_display#' : 'none';
 		}
 		
 		$html = template_replace($replace, getTemplate('core', $_version, 'Nut_free','Nut_free'));
@@ -502,7 +373,7 @@ class Nut_free extends eqLogic {
         $Not_Online = 0;
         $Marque     = '';
 
-        foreach (self::$_infosMap as $idx => $info) {
+        foreach (self::$_infosMap as $logicalId => $info) {
             if (!isset($info['cmd'])) continue;
 
             $result = '';
@@ -517,33 +388,33 @@ class Nut_free extends eqLogic {
             $errorresult = (strpos($result, 'not supported by UPS') !== false) ? $result : '';
 
             // Marque + Modèle concaténés
-            if ($idx === 0) {
+            if ($logicalId === 'Marque') {
                 $Marque = $result;
             }
-            if ($idx === 1) {
+            if ($logicalId === 'Model') {
                 $result = trim($Marque . ' ' . $result);
             }
 
             // Mode ligne / batterie
-            if ($info['logicalId'] === 'ups_line') {
+            if ($logicalId === 'ups_line') {
                 $Not_Online = (stripos($result, 'OL') === false) ? 1 : 0;
                 log::add('Nut_free', 'debug', '[' . $equipement . '] ups_line Not_Online=' . $Not_Online . ' result=' . $result);
             }
 
             // Tension entrée forcée à 0 quand sur batterie
-            if ($info['logicalId'] === 'input_volt' && $Not_Online === 1) {
+            if ($logicalId === 'input_volt' && $Not_Online === 1) {
                 $result = 0;
                 log::add('Nut_free', 'debug', '[' . $equipement . '] input_volt forcé à 0 (mode batterie)');
             }
 
             // Conversion secondes → minutes
-            if ($info['logicalId'] === 'batt_runtime_min' || $info['logicalId'] === 'timer_shutdown_min') {
+            if ($logicalId === 'batt_runtime_min' || $logicalId === 'timer_shutdown_min') {
                 $result = (int) ((float) $result / 60);
             }
 
             if ($errorresult !== '') {
                 log::add('Nut_free', 'debug', '[' . $equipement . '] ' . $info['name'] . ' : non supporté par l\'UPS');
-                $cmd = $this->getCmd(null, $info['logicalId']);
+                $cmd = $this->getCmd(null, $logicalId);
                 if (is_object($cmd)) {
                     $cmd->setIsVisible(0);
                     $cmd->setEqLogic_id($this->getId());
@@ -551,7 +422,7 @@ class Nut_free extends eqLogic {
                 }
             } else {
                 log::add('Nut_free', 'debug', '[' . $equipement . '] ' . $info['name'] . ' : ' . $result);
-                $cmd = $this->getCmd(null, $info['logicalId']);
+                $cmd = $this->getCmd(null, $logicalId);
                 if (is_object($cmd)) {
                     $cmd->event($result);
                 }
@@ -650,6 +521,8 @@ class Nut_free extends eqLogic {
                             'port'        => (int) $eqLogic->getConfiguration('nut_port', 3493),
                             'ups_name'    => $eqLogic->getConfiguration('UPS', ''),
                             'auto_detect' => ($eqLogic->getConfiguration('UPS_auto_select', '0') === '0') ? 1 : 0,
+                            'nut_login'   => $eqLogic->getConfiguration('nut_login', ''),
+                            'nut_password'=> $eqLogic->getConfiguration('nut_password', ''),
                         ),
                     ));
                 }
@@ -717,7 +590,6 @@ class Nut_freeCmd extends cmd {
 
         $eqLogic        = $this->getEqLogic();
         $connexionType  = $eqLogic->getConfiguration('localoudistant', 'local');
-        $ip             = $eqLogic->getConfiguration('addressip', '');
         $ups            = trim($eqLogic->getConfiguration('UPS', ''));
         $sshHostId      = $eqLogic->getConfiguration('SSHHostId', '');
         $logicalId      = $this->getLogicalId();
