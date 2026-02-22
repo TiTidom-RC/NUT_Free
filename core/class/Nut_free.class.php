@@ -262,26 +262,29 @@ class Nut_free extends eqLogic {
 	 */
 	public static function createCmd($eqLogic = null) {
 		$commandsConfig = array(
-			'Marque'             => array('name' => 'Marque_Model',                     'template_dashboard' => 'line', 'subtype' => 'string', 'nutCmd' => 'device.mfr'),
-			'Model'              => array('name' => 'Model',                                                            'subtype' => 'string', 'nutCmd' => 'device.model'),
-			'ups_serial'         => array('name' => 'Serial',                                                          'subtype' => 'string', 'nutCmd' => 'ups.serial'),
-			'ups_line'           => array('name' => 'UPS MODE',                                                        'subtype' => 'string', 'nutCmd' => 'ups.status'),
-			'input_volt'         => array('name' => 'Tension en entrée',                'unite' => 'V',                                        'nutCmd' => 'input.voltage'),
-			'input_freq'         => array('name' => 'Fréquence en entrée',              'unite' => 'Hz',                                       'nutCmd' => 'input.frequency'),
-			'output_volt'        => array('name' => 'Tension en sortie',                'unite' => 'V',                                        'nutCmd' => 'output.voltage'),
-			'output_freq'        => array('name' => 'Fréquence en sortie',              'unite' => 'Hz',                                       'nutCmd' => 'output.frequency'),
-			'output_power'       => array('name' => 'Puissance en sortie',              'unite' => 'VA',                                       'nutCmd' => 'ups.power'),
-			'output_real_power'  => array('name' => 'Puissance en sortie réel',         'unite' => 'W',                                        'nutCmd' => 'ups.realpower'),
-			'batt_charge'        => array('name' => 'Niveau de charge batterie',        'unite' => '%',                                        'nutCmd' => 'battery.charge'),
-			'batt_volt'          => array('name' => 'Tension de la batterie',           'unite' => 'V',                                        'nutCmd' => 'battery.voltage'),
-			'batt_temp'          => array('name' => 'Température de la batterie',       'unite' => '°C',                                       'nutCmd' => 'battery.temperature'),
-			'ups_temp'           => array('name' => 'Température ups',                  'unite' => '°C',                                       'nutCmd' => 'ups.temperature'),
-			'ups_load'           => array('name' => 'Charge onduleur',                  'unite' => '%',                                        'nutCmd' => 'ups.load'),
-			'batt_runtime'       => array('name' => 'Temps restant sur batterie en s',  'unite' => 's',                                        'nutCmd' => 'battery.runtime'),
-			'batt_runtime_min'   => array('name' => 'Temps restant sur batterie en min', 'unite' => 'min',                                     'nutCmd' => 'battery.runtime'),
-			'timer_shutdown'     => array('name' => 'Temps restant avant arrêt en s',   'unite' => 's',                                        'nutCmd' => 'ups.timer.shutdown'),
-			'timer_shutdown_min' => array('name' => 'Temps restant avant arrêt en min',  'unite' => 'min',                                     'nutCmd' => 'ups.timer.shutdown'),
-			'beeper_stat'        => array('name' => 'Beeper',                                                           'subtype' => 'string', 'nutCmd' => 'ups.beeper.status'),
+			// Commande action
+			'refresh'            => array('name' => 'Rafraîchir',                        'type' => 'action', 'subtype' => 'other',   'isVisible' => 0, 'icon' => '<i class="fas fa-sync-alt"></i>'),
+			// Commandes info
+			'Marque'             => array('name' => 'Marque_Model',  'template_dashboard' => 'line', 'subtype' => 'string', 'nutCmd' => 'device.mfr',         'icon' => '<i class="fas fa-tag"></i>'),
+			'Model'              => array('name' => 'Model',                                              'subtype' => 'string', 'nutCmd' => 'device.model',        'icon' => '<i class="fas fa-tag"></i>'),
+			'ups_serial'         => array('name' => 'Serial',                                             'subtype' => 'string', 'nutCmd' => 'ups.serial',          'icon' => '<i class="fas fa-barcode"></i>'),
+			'ups_line'           => array('name' => 'UPS MODE',                                           'subtype' => 'string', 'nutCmd' => 'ups.status',          'icon' => '<i class="fas fa-plug"></i>'),
+			'input_volt'         => array('name' => 'Tension en entrée',         'unite' => 'V',                                'nutCmd' => 'input.voltage',       'icon' => '<i class="fas fa-bolt"></i>'),
+			'input_freq'         => array('name' => 'Fréquence en entrée',       'unite' => 'Hz',                               'nutCmd' => 'input.frequency',     'icon' => '<i class="fas fa-wave-square"></i>'),
+			'output_volt'        => array('name' => 'Tension en sortie',         'unite' => 'V',                                'nutCmd' => 'output.voltage',      'icon' => '<i class="fas fa-bolt"></i>'),
+			'output_freq'        => array('name' => 'Fréquence en sortie',       'unite' => 'Hz',                               'nutCmd' => 'output.frequency',    'icon' => '<i class="fas fa-wave-square"></i>'),
+			'output_power'       => array('name' => 'Puissance en sortie',       'unite' => 'VA',                               'nutCmd' => 'ups.power',           'icon' => '<i class="fas fa-tachometer-alt"></i>'),
+			'output_real_power'  => array('name' => 'Puissance en sortie réelle','unite' => 'W',                                'nutCmd' => 'ups.realpower',       'icon' => '<i class="fas fa-tachometer-alt"></i>'),
+			'batt_charge'        => array('name' => 'Niveau de charge batterie', 'unite' => '%',                                'nutCmd' => 'battery.charge',      'icon' => '<i class="fas fa-battery-three-quarters"></i>'),
+			'batt_volt'          => array('name' => 'Tension de la batterie',    'unite' => 'V',                                'nutCmd' => 'battery.voltage',     'icon' => '<i class="fas fa-bolt"></i>'),
+			'batt_temp'          => array('name' => 'Température de la batterie','unite' => '°C',                               'nutCmd' => 'battery.temperature', 'icon' => '<i class="fas fa-thermometer-half"></i>'),
+			'ups_temp'           => array('name' => 'Température ups',           'unite' => '°C',                               'nutCmd' => 'ups.temperature',     'icon' => '<i class="fas fa-thermometer-half"></i>'),
+			'ups_load'           => array('name' => 'Charge onduleur',           'unite' => '%',                                'nutCmd' => 'ups.load',            'icon' => '<i class="fas fa-chart-bar"></i>'),
+			'batt_runtime'       => array('name' => 'Temps restant batterie s',  'unite' => 's',                                'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock"></i>'),
+			'batt_runtime_min'   => array('name' => 'Temps restant batterie min','unite' => 'min',                              'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock"></i>'),
+			'timer_shutdown'     => array('name' => 'Temps avant arrêt s',       'unite' => 's',                                'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off"></i>'),
+			'timer_shutdown_min' => array('name' => 'Temps avant arrêt min',     'unite' => 'min',                              'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off"></i>'),
+			'beeper_stat'        => array('name' => 'Beeper',                                             'subtype' => 'string', 'nutCmd' => 'ups.beeper.status',   'icon' => '<i class="fas fa-volume-up"></i>'),
 		);
 
 		$targets = is_object($eqLogic) ? array($eqLogic) : eqLogic::byType('Nut_free');
@@ -301,6 +304,9 @@ class Nut_free extends eqLogic {
 				// Toujours écraser l'unité et la variable NUT pour propager les changements lors des mises à jour
 				$cmd->setUnite($info['unite'] ?? '');
 				$cmd->setConfiguration('nutCmd', $info['nutCmd'] ?? '');
+				if (isset($info['icon'])) {
+					$cmd->setDisplay('icon', $info['icon']);
+				}
 				if (isset($info['template_dashboard'])) {
 					$cmd->setTemplate('dashboard', $info['template_dashboard']);
 				}
@@ -338,9 +344,17 @@ class Nut_free extends eqLogic {
 
 		foreach ($this->getCmd() as $cmd) {
 			$logicalId = $cmd->getLogicalId();
-			$replace['#' . $logicalId . '#']         = $cmd->execCmd();
 			$replace['#' . $logicalId . 'id#']       = $cmd->getId();
-			$replace['#' . $logicalId . '_display#'] = $cmd->getIsVisible() ? '#' . $logicalId . '_display#' : 'none';
+			$replace['#' . $logicalId . '_display#'] = $cmd->getIsVisible() ? 'block' : 'none';
+			$replace['#' . $logicalId . '_icon#']    = !empty($cmd->getDisplay('icon')) ? $cmd->getDisplay('icon') : '<i class="fas fa-circle"></i>';
+			$replace['#' . $logicalId . '_collect#'] = $cmd->getCollectDate() ?: '-';
+			$replace['#' . $logicalId . '_value#']   = $cmd->getValueDate() ?: '-';
+			$replace['#' . $logicalId . '_name#']    = $cmd->getName();
+			$replace['#' . $logicalId . '_unite#']   = $cmd->getUnite();
+			// Ne pas appeler execCmd() sur les commandes action (refresh, etc.)
+			if ($cmd->getType() === 'info') {
+				$replace['#' . $logicalId . '#'] = $cmd->execCmd();
+			}
 		}
 
 		$html = template_replace($replace, getTemplate('core', $_version, 'Nut_free', 'Nut_free'));
@@ -350,20 +364,20 @@ class Nut_free extends eqLogic {
     public function getInfosSSH() {
         if (!$this->getIsEnable()) return;
 
-        $equipement      = $this->getName();
+        $equipment      = $this->getName();
         $upsAutoSelect = $this->getConfiguration('upsAutoSelect', '0');
         $ups           = trim($this->getConfiguration('ups', ''));
         $sshHostId     = $this->getConfiguration('SSHHostId', '');
 
-        log::add('Nut_free', 'debug', '--- [' . $equipement . '] Début collecte NUT via SSH ---');
+        log::add('Nut_free', 'debug', '--- [' . $equipment . '] Début collecte NUT via SSH ---');
 
         // --- Vérification SSH-Manager ---
         if (!class_exists('sshmanager')) {
-            log::add('Nut_free', 'error', '[' . $equipement . '] Plugin SSH-Manager introuvable - vérifiez les dépendances');
+            log::add('Nut_free', 'error', '[' . $equipment . '] Plugin SSH-Manager introuvable - vérifiez les dépendances');
             return false;
         }
         if (empty($sshHostId)) {
-            log::add('Nut_free', 'error', '[' . $equipement . '] SSHHostId non configuré');
+            log::add('Nut_free', 'error', '[' . $equipment . '] SSHHostId non configuré');
             return false;
         }
 
@@ -372,17 +386,17 @@ class Nut_free extends eqLogic {
             try {
                 $upsListCmd = "upsc -l 2>&1 | grep -v '^Init SSL'";
                 $ups = trim((string) sshmanager::executeCmds($sshHostId, $upsListCmd));
-                log::add('Nut_free', 'debug', '[' . $equipement . '] UPS auto-détecté : ' . $ups);
+                log::add('Nut_free', 'debug', '[' . $equipment . '] UPS auto-détecté : ' . $ups);
             } catch (\Exception $e) {
-                log::add('Nut_free', 'error', '[' . $equipement . '] Auto-détection UPS échouée : ' . $e->getMessage());
+                log::add('Nut_free', 'error', '[' . $equipment . '] Auto-détection UPS échouée : ' . $e->getMessage());
                 return false;
             }
         } else {
-            log::add('Nut_free', 'debug', '[' . $equipement . '] UPS manuel : ' . $ups);
+            log::add('Nut_free', 'debug', '[' . $equipment . '] UPS manuel : ' . $ups);
         }
 
         if (empty($ups)) {
-            log::add('Nut_free', 'error', '[' . $equipement . '] Impossible de déterminer le nom de l\'UPS');
+            log::add('Nut_free', 'error', '[' . $equipment . '] Impossible de déterminer le nom de l\'UPS');
             return false;
         }
 
@@ -400,7 +414,7 @@ class Nut_free extends eqLogic {
                 $cmdline = 'upsc ' . escapeshellarg($ups) . ' ' . escapeshellarg($nutVar) . " 2>&1 | grep -v '^Init SSL'";
                 $result  = trim((string) sshmanager::executeCmds($sshHostId, $cmdline));
             } catch (\Exception $e) {
-                log::add('Nut_free', 'warning', '[' . $equipement . '] ' . $cmd->getName() . ' erreur : ' . $e->getMessage());
+                log::add('Nut_free', 'warning', '[' . $equipment . '] ' . $cmd->getName() . ' erreur : ' . $e->getMessage());
                 continue;
             }
 
@@ -417,13 +431,13 @@ class Nut_free extends eqLogic {
             // Mode ligne / batterie
             if ($logicalId === 'ups_line') {
                 $Not_Online = (stripos($result, 'OL') === false) ? 1 : 0;
-                log::add('Nut_free', 'debug', '[' . $equipement . '] ups_line Not_Online=' . $Not_Online . ' result=' . $result);
+                log::add('Nut_free', 'debug', '[' . $equipment . '] ups_line Not_Online=' . $Not_Online . ' result=' . $result);
             }
 
             // Tension entrée forcée à 0 quand sur batterie
             if ($logicalId === 'input_volt' && $Not_Online === 1) {
                 $result = 0;
-                log::add('Nut_free', 'debug', '[' . $equipement . '] input_volt forcé à 0 (mode batterie)');
+                log::add('Nut_free', 'debug', '[' . $equipment . '] input_volt forcé à 0 (mode batterie)');
             }
 
             // Conversion secondes → minutes
@@ -432,17 +446,17 @@ class Nut_free extends eqLogic {
             }
 
             if ($errorresult !== '') {
-                log::add('Nut_free', 'debug', '[' . $equipement . '] ' . $cmd->getName() . ' : non supporté par l\'UPS');
+                log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : non supporté par l\'UPS');
                 $cmd->setIsVisible(0);
                 $cmd->setEqLogic_id($this->getId());
                 $cmd->save();
             } else {
-                log::add('Nut_free', 'debug', '[' . $equipement . '] ' . $cmd->getName() . ' : ' . $result);
+                log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : ' . $result);
                 $cmd->event($result);
             }
         }
 
-        log::add('Nut_free', 'debug', '--- [' . $equipement . '] Fin collecte NUT ---');
+        log::add('Nut_free', 'debug', '--- [' . $equipment . '] Fin collecte NUT ---');
     }
 
     public static function deamon_info() {
@@ -602,17 +616,33 @@ class Nut_freeCmd extends cmd {
             throw new Exception(__('Commande non implémentée actuellement', __FILE__));
         }
 
+        /** @var Nut_free $eqLogic */
         $eqLogic        = $this->getEqLogic();
         $connexionType  = $eqLogic->getConfiguration('connexionMode', 'nut');
         $ups            = trim($eqLogic->getConfiguration('ups', ''));
         $sshHostId      = $eqLogic->getConfiguration('SSHHostId', '');
         $logicalId      = $this->getLogicalId();
-        $equipement     = $eqLogic->getName();
+        $equipment     = $eqLogic->getName();
+
+        // Commande spéciale : rafraîchissement des données
+        if ($logicalId === 'refresh') {
+            log::add('Nut_free', 'info', '[' . $equipment . '] Refresh demandé (mode=' . $connexionType . ')');
+            if ($connexionType === 'nut') {
+                Nut_free::sendToDaemon(array(
+                    'action'    => 'query_now',
+                    'eqLogicId' => $eqLogic->getId(),
+                ));
+            } else {
+                $eqLogic->getInfosSSH();
+                $eqLogic->refreshWidget();
+            }
+            return;
+        }
 
         // Construire la commande NUT upscmd
         $nutCmd = 'upscmd ' . escapeshellarg($ups) . ' ' . escapeshellarg($logicalId);
 
-        log::add('Nut_free', 'info', '[' . $equipement . '] Action : ' . $nutCmd . ' (mode=' . $connexionType . ')');
+        log::add('Nut_free', 'info', '[' . $equipment . '] Action : ' . $nutCmd . ' (mode=' . $connexionType . ')');
 
         try {
             if ($connexionType === 'nut') {
@@ -623,16 +653,16 @@ class Nut_freeCmd extends cmd {
                     throw new Exception('Plugin SSH-Manager introuvable - vérifiez les dépendances');
                 }
                 if (empty($sshHostId)) {
-                    throw new Exception('SSHHostId non configuré pour l\'équipement ' . $equipement);
+                    throw new Exception('SSHHostId non configuré pour l\'équipement ' . $equipment);
                 }
                 $result = trim((string) sshmanager::executeCmds($sshHostId, $nutCmd . ' 2>&1'));
             }
         } catch (\Exception $e) {
-            log::add('Nut_free', 'error', '[' . $equipement . '] Erreur action ' . $logicalId . ' : ' . $e->getMessage());
+            log::add('Nut_free', 'error', '[' . $equipment . '] Erreur action ' . $logicalId . ' : ' . $e->getMessage());
             throw $e;
         }
 
-        log::add('Nut_free', 'debug', '[' . $equipement . '] Résultat action ' . $logicalId . ' : ' . $result);
+        log::add('Nut_free', 'debug', '[' . $equipment . '] Résultat action ' . $logicalId . ' : ' . $result);
         return $result;
     }
 }

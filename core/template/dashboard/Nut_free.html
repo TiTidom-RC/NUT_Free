@@ -3,6 +3,11 @@
 
 		<span id="iconUPS_line#id#" style="float: left;width:25px"></span>
 		<span id="iconSSH#id#" style="float: right;width:25px"></span>
+		<span style="float: right;margin-right:4px;">
+			<span data-cmd_id="#refreshid#" data-cmd_type="action" data-cmd_subtype="other" class="cmd cursor" title="Rafraîchir">
+				<i class="fas fa-sync-alt" style="font-size:0.9em;"></i>
+			</span>
+		</span>
 
 		<script>
 			// Icône connexion SSH (mode SSH uniquement)
@@ -29,97 +34,116 @@
 	</center>
 
 	<div class="tooltips" data-cmd_id="#Modelid#" style="margin-left:5px;display:#Model_display#;">
-		<span title="UPS Model">Marque:</span>
+		<span title="Marque / Modèle<br><i>Date de valeur : #Model_value#<br>Date de collecte : #Model_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#Model_icon#</span>
 		<span data-cmd_id="#Modelid#" class="history cursor">#Model#</span>
 	</div>
 
 	<div class="tooltips" data-cmd_id="#ups_serialid#" style="margin-left:5px;display:#ups_serial_display#;">
-		<span title="Numéro de série">N/S:</span>
+		<span title="Numéro de série<br><i>Date de valeur : #ups_serial_value#<br>Date de collecte : #ups_serial_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#ups_serial_icon#</span>
 		<span data-cmd_id="#ups_serialid#" class="history cursor">#ups_serial#</span>
 	</div>
 
 	<div class="tooltips" data-cmd_id="#ups_lineid#" style="margin-left:5px;display:#ups_line_display#;">
-		<span title="UPS MODE">Mode:</span>
+		<span title="Statut UPS (ups.status)<br><i>Date de valeur : #ups_line_value#<br>Date de collecte : #ups_line_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#ups_line_icon#</span>
 		<span data-cmd_id="#ups_lineid#" class="history cursor">#ups_line#</span>
 	</div>
 
 	<div class="tooltips" data-cmd_id="#input_voltid#" style="margin-left:5px;display:#input_volt_display#;">
-		<span title="Tension en entrée">Tension en entrée:</span>
+		<span title="Tension en entrée<br><i>Date de valeur : #input_volt_value#<br>Date de collecte : #input_volt_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#input_volt_icon#</span>
 		<span data-cmd_id="#input_voltid#" class="history cursor">#input_volt#</span> V
 	</div>
 
 	<div class="tooltips" data-cmd_id="#input_freqid#" style="margin-left:5px;display:#input_freq_display#;">
-		<span title="Fréquence d'entrée">Fréquence d'entrée:</span>
+		<span title="Fréquence en entrée<br><i>Date de valeur : #input_freq_value#<br>Date de collecte : #input_freq_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#input_freq_icon#</span>
 		<span data-cmd_id="#input_freqid#" class="history cursor">#input_freq#</span> Hz
 	</div>
 
 	<div class="tooltips" data-cmd_id="#output_voltid#" style="margin-left:5px;display:#output_volt_display#;">
-		<span title="Tension de sortie">Tension de sortie:</span>
+		<span title="Tension en sortie<br><i>Date de valeur : #output_volt_value#<br>Date de collecte : #output_volt_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#output_volt_icon#</span>
 		<span data-cmd_id="#output_voltid#" class="history cursor">#output_volt#</span> V
 	</div>
 
 	<div class="tooltips" data-cmd_id="#output_freqid#" style="margin-left:5px;display:#output_freq_display#;">
-		<span title="Fréquence de sortie">Fréquence de sortie:</span>
+		<span title="Fréquence en sortie<br><i>Date de valeur : #output_freq_value#<br>Date de collecte : #output_freq_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#output_freq_icon#</span>
 		<span data-cmd_id="#output_freqid#" class="history cursor">#output_freq#</span> Hz
 	</div>
 
 	<div class="tooltips" data-cmd_id="#output_powerid#" style="margin-left:5px;display:#output_power_display#;">
-		<span title="Puissance de sortie">Puissance de sortie:</span>
+		<span title="Puissance en sortie<br><i>Date de valeur : #output_power_value#<br>Date de collecte : #output_power_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#output_power_icon#</span>
 		<span data-cmd_id="#output_powerid#" class="history cursor">#output_power#</span> VA
 	</div>
 
 	<div class="tooltips" data-cmd_id="#output_real_powerid#" style="margin-left:5px;display:#output_real_power_display#;">
-		<span title="Puissance de sortie réelle">Puissance de sortie réelle:</span>
+		<span title="Puissance en sortie réelle<br><i>Date de valeur : #output_real_power_value#<br>Date de collecte : #output_real_power_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#output_real_power_icon#</span>
 		<span data-cmd_id="#output_real_powerid#" class="history cursor">#output_real_power#</span> W
 	</div>
 
 	<div class="tooltips" data-cmd_id="#batt_chargeid#" style="margin-left:5px;display:#batt_charge_display#;">
-		<span title="Niveau de charge batterie">Niveau de charge batterie:</span>
+		<span title="Niveau de charge batterie<br><i>Date de valeur : #batt_charge_value#<br>Date de collecte : #batt_charge_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#batt_charge_icon#</span>
 		<span data-cmd_id="#batt_chargeid#" class="history cursor">#batt_charge#</span> %
 	</div>
 
 	<div class="tooltips" data-cmd_id="#batt_voltid#" style="margin-left:5px;display:#batt_volt_display#;">
-		<span title="Tension de la batterie">Tension de la batterie:</span>
+		<span title="Tension de la batterie<br><i>Date de valeur : #batt_volt_value#<br>Date de collecte : #batt_volt_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#batt_volt_icon#</span>
 		<span data-cmd_id="#batt_voltid#" class="history cursor">#batt_volt#</span> V
 	</div>
 
 	<div class="tooltips" data-cmd_id="#batt_tempid#" style="margin-left:5px;display:#batt_temp_display#;">
-		<span title="Température de la batterie">Température de la batterie:</span>
+		<span title="Température de la batterie<br><i>Date de valeur : #batt_temp_value#<br>Date de collecte : #batt_temp_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#batt_temp_icon#</span>
 		<span data-cmd_id="#batt_tempid#" class="history cursor">#batt_temp#</span> °C
 	</div>
 
 	<div class="tooltips" data-cmd_id="#ups_tempid#" style="margin-left:5px;display:#ups_temp_display#;">
-		<span title="Température de l'onduleur">Température de l'onduleur:</span>
+		<span title="Température de l'onduleur<br><i>Date de valeur : #ups_temp_value#<br>Date de collecte : #ups_temp_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#ups_temp_icon#</span>
 		<span data-cmd_id="#ups_tempid#" class="history cursor">#ups_temp#</span> °C
 	</div>
 
 	<div class="tooltips" data-cmd_id="#ups_loadid#" style="margin-left:5px;display:#ups_load_display#;">
-		<span title="Charge de l'onduleur">Charge de l'onduleur:</span>
+		<span title="Charge de l'onduleur<br><i>Date de valeur : #ups_load_value#<br>Date de collecte : #ups_load_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#ups_load_icon#</span>
 		<span data-cmd_id="#ups_loadid#" class="history cursor">#ups_load#</span> %
 	</div>
 
 	<div class="tooltips" data-cmd_id="#batt_runtimeid#" style="margin-left:5px;display:#batt_runtime_display#;">
-		<span title="Temps restant sur batterie en secondes">Temps restant sur batterie:</span>
+		<span title="Temps restant sur batterie<br><i>Date de valeur : #batt_runtime_value#<br>Date de collecte : #batt_runtime_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#batt_runtime_icon#</span>
 		<span data-cmd_id="#batt_runtimeid#" class="history cursor">#batt_runtime#</span> s
 	</div>
 
 	<div class="tooltips" data-cmd_id="#batt_runtime_minid#" style="margin-left:5px;display:#batt_runtime_min_display#;">
-		<span title="Temps restant sur batterie en minutes">Temps restant sur batterie:</span>
+		<span title="Temps restant sur batterie<br><i>Date de valeur : #batt_runtime_min_value#<br>Date de collecte : #batt_runtime_min_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#batt_runtime_min_icon#</span>
 		<span data-cmd_id="#batt_runtime_minid#" class="history cursor">#batt_runtime_min#</span> min
 	</div>
 
 	<div class="tooltips" data-cmd_id="#timer_shutdownid#" style="margin-left:5px;display:#timer_shutdown_display#;">
-		<span title="Temps restant avant arrêt en secondes">Temps restant avant arrêt:</span>
+		<span title="Temps restant avant arrêt<br><i>Date de valeur : #timer_shutdown_value#<br>Date de collecte : #timer_shutdown_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#timer_shutdown_icon#</span>
 		<span data-cmd_id="#timer_shutdownid#" class="history cursor">#timer_shutdown#</span> s
 	</div>
 
 	<div class="tooltips" data-cmd_id="#timer_shutdown_minid#" style="margin-left:5px;display:#timer_shutdown_min_display#;">
-		<span title="Temps restant avant arrêt en minutes">Temps restant avant arrêt:</span>
+		<span title="Temps restant avant arrêt<br><i>Date de valeur : #timer_shutdown_min_value#<br>Date de collecte : #timer_shutdown_min_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#timer_shutdown_min_icon#</span>
 		<span data-cmd_id="#timer_shutdown_minid#" class="history cursor">#timer_shutdown_min#</span> min
 	</div>
 
 	<div class="tooltips" data-cmd_id="#beeper_statid#" style="margin-left:5px;display:#beeper_stat_display#;">
-		<span title="Beeper Status">Beeper:</span>
+		<span title="Beeper<br><i>Date de valeur : #beeper_stat_value#<br>Date de collecte : #beeper_stat_collect#</i>"
+			style="width:15px;max-width:15px;max-height:15px;">#beeper_stat_icon#</span>
 		<span data-cmd_id="#beeper_statid#" class="history cursor">#beeper_stat#</span>
 	</div>
 </div>
