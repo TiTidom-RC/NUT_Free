@@ -286,6 +286,14 @@ class Nut_free extends eqLogic {
 			'timer_shutdown'     => array('name' => 'Minuterie Arrêt',           'unite' => 'sec',                 'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off icon_blue"></i>'),
 			'timer_shutdown_min' => array('name' => 'Minuterie Arrêt (min)',     'unite' => 'min',               'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off icon_green"></i>'),
 			'beeper_status'      => array('name' => 'Beeper',                                                'subtype' => 'string', 'nutCmd' => 'ups.beeper.status',   'icon' => '<i class="fas fa-volume-up icon_green"></i>'),
+			// Commandes actions instcmd
+			'beeper_disable'     => array('name' => 'Désactiver Beeper',    'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'beeper.disable',            'icon' => '<i class="fas fa-volume-mute icon_orange"></i>'),
+			'beeper_enable'      => array('name' => 'Activer Beeper',       'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'beeper.enable',             'icon' => '<i class="fas fa-volume-up icon_green"></i>'),
+			'beeper_mute'        => array('name' => 'Beeper Silencieux',    'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'beeper.mute',              'icon' => '<i class="fas fa-bell-slash icon_blue"></i>'),
+			'test_battery_quick' => array('name' => 'Test Batterie Rapide', 'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'test.battery.start.quick', 'icon' => '<i class="fas fa-vial icon_blue"></i>'),
+			'test_battery_stop'  => array('name' => 'Arrêt Test Batterie',  'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'test.battery.stop',        'icon' => '<i class="fas fa-stop-circle icon_red"></i>'),
+			// Résultat dernière commande instcmd
+			'cmd_result'         => array('name' => 'Retour Commande',       'subtype' => 'string', 'isVisible' => 1,                                                           'icon' => '<i class="fas fa-terminal icon_blue"></i>'),
 		);
 
 		$targets = is_object($eqLogic) ? array($eqLogic) : eqLogic::byType('Nut_free');
@@ -663,31 +671,46 @@ class Nut_freeCmd extends cmd {
             return;
         }
 
-        // Construire la commande NUT upscmd
-        $nutCmd = 'upscmd ' . escapeshellarg($ups) . ' ' . escapeshellarg($logicalId);
+        // Commandes instcmd NUT
+        $nutInstCmd = $this->getConfiguration('nutCmd', '');
+        if (empty($nutInstCmd)) {
+            throw new Exception(__('nutCmd non configuré pour la commande ' . $logicalId, __FILE__));
+        }
 
-        log::add('Nut_free', 'info', '[' . $equipment . '] Action : ' . $nutCmd . ' (mode=' . $connexionType . ')');
+        log::add('Nut_free', 'info', '[' . $equipment . '] instcmd : ' . $nutInstCmd . ' (mode=' . $connexionType . ')');
 
         try {
             if ($connexionType === 'nut') {
-                $fullCmd = $nutCmd . ' 2>&1';
-                $result  = trim((string) exec($fullCmd));
+                // Mode NUT : déléguer au daemon via PyNUT RunUPSCommand (résultat renvoyé en asynchrone via callback)
+                Nut_free::sendToDaemon(array(
+                    'action'     => 'instcmd',
+                    'eqLogicId'  => $eqLogic->getId(),
+                    'nutInstCmd' => $nutInstCmd,
+                ));
             } else {
+                // Mode SSH : exécuter upscmd sur le serveur distant
                 if (!class_exists('sshmanager')) {
                     throw new Exception('Plugin SSH-Manager introuvable - vérifiez les dépendances');
                 }
                 if (empty($sshHostId)) {
                     throw new Exception('SSHHostId non configuré pour l\'équipement ' . $equipment);
                 }
-                $result = trim((string) sshmanager::executeCmds($sshHostId, $nutCmd . ' 2>&1'));
+                if (empty($ups)) {
+                    throw new Exception('Nom UPS non configuré pour l\'équipement ' . $equipment);
+                }
+                $cmd    = 'upscmd ' . escapeshellarg($ups) . ' ' . escapeshellarg($nutInstCmd) . ' 2>&1';
+                $result = trim((string) sshmanager::executeCmds($sshHostId, $cmd));
+                log::add('Nut_free', 'debug', '[' . $equipment . '] Résultat instcmd ' . $nutInstCmd . ' : ' . $result);
+                // Stocker le résultat dans la commande cmd_result
+                $cmdResult = $eqLogic->getCmd('info', 'cmd_result');
+                if (is_object($cmdResult)) {
+                    $cmdResult->event($nutInstCmd . ' → ' . ($result ?: 'OK'));
+                }
             }
         } catch (\Exception $e) {
-            log::add('Nut_free', 'error', '[' . $equipment . '] Erreur action ' . $logicalId . ' : ' . $e->getMessage());
+            log::add('Nut_free', 'error', '[' . $equipment . '] Erreur instcmd ' . $nutInstCmd . ' : ' . $e->getMessage());
             throw $e;
         }
-
-        log::add('Nut_free', 'debug', '[' . $equipment . '] Résultat action ' . $logicalId . ' : ' . $result);
-        return $result;
     }
 }
 

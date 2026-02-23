@@ -270,6 +270,31 @@ def query_device(device: NutDevice) -> Optional[dict]:
     return results
 
 
+def _run_instcmd(device: NutDevice, nutInstCmd: str) -> None:
+    """
+    Exécute une commande instcmd NUT (beeper.disable, test.battery.start.quick, etc.)
+    via PyNUTClient.RunUPSCommand, puis renvoie le résultat à Jeedom via le callback.
+    """
+    upsName = _resolve_ups_name(device)
+    if not upsName:
+        result = f'{nutInstCmd} → ERR: nom UPS non résolu'
+        logging.error('[DAEMON][%s] instcmd %s :: UPS non résolu', device.name, nutInstCmd)
+    else:
+        try:
+            client = PyNUTClient(host=device.host, port=device.port,
+                                 login=device.nutLogin, password=device.nutPassword)
+            client.RunUPSCommand(upsName, nutInstCmd)
+            result = f'{nutInstCmd} → OK'
+            logging.info('[DAEMON][%s] instcmd %s :: OK', device.name, nutInstCmd)
+        except Exception as e:
+            result = f'{nutInstCmd} → ERR: {e}'
+            logging.error('[DAEMON][%s] instcmd %s :: %s', device.name, nutInstCmd, e)
+    # Renvoi du résultat à Jeedom (commande cmd_result) via le callback standard
+    Comm.sendToJeedom.send_change_immediate({
+        'update': {device.eqLogicId: {'cmd_result': result}}
+    })
+
+
 # ---------------------------------------------------------------------------
 
 class Loops:
@@ -334,6 +359,20 @@ class Loops:
                             threading.Thread(target=Loops._poll_device, args=(device,), daemon=True).start()
                         else:
                             logging.warning('[DAEMON][SOCKET] query_now : équipement %s inconnu', eqLogicId)
+
+                    elif action == 'instcmd':
+                        eqLogicId = str(message.get('eqLogicId', ''))
+                        nutInstCmd = str(message.get('nutInstCmd', '')).strip()
+                        with myConfig.devicesLock:
+                            device = myConfig.devices.get(eqLogicId)
+                        if not device:
+                            logging.warning('[DAEMON][SOCKET] instcmd : équipement %s inconnu', eqLogicId)
+                        elif not nutInstCmd:
+                            logging.warning('[DAEMON][SOCKET] instcmd : nutInstCmd vide')
+                        else:
+                            threading.Thread(
+                                target=_run_instcmd, args=(device, nutInstCmd), daemon=True
+                            ).start()
 
                     elif action == 'shutdown':
                         logging.info('[DAEMON] Arrêt demandé via socket')

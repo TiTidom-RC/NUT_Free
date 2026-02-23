@@ -5,6 +5,7 @@
         "Eiwc",
         "Historized",
         "htmlstate",
+        "instcmd",
         "jeecom",
         "nutfreed",
         "pynutclient",
@@ -12,6 +13,7 @@
         "signum",
         "SSHM",
         "sshmanager",
+        "upscmd",
         "upsd",
         "upsmon"
     ]

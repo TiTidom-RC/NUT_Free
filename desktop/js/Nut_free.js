@@ -31,7 +31,9 @@ const VISIBLE_COMMANDS = Object.freeze([
   'input_voltage', 'input_freq', 'output_voltage', 'output_freq',
   'output_power', 'output_real_power', 'batt_charge', 'batt_voltage',
   'batt_temp', 'ups_temp', 'ups_load', 'batt_runtime', 'batt_runtime_min',
-  'timer_shutdown', 'timer_shutdown_min', 'beeper_status'
+  'timer_shutdown', 'timer_shutdown_min', 'beeper_status',
+  'beeper_disable', 'beeper_enable', 'beeper_mute', 'test_battery_quick', 'test_battery_stop',
+  'cmd_result'
 ])
 
 /**
