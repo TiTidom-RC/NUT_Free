@@ -242,7 +242,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                         <textarea id="ta_list_instcmds" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_instcmds" rows="10" readonly placeholder="{{Cliquer sur Rafraîchir pour charger la liste...}}"></textarea>
                                     </div>
                                 </div>
-                                <div class="form-group">
+                                <div class="form-group" style="margin-top:20px;">
                                     <label class="col-sm-4 control-label">{{Variables RW}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Variables NUT accessibles en lecture/écriture (ex: battery.runtime.low, ups.delay.shutdown)}}"></i></sup>
                                         <a id="bt_refresh_rwvars" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a>
