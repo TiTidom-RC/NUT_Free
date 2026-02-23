@@ -63,7 +63,7 @@ try {
         }
 
         $label = ($type === 'instcmds') ? 'commandes instcmd' : 'variables RW';
-        ajax::success(__('Requête envoyée au démon. Sauvegardez et rafraîchissez la page dans quelques instants pour voir les ' . $label . '.', __FILE__));
+        ajax::success(__('Requête envoyée au démon. Rafraîchissez la page dans quelques instants pour voir les ' . $label . '.', __FILE__));
     }
 
     throw new Exception(__('Action inconnue : ' . init('action'), __FILE__));
