@@ -108,11 +108,13 @@ document.addEventListener('click', function(event) {
  * Affichage conditionnel des sections NUT/SSH et UPS manuel
  */
 function updateConnexionModeDisplay(value) {
-  const nutEl = document.querySelector('.nut-protocol')
-  const sshEl = document.querySelector('.nut-ssh')
-  const isSsh = value === 'ssh'
-  if (nutEl) nutEl.style.display = isSsh ? 'none' : ''
-  if (sshEl) sshEl.style.display = isSsh ? '' : 'none'
+  const nutEl  = document.querySelector('.nut-protocol')
+  const sshEl  = document.querySelector('.nut-ssh')
+  const listEl = document.querySelector('.nut-list-section')
+  const isSsh  = value === 'ssh'
+  if (nutEl)  nutEl.style.display  = isSsh ? 'none' : ''
+  if (sshEl)  sshEl.style.display  = isSsh ? '' : 'none'
+  if (listEl) listEl.style.display = isSsh ? 'none' : ''
 }
 
 function updateUpsManualDisplay(value) {
@@ -136,6 +138,36 @@ function printEqLogic(_eqLogic) {
     selConnexionMode.removeEventListener('change', handleConnexionModeChange)
     selConnexionMode.addEventListener('change', handleConnexionModeChange)
   }
+
+  // Boutons Rafraîchir — fire & message
+  const refreshList = (type) => {
+    const eqLogicId = _eqLogic.id
+    if (!eqLogicId) {
+      jeedomUtils.showAlert({ message: '{{Sauvegardez d\'abord l\'équipement avant de lancer une requête}}', level: 'warning' })
+      return
+    }
+    fetch('plugins/Nut_free/core/ajax/Nut_free.ajax.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'getNutList', eqLogicId, type })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.state === 'ok') {
+        jeedomUtils.showAlert({ message: data.result, level: 'info' })
+      } else {
+        jeedomUtils.showAlert({ message: data.result ?? '{{Erreur inconnue}}', level: 'danger' })
+      }
+    })
+    .catch(err => {
+      jeedomUtils.showAlert({ message: String(err), level: 'danger' })
+    })
+  }
+
+  const btInstcmds = document.querySelector('#bt_refresh_instcmds')
+  const btRwvars   = document.querySelector('#bt_refresh_rwvars')
+  if (btInstcmds) btInstcmds.onclick = () => refreshList('instcmds')
+  if (btRwvars)   btRwvars.onclick   = () => refreshList('rwvars')
 
   // Auto-détection UPS — lire depuis le DOM, forcer le défaut si vide
   const selUpsAuto = document.querySelector('#selUpsAuto')

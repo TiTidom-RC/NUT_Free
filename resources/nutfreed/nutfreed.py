@@ -295,6 +295,54 @@ def _run_instcmd(device: NutDevice, nutInstCmd: str) -> None:
     })
 
 
+def _run_list_query(device: NutDevice, queryType: str) -> None:
+    """
+    Interroge le serveur NUT pour obtenir la liste des instcmds ou des RW vars.
+    queryType : 'instcmds' | 'rwvars'
+    Renvoie le résultat à Jeedom via le callback (clé list_result).
+    """
+    upsName = _resolve_ups_name(device)
+    if not upsName:
+        result = 'ERR: nom UPS non résolu'
+        logging.error('[DAEMON][%s] list_query/%s :: UPS non résolu', device.name, queryType)
+    else:
+        try:
+            client = PyNUTClient(host=device.host, port=device.port,
+                                 login=device.nutLogin, password=device.nutPassword)
+            if queryType == 'instcmds':
+                raw = client.GetUPSCommands(upsName)
+                # Normalisation bytes → str
+                cmds = sorted(
+                    k.decode('ascii') if isinstance(k, bytes) else str(k)
+                    for k in raw.keys()
+                ) if raw else []
+                result = '\n'.join(cmds) if cmds else '(aucune commande disponible)'
+            elif queryType == 'rwvars':
+                raw = client.GetRWVars(upsName)
+                # Normalisation bytes → str
+                lines = sorted(
+                    f"{k.decode('ascii') if isinstance(k, bytes) else k} = "
+                    f"{v.decode('ascii') if isinstance(v, bytes) else v}"
+                    for k, v in raw.items()
+                ) if raw else []
+                result = '\n'.join(lines) if lines else '(aucune variable RW disponible)'
+            else:
+                result = f'ERR: queryType inconnu : {queryType}'
+            logging.info('[DAEMON][%s] list_query/%s :: %d entrée(s)',
+                         device.name, queryType, len(raw) if raw else 0)
+        except Exception as e:
+            result = f'ERR: {e}'
+            logging.error('[DAEMON][%s] list_query/%s :: %s', device.name, queryType, e)
+    Comm.sendToJeedom.send_change_immediate({
+        'list_result': {
+            device.eqLogicId: {
+                'type': queryType,
+                'result': result,
+            }
+        }
+    })
+
+
 # ---------------------------------------------------------------------------
 
 class Loops:
@@ -372,6 +420,20 @@ class Loops:
                         else:
                             threading.Thread(
                                 target=_run_instcmd, args=(device, nutInstCmd), daemon=True
+                            ).start()
+
+                    elif action == 'list_query':
+                        eqLogicId = str(message.get('eqLogicId', ''))
+                        queryType = str(message.get('queryType', '')).strip()
+                        with myConfig.devicesLock:
+                            device = myConfig.devices.get(eqLogicId)
+                        if not device:
+                            logging.warning('[DAEMON][SOCKET] list_query : équipement %s inconnu', eqLogicId)
+                        elif queryType not in ('instcmds', 'rwvars'):
+                            logging.warning('[DAEMON][SOCKET] list_query : queryType invalide : %s', queryType)
+                        else:
+                            threading.Thread(
+                                target=_run_list_query, args=(device, queryType), daemon=True
                             ).start()
 
                     elif action == 'shutdown':

@@ -228,6 +228,32 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             </fieldset>
                         </form>
                     </div>
+                    <!-- Colonne droite : Données UPS disponibles (mode NUT direct uniquement) -->
+                    <div class="col-sm-6 nut-list-section">
+                        <form class="form-horizontal">
+                            <fieldset>
+                                <legend><i class="fas fa-list"></i> {{Données UPS disponibles}}</legend>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{{Commandes instcmd}}
+                                        <sup><i class="fas fa-question-circle tooltips" title="{{Liste des commandes instcmd supportées par l'UPS (ex: beeper.disable, test.battery.start.quick)}}"></i></sup>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <textarea id="ta_list_instcmds" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_instcmds" rows="10" readonly placeholder="{{Cliquer sur Rafraîchir pour charger la liste...}}"></textarea>
+                                        <a id="bt_refresh_instcmds" class="btn btn-sm btn-default" style="margin-top:5px;"><i class="fas fa-sync"></i> {{Rafraîchir}}</a>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{{Variables RW}}
+                                        <sup><i class="fas fa-question-circle tooltips" title="{{Variables NUT accessibles en lecture/écriture (ex: battery.runtime.low, ups.delay.shutdown)}}"></i></sup>
+                                    </label>
+                                    <div class="col-sm-8">
+                                        <textarea id="ta_list_rwvars" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_rwvars" rows="10" readonly placeholder="{{Cliquer sur Rafraîchir pour charger la liste...}}"></textarea>
+                                        <a id="bt_refresh_rwvars" class="btn btn-sm btn-default" style="margin-top:5px;"><i class="fas fa-sync"></i> {{Rafraîchir}}</a>
+                                    </div>
+                                </div>
+                            </fieldset>
+                        </form>
+                    </div>
                 </div>
             </div><!-- /.tab-pane #eqlogictab -->
 

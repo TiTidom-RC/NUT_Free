@@ -1,0 +1,73 @@
+<?php
+
+/* This file is part of Jeedom.
+ *
+ * Jeedom is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Jeedom is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Point d'entrée AJAX pour le plugin NUT Free.
+ * Requiert une session admin active (authentification par cookie de session Jeedom).
+ */
+
+try {
+    require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
+    include_file('core', 'authentification', 'php');
+
+    if (!isConnect('admin')) {
+        throw new Exception(__('401 - Accès non autorisé', __FILE__));
+    }
+
+    ajax::init(array());
+
+    // ----- Action : Interroger le démon pour la liste instcmds ou RW vars d'un UPS -----
+    if (init('action') == 'getNutList') {
+        $eqLogicId = init('eqLogicId');
+        $type      = init('type'); // 'instcmds' ou 'rwvars'
+
+        if (empty($eqLogicId)) {
+            throw new Exception(__('ID équipement manquant', __FILE__));
+        }
+        if (!in_array($type, array('instcmds', 'rwvars'))) {
+            throw new Exception(__('Type invalide (attendu : instcmds ou rwvars)', __FILE__));
+        }
+
+        /** @var Nut_free $eqLogic */
+        $eqLogic = Nut_free::byId($eqLogicId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Équipement introuvable', __FILE__));
+        }
+        if ($eqLogic->getConfiguration('connexionMode', 'nut') !== 'nut') {
+            throw new Exception(__('Fonctionnalité disponible uniquement en mode NUT direct', __FILE__));
+        }
+
+        $sent = Nut_free::sendToDaemon(array(
+            'action'    => 'list_query',
+            'eqLogicId' => $eqLogicId,
+            'queryType' => $type,
+        ));
+
+        if (!$sent) {
+            throw new Exception(__('Impossible de contacter le démon (vérifiez qu\'il est démarré)', __FILE__));
+        }
+
+        $label = ($type === 'instcmds') ? 'commandes instcmd' : 'variables RW';
+        ajax::success(__('Requête envoyée au démon. Sauvegardez et rafraîchissez la page dans quelques instants pour voir les ' . $label . '.', __FILE__));
+    }
+
+    throw new Exception(__('Action inconnue : ' . init('action'), __FILE__));
+
+} catch (Exception $e) {
+    ajax::error(displayException($e), $e->getCode());
+}

@@ -86,6 +86,32 @@ try {
         exit;
     }
 
+    // ----- Traitement des résultats list_query (instcmds / rwvars) -----
+    if (isset($data['list_result'])) {
+        foreach ($data['list_result'] as $eqLogicId => $payload) {
+            if (!is_array($payload)) {
+                continue;
+            }
+            /** @var Nut_free $eqLogic */
+            $eqLogic = Nut_free::byId($eqLogicId);
+            if (!is_object($eqLogic)) {
+                log::add('Nut_free', 'warning', '[CALLBACK] list_result :: eqLogic introuvable : ' . $eqLogicId);
+                continue;
+            }
+            $type = $payload['type'] ?? '';
+            if (!in_array($type, array('instcmds', 'rwvars'))) {
+                log::add('Nut_free', 'warning', '[CALLBACK] list_result :: type invalide : ' . $type);
+                continue;
+            }
+            $configKey = 'list_' . $type;
+            $eqLogic->setConfiguration($configKey, $payload['result'] ?? '');
+            $eqLogic->save();
+            log::add('Nut_free', 'info', '[CALLBACK] ' . $configKey . ' mis à jour pour eqLogic ' . $eqLogicId);
+        }
+        echo json_encode(['status' => 'ok']);
+        exit;
+    }
+
     // ----- Traitement des mises à jour -----
     if (!isset($data['update']) || !is_array($data['update'])) {
         log::add('Nut_free', 'debug', '[CALLBACK] Aucune clé "update" dans le payload');
