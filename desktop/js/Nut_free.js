@@ -139,8 +139,9 @@ function printEqLogic(_eqLogic) {
     selConnexionMode.addEventListener('change', handleConnexionModeChange)
   }
 
-  // Boutons Rafraîchir — fire & message
-  const refreshList = (type) => {
+  // Bouton Rafraîchir — une seule requête qui déclenche les deux listes
+  const btAll = document.querySelector('#bt_refresh_nut_lists')
+  if (btAll) btAll.onclick = () => {
     const eqLogicId = _eqLogic.id
     if (!eqLogicId) {
       jeedomUtils.showAlert({ message: '{{Sauvegardez d\'abord l\'équipement avant de lancer une requête}}', level: 'warning' })
@@ -149,12 +150,12 @@ function printEqLogic(_eqLogic) {
     fetch('plugins/Nut_free/core/ajax/Nut_free.ajax.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ action: 'getNutList', eqLogicId, type })
+      body: new URLSearchParams({ action: 'getNutList', eqLogicId })
     })
     .then(r => r.json())
     .then(data => {
       if (data.state === 'ok') {
-        jeedomUtils.showAlert({ message: data.result, level: 'info' })
+        jeedomUtils.showAlert({ message: '{{Requêtes envoyées au démon. Rafraîchissez la page dans quelques instants pour voir les résultats.}}', level: 'info' })
       } else {
         jeedomUtils.showAlert({ message: data.result ?? '{{Erreur inconnue}}', level: 'danger' })
       }
@@ -163,11 +164,6 @@ function printEqLogic(_eqLogic) {
       jeedomUtils.showAlert({ message: String(err), level: 'danger' })
     })
   }
-
-  const btInstcmds = document.querySelector('#bt_refresh_instcmds')
-  const btRwvars   = document.querySelector('#bt_refresh_rwvars')
-  if (btInstcmds) btInstcmds.onclick = () => refreshList('instcmds')
-  if (btRwvars)   btRwvars.onclick   = () => refreshList('rwvars')
 
   // Auto-détection UPS — lire depuis le DOM, forcer le défaut si vide
   const selUpsAuto = document.querySelector('#selUpsAuto')

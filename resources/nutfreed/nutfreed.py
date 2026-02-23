@@ -424,17 +424,15 @@ class Loops:
 
                     elif action == 'list_query':
                         eqLogicId = str(message.get('eqLogicId', ''))
-                        queryType = str(message.get('queryType', '')).strip()
                         with myConfig.devicesLock:
                             device = myConfig.devices.get(eqLogicId)
                         if not device:
                             logging.warning('[DAEMON][SOCKET] list_query : équipement %s inconnu', eqLogicId)
-                        elif queryType not in ('instcmds', 'rwvars'):
-                            logging.warning('[DAEMON][SOCKET] list_query : queryType invalide : %s', queryType)
                         else:
-                            threading.Thread(
-                                target=_run_list_query, args=(device, queryType), daemon=True
-                            ).start()
+                            for qtype in ('instcmds', 'rwvars'):
+                                threading.Thread(
+                                    target=_run_list_query, args=(device, qtype), daemon=True
+                                ).start()
 
                     elif action == 'shutdown':
                         logging.info('[DAEMON] Arrêt demandé via socket')

@@ -31,16 +31,12 @@ try {
 
     ajax::init(array());
 
-    // ----- Action : Interroger le démon pour la liste instcmds ou RW vars d'un UPS -----
+    // ----- Action : Interroger le démon pour les instcmds et RW vars d'un UPS -----
     if (init('action') == 'getNutList') {
         $eqLogicId = init('eqLogicId');
-        $type      = init('type'); // 'instcmds' ou 'rwvars'
 
         if (empty($eqLogicId)) {
             throw new Exception(__('ID équipement manquant', __FILE__));
-        }
-        if (!in_array($type, array('instcmds', 'rwvars'))) {
-            throw new Exception(__('Type invalide (attendu : instcmds ou rwvars)', __FILE__));
         }
 
         /** @var Nut_free $eqLogic */
@@ -55,15 +51,13 @@ try {
         $sent = Nut_free::sendToDaemon(array(
             'action'    => 'list_query',
             'eqLogicId' => $eqLogicId,
-            'queryType' => $type,
         ));
 
         if (!$sent) {
             throw new Exception(__('Impossible de contacter le démon (vérifiez qu\'il est démarré)', __FILE__));
         }
 
-        $label = ($type === 'instcmds') ? 'commandes instcmd' : 'variables RW';
-        ajax::success(__('Requête envoyée au démon. Rafraîchissez la page dans quelques instants pour voir les ' . $label . '.', __FILE__));
+        ajax::success(__('ok', __FILE__));
     }
 
     throw new Exception(__('Action inconnue : ' . init('action'), __FILE__));

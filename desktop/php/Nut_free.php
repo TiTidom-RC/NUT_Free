@@ -232,9 +232,9 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     <div class="col-sm-6 nut-list-section">
                         <form class="form-horizontal">
                             <fieldset>
-                                <legend><i class="fas fa-list"></i> {{Données UPS disponibles}}</legend>
+                                <legend><i class="fas fa-list"></i> {{Données UPS disponibles}} <a id="bt_refresh_nut_lists" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a></legend>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label"><a id="bt_refresh_instcmds" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a> {{Commandes instcmd}}
+                                    <label class="col-sm-4 control-label">{{Commandes instcmd}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Liste des commandes instcmd supportées par l'UPS (ex: beeper.disable, test.battery.start.quick)}}"></i></sup>
                                     </label>
                                     <div class="col-sm-8">
@@ -242,7 +242,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     </div>
                                 </div>
                                 <div class="form-group" style="margin-top:20px;">
-                                    <label class="col-sm-4 control-label"><a id="bt_refresh_rwvars" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a> {{Variables RW}}
+                                    <label class="col-sm-4 control-label">{{Variables RW}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Variables NUT accessibles en lecture/écriture (ex: battery.runtime.low, ups.delay.shutdown)}}"></i></sup>
                                     </label>
                                     <div class="col-sm-8">
