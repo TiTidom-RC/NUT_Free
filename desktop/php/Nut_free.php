@@ -234,18 +234,16 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             <fieldset>
                                 <legend><i class="fas fa-list"></i> {{Données UPS disponibles}}</legend>
                                 <div class="form-group">
-                                    <label class="col-sm-4 control-label">{{Commandes instcmd}}
+                                    <label class="col-sm-4 control-label"><a id="bt_refresh_instcmds" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a> {{Commandes instcmd}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Liste des commandes instcmd supportées par l'UPS (ex: beeper.disable, test.battery.start.quick)}}"></i></sup>
-                                        <a id="bt_refresh_instcmds" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a>
                                     </label>
                                     <div class="col-sm-8">
                                         <textarea id="ta_list_instcmds" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_instcmds" rows="10" readonly placeholder="{{Cliquer sur Rafraîchir pour charger la liste...}}"></textarea>
                                     </div>
                                 </div>
                                 <div class="form-group" style="margin-top:20px;">
-                                    <label class="col-sm-4 control-label">{{Variables RW}}
+                                    <label class="col-sm-4 control-label"><a id="bt_refresh_rwvars" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a> {{Variables RW}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Variables NUT accessibles en lecture/écriture (ex: battery.runtime.low, ups.delay.shutdown)}}"></i></sup>
-                                        <a id="bt_refresh_rwvars" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a>
                                     </label>
                                     <div class="col-sm-8">
                                         <textarea id="ta_list_rwvars" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_rwvars" rows="10" readonly placeholder="{{Cliquer sur Rafraîchir pour charger la liste...}}"></textarea>
