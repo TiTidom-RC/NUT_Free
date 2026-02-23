@@ -377,7 +377,8 @@ class Nut_free extends eqLogic {
 			$replace['#' . $logicalId . '_collect#'] = $cmd->getCollectDate() ?: '-';
 			$replace['#' . $logicalId . '_value#']   = $cmd->getValueDate() ?: '-';
 			$replace['#' . $logicalId . '_name#']    = $cmd->getName();
-			$replace['#' . $logicalId . '_unite#']   = $cmd->getUnite();
+			$replace['#' . $logicalId . '_unite#']       = $cmd->getUnite();
+			$replace['#' . $logicalId . '_historized#'] = $cmd->getIsHistorized() ? 'history cursor' : '';
 			// Ne pas appeler execCmd() sur les commandes action (refresh, etc.)
 			if ($cmd->getType() === 'info') {
 				$replace['#' . $logicalId . '#'] = $cmd->execCmd();
