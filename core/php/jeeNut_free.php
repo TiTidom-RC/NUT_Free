@@ -1,0 +1,174 @@
+<?php
+
+/* This file is part of Jeedom.
+ *
+ * Jeedom is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Jeedom is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * Callback HTTP reçu par le daemon Python nutfreed.
+ * Format attendu (POST JSON) :
+ * {
+ *   "apikey": "...",
+ *   "update": {
+ *     "<eqLogicId>": {
+ *       "<logicalId>": "<value>",
+ *       ...
+ *     },
+ *     ...
+ *   }
+ * }
+ */
+
+try {
+    require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
+
+    // ----- Vérification API key -----
+    $apikey = init('apikey');
+    if (empty($apikey)) {
+        $body = file_get_contents('php://input');
+        if (!empty($body)) {
+            $payload = json_decode($body, true);
+            if (isset($payload['apikey'])) {
+                $apikey = $payload['apikey'];
+            }
+        }
+    }
+
+    if (!jeedom::apiAccess($apikey, 'Nut_free')) {
+        log::add('Nut_free', 'error', '[CALLBACK] Accès refusé : clé API invalide');
+        http_response_code(403);
+        echo json_encode(['status' => 'error', 'message' => 'Access denied']);
+        exit;
+    }
+
+    // ----- Lecture du corps POST -----
+    $body = file_get_contents('php://input');
+    if (empty($body)) {
+        log::add('Nut_free', 'warning', '[CALLBACK] Corps POST vide');
+        echo json_encode(['status' => 'ok']);
+        exit;
+    }
+
+    $data = json_decode($body, true);
+    if (!is_array($data)) {
+        log::add('Nut_free', 'error', '[CALLBACK] JSON invalide :: ' . $body);
+        http_response_code(400);
+        echo json_encode(['status' => 'error', 'message' => 'Invalid JSON']);
+        exit;
+    }
+
+    // ----- Traitement des événements daemon -----
+    if (isset($data['daemonStarted'])) {
+        if ($data['daemonStarted'] == '1') {
+            log::add('Nut_free', 'info', '[CALLBACK] Démon démarré');
+        }
+        echo json_encode(['status' => 'ok']);
+        exit;
+    }
+
+    if (isset($data['heartbeat'])) {
+        if ($data['heartbeat'] == '1') {
+            log::add('Nut_free', 'info', '[CALLBACK] Démon :: Heartbeat (' . config::byKey('heartbeatFrequency', 'Nut_free', 600) . 's)');
+        }
+        echo json_encode(['status' => 'ok']);
+        exit;
+    }
+
+    // ----- Traitement des résultats list_query (instcmds / rwvars) -----
+    if (isset($data['list_result'])) {
+        foreach ($data['list_result'] as $eqLogicId => $payload) {
+            if (!is_array($payload)) {
+                continue;
+            }
+            /** @var Nut_free $eqLogic */
+            $eqLogic = Nut_free::byId($eqLogicId);
+            if (!is_object($eqLogic)) {
+                log::add('Nut_free', 'warning', '[CALLBACK] list_result :: eqLogic introuvable : ' . $eqLogicId);
+                continue;
+            }
+            $type = $payload['type'] ?? '';
+            if (!in_array($type, array('instcmds', 'rwvars'))) {
+                log::add('Nut_free', 'warning', '[CALLBACK] list_result :: type invalide : ' . $type);
+                continue;
+            }
+            $configKey = 'list_' . $type;
+            $eqLogic->setConfiguration($configKey, $payload['result'] ?? '');
+            $eqLogic->save();
+            log::add('Nut_free', 'info', '[CALLBACK] ' . $configKey . ' mis à jour pour eqLogic ' . $eqLogicId);
+        }
+        echo json_encode(['status' => 'ok']);
+        exit;
+    }
+
+    // ----- Traitement des mises à jour -----
+    if (!isset($data['update']) || !is_array($data['update'])) {
+        log::add('Nut_free', 'debug', '[CALLBACK] Aucune clé "update" dans le payload');
+        echo json_encode(['status' => 'ok']);
+        exit;
+    }
+
+    foreach ($data['update'] as $eqLogicId => $values) {
+        if (!is_array($values)) {
+            continue;
+        }
+
+        /** @var Nut_free $eqLogic */
+        $eqLogic = Nut_free::byId($eqLogicId);
+        if (!is_object($eqLogic)) {
+            log::add('Nut_free', 'warning', '[CALLBACK] eqLogic introuvable : ' . $eqLogicId);
+            continue;
+        }
+
+        if (!$eqLogic->getIsEnable()) {
+            log::add('Nut_free', 'debug', '[CALLBACK] eqLogic désactivé, ignore : ' . $eqLogicId);
+            continue;
+        }
+
+        $updated = false;
+        foreach ($values as $logicalId => $value) {
+            $cmd = $eqLogic->getCmd('info', $logicalId);
+            if (!is_object($cmd)) {
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] Commande introuvable : ' . $logicalId);
+                continue;
+            }
+            $cmd->event($value);
+            $updated = true;
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] ' . $logicalId . ' = ' . $value);
+        }
+
+        // Dériver ups_status_label depuis ups_status
+        if (isset($values['ups_status'])) {
+            $cmdFr = $eqLogic->getCmd('info', 'ups_status_label');
+            if (is_object($cmdFr)) {
+                $translated = Nut_free::translateUpsStatus($values['ups_status']);
+                $cmdFr->event($translated);
+                $updated = true;
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] ups_status_label = ' . $translated);
+            }
+        }
+
+        if ($updated) {
+            $eqLogic->refreshWidget();
+            log::add('Nut_free', 'info', '[CALLBACK] Widget rafraîchi pour eqLogic ' . $eqLogicId);
+        }
+    }
+
+    echo json_encode(['status' => 'ok']);
+
+} catch (Exception $e) {
+    log::add('Nut_free', 'error', '[CALLBACK] Exception :: ' . $e->getMessage());
+    http_response_code(500);
+    echo json_encode(['status' => 'error', 'message' => $e->getMessage()]);
+}
