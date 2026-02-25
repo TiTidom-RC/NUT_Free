@@ -690,13 +690,13 @@ class Nut_freeCmd extends cmd {
             } else {
                 // Mode SSH : exécuter upscmd sur le serveur distant
                 if (!class_exists('sshmanager')) {
-                    throw new Exception('Plugin SSH-Manager introuvable - vérifiez les dépendances');
+                    throw new Exception(__('Plugin SSH-Manager introuvable - vérifiez les dépendances', __FILE__));
                 }
                 if (empty($sshHostId)) {
-                    throw new Exception('SSHHostId non configuré pour l\'équipement ' . $equipment);
+                    throw new Exception(__('SSHHostId non configuré pour l\'équipement ', __FILE__) . $equipment);
                 }
                 if (empty($ups)) {
-                    throw new Exception('Nom UPS non configuré pour l\'équipement ' . $equipment);
+                    throw new Exception(__('Nom UPS non configuré pour l\'équipement ', __FILE__) . $equipment);
                 }
                 $cmd    = 'upscmd ' . escapeshellarg($ups) . ' ' . escapeshellarg($nutInstCmd) . ' 2>&1';
                 $result = trim((string) sshmanager::executeCmds($sshHostId, $cmd));
