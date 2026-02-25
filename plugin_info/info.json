@@ -1,24 +1,24 @@
 {
-	"id" : "Nut_free",
-	"name" : "NUT Free",
-	"pluginVersion" : "2.0.1",
-	"description" : {
-		"fr_FR" : "Plugin de supervision d'onduleur (UPS) via le protocole NUT (Network UPS Tools). Connexion en TCP (NUT) ou SSH (via SSH-Manager). Supervise le statut, les tensions et fréquences entrée/sortie, la charge, l'autonomie, les températures batterie/onduleur, la puissance et le minuteur d'arrêt. Génère automatiquement toutes les commandes et supporte les actions de test batterie.",
-		"en_US" : "UPS monitoring plugin via the NUT (Network UPS Tools) protocol. Connects via TCP (NUT) or SSH (via SSH-Manager). Monitors status, input/output voltages and frequencies, load, runtime, battery/UPS temperatures, power and shutdown timer. Automatically generates all commands and supports battery test actions.",
-		"es_ES" : "Plugin de supervisión de SAI (UPS) mediante el protocolo NUT (Network UPS Tools). Conexión por TCP (NUT) o SSH (a través de SSH-Manager). Supervisa el estado, las tensiones y frecuencias de entrada/salida, la carga, la autonomía, las temperaturas de batería/SAI, la potencia y el temporizador de apagado. Genera automáticamente todos los comandos y soporta acciones de prueba de batería.",
-		"de_DE" : "Plugin zur Überwachung von USV-Geräten (UPS) über das NUT-Protokoll (Network UPS Tools). Verbindung über TCP (NUT) oder SSH (via SSH-Manager). Überwacht Status, Ein-/Ausgangsspannungen und -frequenzen, Last, Laufzeit, Batterie-/USV-Temperaturen, Leistung und Abschalttimer. Erstellt automatisch alle Befehle und unterstützt Batterietest-Aktionen.",
-		"it_IT" : "Plugin per il monitoraggio dei gruppi di continuità (UPS) tramite il protocollo NUT (Network UPS Tools). Connessione via TCP (NUT) o SSH (tramite SSH-Manager). Monitora lo stato, le tensioni e le frequenze di ingresso/uscita, il carico, l'autonomia, le temperature batteria/UPS, la potenza e il timer di spegnimento. Genera automaticamente tutti i comandi e supporta le azioni di test della batteria.",
-		"pt_PT" : "Plugin de monitorização de UPS (grupos de continuidade) através do protocolo NUT (Network UPS Tools). Ligação por TCP (NUT) ou SSH (via SSH-Manager). Monitoriza o estado, as tensões e frequências de entrada/saída, a carga, a autonomia, as temperaturas da bateria/UPS, a potência e o temporizador de desligamento. Gera automaticamente todos os comandos e suporta ações de teste de bateria."
+	"id": "Nut_free",
+	"name": "NUT Free",
+	"pluginVersion": "2.0.1",
+	"description": {
+		"fr_FR": "Plugin de supervision d'onduleur (UPS) via le protocole NUT (Network UPS Tools). Connexion en TCP (NUT) ou SSH (via SSH-Manager). Supervise le statut, les tensions et fréquences entrée/sortie, la charge, l'autonomie, les températures batterie/onduleur, la puissance et le minuteur d'arrêt. Génère automatiquement toutes les commandes et supporte les actions de test batterie.",
+		"en_US": "UPS monitoring plugin via the NUT (Network UPS Tools) protocol. Connects via TCP (NUT) or SSH (via SSH-Manager). Monitors status, input/output voltages and frequencies, load, runtime, battery/UPS temperatures, power and shutdown timer. Automatically generates all commands and supports battery test actions.",
+		"es_ES": "Plugin de supervisión de SAI (UPS) mediante el protocolo NUT (Network UPS Tools). Conexión por TCP (NUT) o SSH (a través de SSH-Manager). Supervisa el estado, las tensiones y frecuencias de entrada/salida, la carga, la autonomía, las temperaturas de batería/SAI, la potencia y el temporizador de apagado. Genera automáticamente todos los comandos y soporta acciones de prueba de batería.",
+		"de_DE": "Plugin zur Überwachung von USV-Geräten (UPS) über das NUT-Protokoll (Network UPS Tools). Verbindung über TCP (NUT) oder SSH (via SSH-Manager). Überwacht Status, Ein-/Ausgangsspannungen und -frequenzen, Last, Laufzeit, Batterie-/USV-Temperaturen, Leistung und Abschalttimer. Erstellt automatisch alle Befehle und unterstützt Batterietest-Aktionen.",
+		"it_IT": "Plugin per il monitoraggio dei gruppi di continuità (UPS) tramite il protocollo NUT (Network UPS Tools). Connessione via TCP (NUT) o SSH (tramite SSH-Manager). Monitora lo stato, le tensioni e le frequenze di ingresso/uscita, il carico, l'autonomia, le temperature batteria/UPS, la potenza e il timer di spegnimento. Genera automaticamente tutti i comandi e supporta le azioni di test della batteria.",
+		"pt_PT": "Plugin de monitorização de UPS (grupos de continuidade) através do protocolo NUT (Network UPS Tools). Ligação por TCP (NUT) ou SSH (via SSH-Manager). Monitoriza o estado, as tensões e frequências de entrada/saída, a carga, a autonomia, as temperaturas da bateria/UPS, a potência e o temporizador de desligamento. Gera automaticamente todos os comandos e suporta ações de teste de bateria."
 	},
-	"utilization" : "Créez un équipement, sélectionnez le mode de connexion TCP (NUT) ou SSH (via SSH-Manager), renseignez l'adresse IP du serveur NUT et le nom de l'onduleur (ou laissez l'auto-détection active), puis sauvegardez pour générer automatiquement toutes les commandes de supervision (statut, tensions/fréquences, charge et autonomie batterie, températures, puissance, minuteur d'arrêt, test batterie).",
-	"licence" : "AGPL",
-	"author" : "TiTidom",
-	"require" : "4.4.2",
-	"hasDependency" : true,
-	"hasOwnDeamon" : true,
-	"maxDependancyInstallTime" : 60,
-	"category" : "monitoring",
-	"language" : [
+	"utilization": "Créez un équipement, sélectionnez le mode de connexion TCP (NUT) ou SSH (via SSH-Manager), renseignez l'adresse IP du serveur NUT et le nom de l'onduleur (ou laissez l'auto-détection active), puis sauvegardez pour générer automatiquement toutes les commandes de supervision (statut, tensions/fréquences, charge et autonomie batterie, températures, puissance, minuteur d'arrêt, test batterie).",
+	"licence": "AGPL",
+	"author": "TiTidom",
+	"require": "4.4.2",
+	"hasDependency": true,
+	"hasOwnDeamon": true,
+	"maxDependancyInstallTime": 60,
+	"category": "monitoring",
+	"language": [
 		"de_DE",
 		"en_US",
 		"es_ES",
@@ -26,7 +26,7 @@
 		"it_IT",
 		"pt_PT"
 	],
-	"compatibility" : [
+	"compatibility": [
 		"smart",
 		"rpi",
 		"docker",
@@ -34,15 +34,15 @@
 		"v4",
 		"atlas"
 	],
-	"os" : {
-		"min" : 11
+	"os": {
+		"min": 11
 	},
-	"link" : {
-		"forum" : "https://community.jeedom.com/tag/plugin-Nut_free",
-		"video" : ""
+	"link": {
+		"forum": "https://community.jeedom.com/tag/plugin-Nut_free",
+		"video": ""
 	},
-	"changelog" : "https://titidom-rc.github.io/Documentation/#language#/Nut_free/changelog",
-	"documentation" : "https://titidom-rc.github.io/Documentation/#language#/Nut_free/index",
-	"changelog_beta" : "https://titidom-rc.github.io/Documentation/#language#/Nut_free/beta/changelog",
-	"documentation_beta" : "https://titidom-rc.github.io/Documentation/#language#/Nut_free/beta/index"
+	"changelog": "https://titidom-rc.github.io/Documentation/#language#/Nut_free/changelog",
+	"documentation": "https://titidom-rc.github.io/Documentation/#language#/Nut_free/index",
+	"changelog_beta": "https://titidom-rc.github.io/Documentation/#language#/Nut_free/beta/changelog",
+	"documentation_beta": "https://titidom-rc.github.io/Documentation/#language#/Nut_free/beta/index"
 }
