@@ -267,7 +267,7 @@ class Nut_free extends eqLogic {
 			// Action virtuelle
 			'refresh'              => array('name' => 'Rafraîchir',                    'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'icon' => '<i class="fas fa-sync-alt icon_green"></i>'),
 			// Identification (quasi-universelles)
-			'device_mfr'           => array('name' => 'Fabricant',               'template_dashboard' => 'line', 'subtype' => 'string', 'nutCmd' => 'device.mfr',      'icon' => '<i class="fas fa-tag icon_green"></i>'),
+			'device_mfr'           => array('name' => 'Fabricant',               'subtype' => 'string', 'nutCmd' => 'device.mfr',      'icon' => '<i class="fas fa-tag icon_green"></i>'),
 			'device_model'         => array('name' => 'Modèle',                                                   'subtype' => 'string', 'nutCmd' => 'device.model',    'icon' => '<i class="fas fa-tag icon_blue"></i>'),
 			'ups_serial'           => array('name' => 'Numéro Série',                                           'subtype' => 'string', 'nutCmd' => 'ups.serial',      'icon' => '<i class="fas fa-barcode icon_green"></i>'),
 			// Statut (seule var obligatoire NUT)
@@ -306,8 +306,9 @@ class Nut_free extends eqLogic {
 					if (isset($info['icon'])) {
 						$cmd->setDisplay('icon', $info['icon']);
 					}
-					if (isset($info['template_dashboard'])) {
-						$cmd->setTemplate('dashboard', $info['template_dashboard']);
+					if (($info['type'] ?? 'info') === 'info') {
+						$cmd->setTemplate('dashboard', 'Nut_free');
+						$cmd->setTemplate('mobile', 'Nut_free');
 					}
 					if (isset($info['isVisible'])) {
 						$cmd->setIsVisible($info['isVisible']);
@@ -361,6 +362,8 @@ class Nut_free extends eqLogic {
 				$cmd->setName($name);
 				$cmd->setUnite($unit);
 				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($icon, ENT_QUOTES) . '"></i>');
+				$cmd->setTemplate('dashboard', 'Nut_free');
+				$cmd->setTemplate('mobile', 'Nut_free');
 				$cmd->setIsVisible(0);
 				$cmd->setOrder($order);
 			}
@@ -563,8 +566,8 @@ class Nut_free extends eqLogic {
 				$replace['#' . $logicalId . '#'] = $rawValue;
 			}
 
-			// Corps : le bouton refresh est géré dans le header ; les commandes masquées sont ignorées
-			if ($logicalId === 'refresh' || !$cmd->getIsVisible()) {
+			// Corps : refresh géré dans le header ; commandes masquées et actions ignorées
+			if ($logicalId === 'refresh' || !$cmd->getIsVisible() || $cmd->getType() !== 'info') {
 				continue;
 			}
 
@@ -593,15 +596,6 @@ class Nut_free extends eqLogic {
 				}
 				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
 
-			} elseif ($cmd->getType() === 'action') {
-				$subtype   = htmlspecialchars($cmd->getSubType(), ENT_QUOTES);
-				$cmdsHtml .= '<div class="tooltips nut-action-row" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
-				$cmdsHtml .= '<span style="width:15px;max-width:15px;max-height:15px;">' . $icon . '</span>';
-				$cmdsHtml .= ' <span class="nut-label">' . $nameEnc . '</span>';
-				$cmdsHtml .= ' <a class="nut-action-btn btn btn-default btn-xs cursor"';
-				$cmdsHtml .= ' data-cmd_id="' . $cmdId . '" data-subtype="' . $subtype . '">';
-				$cmdsHtml .= '<i class="fas fa-play"></i></a>';
-				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
 			}
 		}
 
