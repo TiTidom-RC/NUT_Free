@@ -19,20 +19,14 @@
 
 // Commandes pouvant être historisées
 const HISTORIZED_COMMANDS = Object.freeze([
-  'input_voltage', 'input_freq', 'output_voltage', 'output_freq',
-  'output_power', 'output_real_power', 'batt_charge', 'batt_voltage',
-  'batt_temp', 'ups_temp', 'ups_load', 'batt_runtime', 'batt_runtime_min',
-  'timer_shutdown', 'timer_shutdown_min'
+  'ups_load', 'battery_charge', 'battery_runtime', 'battery_runtime_min'
 ])
 
-// Commandes affichables (visibles par défaut)
+// Commandes affichables (visibles par défaut) — set statique uniquement
 const VISIBLE_COMMANDS = Object.freeze([
-  'device_mfr', 'device_model', 'ups_serial', 'ups_status', 'ups_status_label',
-  'input_voltage', 'input_freq', 'output_voltage', 'output_freq',
-  'output_power', 'output_real_power', 'batt_charge', 'batt_voltage',
-  'batt_temp', 'ups_temp', 'ups_load', 'batt_runtime', 'batt_runtime_min',
-  'timer_shutdown', 'timer_shutdown_min', 'beeper_status',
-  'beeper_disable', 'beeper_enable', 'beeper_mute', 'test_battery_quick', 'test_battery_stop',
+  'device_mfr', 'device_model', 'ups_serial',
+  'ups_status', 'ups_status_label',
+  'ups_load', 'battery_charge', 'battery_runtime', 'battery_runtime_min',
   'cmd_result'
 ])
 
@@ -44,14 +38,23 @@ function addCmdToTable(_cmd) {
   if (!isset(_cmd.configuration)) _cmd.configuration = {}
 
   const logicalId       = init(_cmd.logicalId)
-  const canBeVisible    = VISIBLE_COMMANDS.includes(logicalId)
-  const canBeHistorized = HISTORIZED_COMMANDS.includes(logicalId)
+  const isDynamic       = String(_cmd.configuration?.isDynamic ?? '0') === '1'
+  const isDynInfo       = isDynamic && init(_cmd.type) === 'info'
+  const isDynRw         = isDynamic && init(_cmd.type) === 'action' && !!init(_cmd.configuration?.nutRwVar)
+
+  const canBeVisible    = VISIBLE_COMMANDS.includes(logicalId) || isDynamic
+  const canBeHistorized = HISTORIZED_COMMANDS.includes(logicalId) || (isDynInfo && init(_cmd.subType) === 'numeric')
+
+  // Clé NUT à afficher : nutRwVar pour les actions RW, sinon nutCmd
+  const nutKey = isDynRw
+    ? init(_cmd.configuration?.nutRwVar)
+    : init(_cmd.configuration?.nutCmd)
 
   const testButtons = is_numeric(_cmd.id)
     ? '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fas fa-cogs"></i></a> <a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fas fa-rss"></i> {{Tester}}</a>'
     : ''
 
-  const rowHtml = `<td class="hidden-xs"><span class="cmdAttr" data-l1key="id"></span></td>
+  const rowHtml = `<td class="hidden-xs"><span class="cmdAttr${isDynamic ? ' text-primary' : ''}" data-l1key="id"></span></td>
     <td>
       <div class="input-group">
         <input class="cmdAttr form-control input-sm" data-l1key="type" value="info" style="display:none">
@@ -61,7 +64,7 @@ function addCmdToTable(_cmd) {
       </div>
     </td>
     <td>
-      <span class="cmdAttr label label-default" data-l1key="configuration" data-l2key="nutCmd" style="font-size:0.9em;display:inline-block;"></span>
+      ${nutKey ? `<span class="label label-default" style="font-size:0.9em;display:inline-block;">${jeedom.escapeHtml ? jeedom.escapeHtml(nutKey) : nutKey}</span>` : ''}
     </td>
     <td>
       ${canBeHistorized ? '<input class="cmdAttr form-control input-sm" data-l1key="unite" placeholder="{{Unité}}" style="width:80px;">' : ''}
@@ -139,23 +142,80 @@ function printEqLogic(_eqLogic) {
     selConnexionMode.addEventListener('change', handleConnexionModeChange)
   }
 
-  // Bouton Rafraîchir — une seule requête qui déclenche les deux listes
-  const btAll = document.querySelector('#bt_refresh_nut_lists')
-  if (btAll) btAll.onclick = () => {
+  // Bouton Synchroniser les Commandes
+  const btDiscover = document.querySelector('#bt_discover_all')
+  if (btDiscover) btDiscover.onclick = () => {
     const eqLogicId = _eqLogic.id
     if (!eqLogicId) {
-      jeedomUtils.showAlert({ message: '{{Sauvegardez d\'abord l\'équipement avant de lancer une requête}}', level: 'warning' })
+      jeedomUtils.showAlert({ message: '{{Sauvegardez d\'abord l\'équipement avant de lancer la synchronisation}}', level: 'warning' })
       return
     }
+    const statusBlock = document.querySelector('#discover_status_block')
+    const statusMsg   = document.querySelector('#discover_status_msg')
+    if (statusBlock) statusBlock.style.display = ''
+    if (statusMsg) {
+      statusMsg.className = 'label label-info'
+      statusMsg.textContent = '{{Synchronisation en cours...}}'
+    }
+    btDiscover.setAttribute('disabled', 'disabled')
+
     fetch('plugins/Nut_free/core/ajax/Nut_free.ajax.php', {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ action: 'getNutList', eqLogicId })
+      body: new URLSearchParams({ action: 'discoverAll', eqLogicId })
+    })
+    .then(r => r.json())
+    .then(data => {
+      btDiscover.removeAttribute('disabled')
+      if (data.state === 'ok') {
+        if (statusMsg) {
+          statusMsg.className = 'label label-success'
+          statusMsg.textContent = '{{Requête envoyée. Les commandes seront créées dans quelques instants — rechargez la page des commandes pour les voir.}}'
+        }
+        jeedomUtils.showAlert({ message: '{{Synchronisation lancée. Rechargez la page des commandes dans quelques instants.}}', level: 'success' })
+      } else {
+        const errMsg = data.result ?? '{{Erreur inconnue}}'
+        if (statusMsg) {
+          statusMsg.className = 'label label-danger'
+          statusMsg.textContent = errMsg
+        }
+        jeedomUtils.showAlert({ message: errMsg, level: 'danger' })
+      }
+    })
+    .catch(err => {
+      btDiscover.removeAttribute('disabled')
+      const errMsg = String(err)
+      if (statusMsg) {
+        statusMsg.className = 'label label-danger'
+        statusMsg.textContent = errMsg
+      }
+      jeedomUtils.showAlert({ message: errMsg, level: 'danger' })
+    })
+  }
+
+  // Bouton Supprimer Commandes Synchronisées
+  const btClean = document.querySelector('#bt_clean_dynamic_cmds')
+  if (btClean) btClean.onclick = () => {
+    const eqLogicId = _eqLogic.id
+    if (!eqLogicId) {
+      jeedomUtils.showAlert({ message: '{{Sauvegardez d\'abord l\'équipement}}', level: 'warning' })
+      return
+    }
+    if (!confirm('{{Supprimer toutes les commandes dynamiques de cet équipement ?}}')) return
+
+    fetch('plugins/Nut_free/core/ajax/Nut_free.ajax.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'cleanDynamicCmds', eqLogicId })
     })
     .then(r => r.json())
     .then(data => {
       if (data.state === 'ok') {
-        jeedomUtils.showAlert({ message: '{{Requêtes envoyées au démon. Rafraîchissez la page dans quelques instants pour voir les résultats.}}', level: 'info' })
+        const statusBlock = document.querySelector('#discover_status_block')
+        const statusMsg   = document.querySelector('#discover_status_msg')
+        if (statusBlock) statusBlock.style.display = 'none'
+        if (statusMsg)   statusMsg.textContent = ''
+        jeedomUtils.showAlert({ message: '{{Commandes dynamiques supprimées. Rechargez la page des commandes.}}', level: 'success' })
       } else {
         jeedomUtils.showAlert({ message: data.result ?? '{{Erreur inconnue}}', level: 'danger' })
       }
@@ -163,6 +223,29 @@ function printEqLogic(_eqLogic) {
     .catch(err => {
       jeedomUtils.showAlert({ message: String(err), level: 'danger' })
     })
+  }
+
+  // Restauration du statut de synchronisation (affiché si déjà lancé)
+  const discoverStatus = _eqLogic.configuration?.discover_status ?? ''
+  const discoverError  = _eqLogic.configuration?.discover_error  ?? ''
+  const statusBlock = document.querySelector('#discover_status_block')
+  const statusMsg   = document.querySelector('#discover_status_msg')
+  if (statusBlock && statusMsg) {
+    if (discoverStatus === 'done') {
+      statusBlock.style.display = ''
+      statusMsg.className = 'label label-success'
+      statusMsg.textContent = '{{Dernière Synchronisation : terminée avec succès}}'
+    } else if (discoverStatus === 'error') {
+      statusBlock.style.display = ''
+      statusMsg.className = 'label label-danger'
+      statusMsg.textContent = '{{Erreur lors de la dernière synchronisation}}' + (discoverError ? ' : ' + discoverError : '')
+    } else if (discoverStatus === 'pending') {
+      statusBlock.style.display = ''
+      statusMsg.className = 'label label-warning'
+      statusMsg.textContent = '{{Synchronisation en cours ou en attente...}}'
+    } else {
+      statusBlock.style.display = 'none'
+    }
   }
 
   // Auto-détection UPS — lire depuis le DOM, forcer le défaut si vide

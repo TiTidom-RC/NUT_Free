@@ -31,8 +31,8 @@ try {
 
     ajax::init(array());
 
-    // ----- Action : Interroger le démon pour les instcmds et RW vars d'un UPS -----
-    if (init('action') == 'getNutList') {
+    // ----- Action : Synchroniser toutes les commandes dynamiques avec l'onduleur -----
+    if (init('action') == 'discoverAll') {
         $eqLogicId = init('eqLogicId');
 
         if (empty($eqLogicId)) {
@@ -48,8 +48,12 @@ try {
             throw new Exception(__('Fonctionnalité disponible uniquement en mode NUT direct', __FILE__));
         }
 
+        $eqLogic->setConfiguration('discover_status', 'pending');
+        $eqLogic->setConfiguration('discover_error', '');
+        $eqLogic->save();
+
         $sent = Nut_free::sendToDaemon(array(
-            'action'    => 'list_query',
+            'action'    => 'discover_all',
             'eqLogicId' => $eqLogicId,
         ));
 
@@ -60,8 +64,27 @@ try {
         ajax::success(__('ok', __FILE__));
     }
 
+    // ----- Action : Supprimer toutes les commandes dynamiques d'un équipement -----
+    if (init('action') == 'cleanDynamicCmds') {
+        $eqLogicId = init('eqLogicId');
+
+        if (empty($eqLogicId)) {
+            throw new Exception(__('ID équipement manquant', __FILE__));
+        }
+
+        /** @var Nut_free $eqLogic */
+        $eqLogic = Nut_free::byId($eqLogicId);
+        if (!is_object($eqLogic)) {
+            throw new Exception(__('Équipement introuvable', __FILE__));
+        }
+
+        $eqLogic->cleanDynamicCmds();
+
+        ajax::success(__('ok', __FILE__));
+    }
+
     throw new Exception(__('Action inconnue : ' . init('action'), __FILE__));
 
-} catch (Exception $e) {
-    ajax::error(displayException($e), $e->getCode());
+} catch (\Throwable $e) {
+    ajax::error($e->getMessage(), $e->getCode());
 }

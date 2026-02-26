@@ -1,0 +1,38 @@
+<div class="cmd cmd-widget #history#"
+	data-type="info"
+	data-subtype="numeric"
+	data-template="ups"
+	data-cmd_id="#id#"
+	data-cmd_uid="#uid#"
+	data-version="#version#"
+	data-eqLogic_id="#eqLogic_id#">
+
+	<style>
+		.cmd[data-cmd_uid="#uid#"] .cmdName {
+			opacity: 0.6;
+			font-style: italic;
+		}
+		.cmd[data-cmd_uid="#uid#"] .cmdName::after {
+			content: ' :';
+		}
+		.cmd[data-cmd_uid="#uid#"] .value {
+			font-weight: 500;
+		}
+	</style>
+
+	<div class="content-xs">
+		<span class="cmdName #hide_name#">#name_display#</span> <span class="value">#state#</span> <strong class="unit">#unite#</strong>
+	</div>
+
+	<script>
+		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
+			if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+				cmd.querySelector('.content-xs').setAttribute('title', '#name#<br>{{Date de valeur}}: ' + _options.valueDate + '<br>{{Date de collecte}}: ' + _options.collectDate);
+				cmd.querySelector('.value').innerHTML = _options.display_value;
+				cmd.querySelector('.unit').innerHTML = _options.unit;
+			}
+		});
+		jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }]);
+	</script>
+
+</div>

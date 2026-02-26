@@ -164,11 +164,11 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label class="col-sm-4 control-label">{{Login NUT}}
-                                            <sup><i class="fas fa-question-circle tooltips" title="{{Login d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)}}"></i></sup>
+                                        <label class="col-sm-4 control-label">{{Utilisateur NUT}}
+                                            <sup><i class="fas fa-question-circle tooltips" title="{{Utilisateur d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)}}"></i></sup>
                                         </label>
                                         <div class="col-sm-6">
-                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutLogin" type="text" placeholder="{{optionnel}}" autocomplete="off"/>
+                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutUsername" type="text" placeholder="{{optionnel}}" autocomplete="off"/>
                                         </div>
                                     </div>
                                     <div class="form-group">
@@ -230,20 +230,24 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     </div>
                     <!-- Colonne droite : Données UPS disponibles (mode NUT direct uniquement) -->
                     <div class="col-sm-6 nut-list-section">
+                        <!-- Synchronisation dynamique des commandes -->
                         <fieldset>
-                            <legend><i class="fas fa-list"></i> {{Données UPS disponibles}} <a id="bt_refresh_nut_lists" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a></legend>
-                            <div class="row">
-                                <div class="col-xs-6">
-                                    <label>{{Commandes instcmd}}
-                                        <sup><i class="fas fa-question-circle tooltips" title="{{Liste des commandes instcmd supportées par l'UPS (ex: beeper.disable, test.battery.start.quick)}}"></i></sup>
-                                    </label>
-                                    <textarea id="ta_list_instcmds" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_instcmds" rows="12" readonly placeholder="{{Cliquer sur Rafraîchir...}}"></textarea>
+                            <legend><i class="fas fa-sync-alt icon_blue"></i> {{Synchronisation des Commandes}}</legend>
+                            <p class="help-block">{{Crée automatiquement les commandes Jeedom correspondant aux variables et commandes supportées par votre onduleur.}}</p>
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <a id="bt_discover_all" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-sync-alt"></i> {{Synchroniser les Commandes}}
+                                    </a>
+                                    &nbsp;
+                                    <a id="bt_clean_dynamic_cmds" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash-alt"></i> {{Supprimer Commandes Synchronisées}}
+                                    </a>
                                 </div>
-                                <div class="col-xs-6">
-                                    <label>{{Variables RW}}
-                                        <sup><i class="fas fa-question-circle tooltips" title="{{Variables NUT accessibles en lecture/écriture (ex: battery.runtime.low, ups.delay.shutdown)}}"></i></sup>
-                                    </label>
-                                    <textarea id="ta_list_rwvars" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_rwvars" rows="12" readonly placeholder="{{Cliquer sur Rafraîchir...}}"></textarea>
+                            </div>
+                            <div id="discover_status_block" class="form-group" style="display:none;">
+                                <div class="col-sm-12">
+                                    <span id="discover_status_msg" class="label label-info"></span>
                                 </div>
                             </div>
                         </fieldset>
@@ -281,7 +285,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 if (class_exists('sshmanager')) {
     include_file('desktop', 'sshmanager.helper', 'js', 'sshmanager');
 } else {
-    log::add('Nut_free', 'error', '[PLUGIN] Impossible de charger sshmanager.helper.js (vérifiez les dépendances)');
+    log::add('Nut_free', 'debug', '[PLUGIN] sshmanager.helper.js non chargé (plugin SSH-Manager non installé)');
 }
 ?>
 <?php include_file('desktop', 'Nut_free', 'js', 'Nut_free'); ?>

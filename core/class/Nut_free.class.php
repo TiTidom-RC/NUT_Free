@@ -38,11 +38,10 @@ class Nut_free extends eqLogic {
             if ($mode === 'nut') {
                 // Mode NUT : le daemon gère son propre polling (cyclePolling + statusWatcher).
                 continue;
-            } else {
-                // Mode SSH : collecte via SSH-Manager directement en PHP
-                $eqLogic->getInfosSSH();
-                $eqLogic->refreshWidget();
             }
+            // Mode SSH : collecte via SSH-Manager directement en PHP
+            $eqLogic->getInfosSSH();
+            $eqLogic->refreshWidget();
         }
     }
 
@@ -52,7 +51,7 @@ class Nut_free extends eqLogic {
 		try {
 			$_update = update::byLogicalId('Nut_free');
 			$pluginBranch = $_update->getConfiguration('version', 'N/A') . ' (' . $_update->getSource() . ')';
-		} catch (\Exception $e) {
+		} catch (\Throwable $e) {
 			log::add('Nut_free', 'warning', '[BRANCH] Get ERROR :: ' . $e->getMessage());
 		}
 		log::add('Nut_free', 'info', '[BRANCH] PluginBranch :: ' . $pluginBranch);
@@ -62,19 +61,18 @@ class Nut_free extends eqLogic {
 	public static function getPluginVersion() {
 		$pluginVersion = '0.0.0';
 		try {
-			if (!file_exists(dirname(__FILE__) . '/../../plugin_info/info.json')) {
+			$jsonPath = dirname(__FILE__) . '/../../plugin_info/info.json';
+			if (!file_exists($jsonPath)) {
 				log::add('Nut_free', 'warning', '[VERSION] fichier info.json manquant');
+				return $pluginVersion;
 			}
-			$data = json_decode(file_get_contents(dirname(__FILE__) . '/../../plugin_info/info.json'), true);
+			$data = json_decode((string) file_get_contents($jsonPath), true);
 			if (!is_array($data)) {
 				log::add('Nut_free', 'warning', '[VERSION] Impossible de décoder le fichier info.json');
+				return $pluginVersion;
 			}
-			try {
-				$pluginVersion = $data['pluginVersion'];
-			} catch (\Exception $e) {
-				log::add('Nut_free', 'warning', '[VERSION] Impossible de récupérer la version du plugin');
-			}
-		} catch (\Exception $e) {
+			$pluginVersion = $data['pluginVersion'] ?? '0.0.0';
+		} catch (\Throwable $e) {
 			log::add('Nut_free', 'warning', '[VERSION] Get ERROR :: ' . $e->getMessage());
 		}
 		log::add('Nut_free', 'info', '[VERSION] PluginVersion :: ' . $pluginVersion);
@@ -111,13 +109,13 @@ class Nut_free extends eqLogic {
 		$return['log'] = log::getPathToLog($_logName);
 		$return['progress_file'] = jeedom::getTmpFolder(__CLASS__) . '/dependency';
 
-		if (file_exists(jeedom::getTmpFolder(__CLASS__) . '/dependency')) {
+		if (file_exists($return['progress_file'])) {
 			$return['state'] = 'in_progress';
 		} else {
 			if (!file_exists(self::VENV_PYTHON)) {
 				log::add($_logName, 'debug', '[DepInfo][ERROR] Python venv introuvable');
 				$return['state'] = 'nok';
-			} elseif (exec(self::VENV_PYTHON . ' -m pip freeze | grep -Eiwc "' . config::byKey('pythonDepString', 'Nut_free', '', true) . '"') < config::byKey('pythonDepNum', 'Nut_free', 0, true)) {
+			} elseif ((int) exec(self::VENV_PYTHON . ' -m pip freeze | grep -Eiwc "' . config::byKey('pythonDepString', 'Nut_free', '', true) . '"') < (int) config::byKey('pythonDepNum', 'Nut_free', 0, true)) {
 				log::add($_logName, 'debug', '[DepInfo][ERROR] Missing Python dependencies');
 				$return['state'] = 'nok';
 			} else {
@@ -151,7 +149,7 @@ class Nut_free extends eqLogic {
 			});
 			$pythonDepString = join('|', $nonEmptyLines);
 			$pythonDepNum = count($nonEmptyLines);
-		} catch (\Exception $e) {
+		} catch (\Throwable $e) {
 			log::add('Nut_free', 'debug', '[Python-Dep] Get requirements.txt ERROR :: ' . $e->getMessage());
 		}
 		log::add('Nut_free', 'debug', '[Python-Dep] PythonDepString / PythonDepNum :: ' . $pythonDepString . ' / ' . $pythonDepNum);
@@ -164,12 +162,12 @@ class Nut_free extends eqLogic {
 		$pythonVersion = '0.0.0';
 		try {
 			if (file_exists(self::VENV_PYTHON)) {
-				$pythonVersion = exec(system::getCmdSudo() . self::VENV_PYTHON . " --version | awk '{ print $2 }'");
+				$pythonVersion = exec(system::getCmdSudo() . self::VENV_PYTHON . " --version | awk '{ print $2 }'") ?: '0.0.0';
 				config::save('pythonVersion', $pythonVersion, 'Nut_free');
 			} else {
 				log::add('Nut_free', 'error', '[Python-Version] Python venv introuvable :: ' . self::VENV_PYTHON);
 			}
-		} catch (\Exception $e) {
+		} catch (\Throwable $e) {
 			log::add('Nut_free', 'error', '[Python-Version] Exception :: ' . $e->getMessage());
 		}
 		log::add('Nut_free', 'info', '[Python-Version] PythonVersion (venv) :: ' . $pythonVersion);
@@ -180,10 +178,10 @@ class Nut_free extends eqLogic {
 		$pyenvVersion = '0.0.0';
 		try {
 			if (file_exists(self::PYENV_PATH)) {
-				$pyenvVersion = exec(system::getCmdSudo() . self::PYENV_PATH . " --version | awk '{ print $2 }'");
+				$pyenvVersion = exec(system::getCmdSudo() . self::PYENV_PATH . " --version | awk '{ print $2 }'") ?: '0.0.0';
 				config::save('pyenvVersion', $pyenvVersion, 'Nut_free');
 			} elseif (file_exists(self::VENV_PYTHON)) {
-				$pythonPyEnvInUse = (exec(system::getCmdSudo() . 'dirname $(readlink ' . self::VENV_PYTHON . ') | grep -Ewc "opt/pyenv"') == 1) ? true : false;
+				$pythonPyEnvInUse = exec(system::getCmdSudo() . 'dirname $(readlink ' . self::VENV_PYTHON . ') | grep -Ewc "opt/pyenv"') === '1';
 				if (!$pythonPyEnvInUse) {
 					$pyenvVersion = '-';
 					config::save('pyenvVersion', $pyenvVersion, 'Nut_free');
@@ -191,7 +189,7 @@ class Nut_free extends eqLogic {
 			} else {
 				log::add('Nut_free', 'error', '[PyEnv-Version] PyEnv File :: KO');
 			}
-		} catch (\Exception $e) {
+		} catch (\Throwable $e) {
 			log::add('Nut_free', 'error', '[PyEnv-Version] Exception :: ' . $e->getMessage());
 		}
 		log::add('Nut_free', 'info', '[PyEnv-Version] PyEnvVersion :: ' . $pyenvVersion);
@@ -205,15 +203,15 @@ class Nut_free extends eqLogic {
 		$script_restorePyEnv = 0;
 		$script_restoreVenv = 0;
 
-		if (config::byKey('debugInstallUpdates', 'Nut_free') == '1') {
+		if (config::byKey('debugInstallUpdates', 'Nut_free') === '1') {
 			$script_sysUpdates = 1;
 			config::save('debugInstallUpdates', '0', 'Nut_free');
 		}
-		if (config::byKey('debugRestorePyEnv', 'Nut_free') == '1') {
+		if (config::byKey('debugRestorePyEnv', 'Nut_free') === '1') {
 			$script_restorePyEnv = 1;
 			config::save('debugRestorePyEnv', '0', 'Nut_free');
 		}
-		if (config::byKey('debugRestoreVenv', 'Nut_free') == '1') {
+		if (config::byKey('debugRestoreVenv', 'Nut_free') === '1') {
 			$script_restoreVenv = 1;
 			config::save('debugRestoreVenv', '0', 'Nut_free');
 		}
@@ -224,6 +222,19 @@ class Nut_free extends eqLogic {
 		);
 	}
 
+	protected static function buildDevicePayload(Nut_free $eq): array {
+		return [
+			'eqLogicId'   => $eq->getId(),
+			'eqName'      => $eq->getName(),
+			'host'        => $eq->getConfiguration('addressIp', '127.0.0.1'),
+			'port'        => (int) $eq->getConfiguration('nutPort', 3493),
+			'upsName'     => $eq->getConfiguration('ups', ''),
+			'autoDetect'  => ($eq->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
+			'nutUsername' => $eq->getConfiguration('nutUsername', ''),
+			'nutPassword' => $eq->getConfiguration('nutPassword', ''),
+		];
+	}
+
 	public function postSave() {
 		static::createCmd($this);
 
@@ -232,16 +243,7 @@ class Nut_free extends eqLogic {
 		if ($mode === 'nut') {
 			self::sendToDaemon(array(
 				'action' => 'add_device',
-				'device' => array(
-					'eqLogicId'   => $this->getId(),
-					'eqName'      => $this->getName(),
-					'host'        => $this->getConfiguration('addressIp', '127.0.0.1'),
-					'port'        => (int) $this->getConfiguration('nutPort', 3493),
-					'upsName'     => $this->getConfiguration('ups', ''),
-					'autoDetect'  => ($this->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
-					'nutLogin'    => $this->getConfiguration('nutLogin', ''),
-					'nutPassword' => $this->getConfiguration('nutPassword', ''),
-				),
+				'device' => self::buildDevicePayload($this),
 			));
 		} else {
 			// Mode SSH : collecte via SSH-Manager directement en PHP
@@ -262,65 +264,57 @@ class Nut_free extends eqLogic {
 	 */
 	public static function createCmd($eqLogic = null) {
 		$commandsConfig = array(
-			// Commande action
-			'refresh'            => array('name' => 'Rafraîchir',                        'type' => 'action', 'subtype' => 'other',   'isVisible' => 0, 'icon' => '<i class="fas fa-sync-alt icon_green"></i>'),
-			// Commandes info
-			'device_mfr'         => array('name' => 'Fabricant',              'template_dashboard' => 'line', 'subtype' => 'string', 'nutCmd' => 'device.mfr',         'icon' => '<i class="fas fa-tag icon_green"></i>'),
-			'device_model'       => array('name' => 'Modèle',                                                   'subtype' => 'string', 'nutCmd' => 'device.model',        'icon' => '<i class="fas fa-tag icon_blue"></i>'),
-			'ups_serial'         => array('name' => 'Numéro Série',                                           'subtype' => 'string', 'nutCmd' => 'ups.serial',          'icon' => '<i class="fas fa-barcode icon_green"></i>'),
-			'ups_status'         => array('name' => 'Code NUT',                                                 'subtype' => 'string', 'nutCmd' => 'ups.status',          'icon' => '<i class="fas fa-code icon_green"></i>'),
-			'ups_status_label'   => array('name' => 'Statut Onduleur',                                           'subtype' => 'string', 'nutCmd' => 'ups.status',          'icon' => '<i class="fas fa-plug icon_green"></i>'),
-			'input_voltage'      => array('name' => 'Tension Entrée',            'unite' => 'V',                 'nutCmd' => 'input.voltage',       'icon' => '<i class="fas fa-bolt icon_green"></i>'),
-			'input_freq'         => array('name' => 'Fréquence Entrée',          'unite' => 'Hz',                'nutCmd' => 'input.frequency',     'icon' => '<i class="fas fa-wave-square icon_green"></i>'),
-			'output_voltage'     => array('name' => 'Tension Sortie',            'unite' => 'V',                 'nutCmd' => 'output.voltage',      'icon' => '<i class="fas fa-bolt icon_green"></i>'),
-			'output_freq'        => array('name' => 'Fréquence Sortie',          'unite' => 'Hz',                'nutCmd' => 'output.frequency',    'icon' => '<i class="fas fa-wave-square icon_green"></i>'),
-			'output_power'       => array('name' => 'Puissance Sortie',          'unite' => 'VA',                'nutCmd' => 'ups.power',           'icon' => '<i class="fas fa-tachometer-alt icon_green"></i>'),
-			'output_real_power'  => array('name' => 'Puissance Sortie Réelle',   'unite' => 'W',                 'nutCmd' => 'ups.realpower',       'icon' => '<i class="fas fa-tachometer-alt icon_blue"></i>'),
-			'batt_charge'        => array('name' => 'Charge Batterie',           'unite' => '%',                 'nutCmd' => 'battery.charge',      'icon' => '<i class="fas fa-battery-three-quarters icon_green"></i>'),
-			'batt_voltage'       => array('name' => 'Tension Batterie',          'unite' => 'V',                 'nutCmd' => 'battery.voltage',     'icon' => '<i class="fas fa-bolt icon_green"></i>'),
-			'batt_temp'          => array('name' => 'Température Batterie',      'unite' => '°C',                'nutCmd' => 'battery.temperature', 'icon' => '<i class="fas fa-thermometer-half icon_blue"></i>'),
-			'ups_temp'           => array('name' => 'Température Onduleur',      'unite' => '°C',                'nutCmd' => 'ups.temperature',     'icon' => '<i class="fas fa-thermometer-half icon_green"></i>'),
-			'ups_load'           => array('name' => 'Charge Onduleur',           'unite' => '%',                 'nutCmd' => 'ups.load',            'icon' => '<i class="fas fa-chart-bar icon_green"></i>'),
-			'batt_runtime'       => array('name' => 'Autonomie Batterie',        'unite' => 'sec',                 'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock icon_blue"></i>'),
-			'batt_runtime_min'   => array('name' => 'Autonomie Batterie (min)',  'unite' => 'min',               'nutCmd' => 'battery.runtime',     'icon' => '<i class="fas fa-clock icon_green"></i>'),
-			'timer_shutdown'     => array('name' => 'Minuterie Arrêt',           'unite' => 'sec',                 'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off icon_blue"></i>'),
-			'timer_shutdown_min' => array('name' => 'Minuterie Arrêt (min)',     'unite' => 'min',               'nutCmd' => 'ups.timer.shutdown',  'icon' => '<i class="fas fa-power-off icon_green"></i>'),
-			'beeper_status'      => array('name' => 'Beeper',                                                'subtype' => 'string', 'nutCmd' => 'ups.beeper.status',   'icon' => '<i class="fas fa-volume-up icon_green"></i>'),
-			// Commandes actions instcmd
-			'beeper_disable'     => array('name' => 'Désactiver Beeper',    'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'beeper.disable',            'icon' => '<i class="fas fa-volume-mute icon_orange"></i>'),
-			'beeper_enable'      => array('name' => 'Activer Beeper',       'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'beeper.enable',             'icon' => '<i class="fas fa-volume-up icon_green"></i>'),
-			'beeper_mute'        => array('name' => 'Beeper Silencieux',    'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'beeper.mute',              'icon' => '<i class="fas fa-bell-slash icon_blue"></i>'),
-			'test_battery_quick' => array('name' => 'Test Batterie Rapide', 'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'test.battery.start.quick', 'icon' => '<i class="fas fa-vial icon_blue"></i>'),
-			'test_battery_stop'  => array('name' => 'Arrêt Test Batterie',  'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'nutCmd' => 'test.battery.stop',        'icon' => '<i class="fas fa-stop-circle icon_red"></i>'),
-			// Résultat dernière commande instcmd
-			'cmd_result'         => array('name' => 'Retour Commande',       'subtype' => 'string', 'isVisible' => 1,                                                           'icon' => '<i class="fas fa-terminal icon_blue"></i>'),
+			// Action virtuelle
+			'refresh'              => array('name' => 'Rafraîchir',                    'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'icon' => '<i class="fas fa-sync-alt icon_green"></i>'),
+			// Identification (quasi-universelles)
+			'device_mfr'           => array('name' => 'Fabricant',               'subtype' => 'string', 'nutCmd' => 'device.mfr',      'icon' => '<i class="fas fa-tag icon_green"></i>'),
+			'device_model'         => array('name' => 'Modèle',                                                   'subtype' => 'string', 'nutCmd' => 'device.model',    'icon' => '<i class="fas fa-tag icon_blue"></i>'),
+			'ups_serial'           => array('name' => 'Numéro Série',                                           'subtype' => 'string', 'nutCmd' => 'ups.serial',      'icon' => '<i class="fas fa-barcode icon_green"></i>'),
+			// Statut (seule var obligatoire NUT)
+			'ups_status'           => array('name' => 'Code NUT',                                                    'subtype' => 'string', 'nutCmd'      => 'ups.status',        'icon' => '<i class="fas fa-code icon_green"></i>'),
+			'ups_status_label'     => array('name' => 'Statut Onduleur',                                             'subtype' => 'string', 'derivedFrom' => 'ups_status',        'icon' => '<i class="fas fa-plug icon_green"></i>'),
+			// Métriques quasi-universelles
+			'ups_load'             => array('name' => 'Charge Onduleur',          'unite' => '%',   'nutCmd'      => 'ups.load',          'icon' => '<i class="fas fa-chart-bar icon_green"></i>'),
+			'battery_charge'       => array('name' => 'Charge Batterie',          'unite' => '%',   'nutCmd'      => 'battery.charge',    'icon' => '<i class="fas fa-battery-three-quarters icon_green"></i>'),
+			'battery_runtime'      => array('name' => 'Autonomie Batterie',       'unite' => 'sec', 'nutCmd'      => 'battery.runtime',   'icon' => '<i class="fas fa-clock icon_blue"></i>'),
+			'battery_runtime_min'  => array('name' => 'Autonomie Batterie (min)', 'unite' => 'min', 'derivedFrom' => 'battery_runtime',   'icon' => '<i class="fas fa-clock icon_green"></i>'),
+			// Virtuelle
+			'cmd_result'           => array('name' => 'Retour Commande',          'subtype' => 'string', 'isVisible' => 1,             'icon' => '<i class="fas fa-terminal icon_blue"></i>'),
 		);
 
 		$targets = is_object($eqLogic) ? array($eqLogic) : eqLogic::byType('Nut_free');
 		foreach ($targets as $eq) {
 			$order = 0;
 			foreach ($commandsConfig as $logicalId => $info) {
-				$cmd = $eq->getCmd(null, $logicalId);
-				if (!is_object($cmd)) {
+				$cmd   = $eq->getCmd(null, $logicalId);
+				$isNew = !is_object($cmd);
+				if ($isNew) {
 					$cmd = new Nut_freeCmd();
 					$cmd->setLogicalId($logicalId);
 				}
 				$cmd->setEqLogic_id($eq->getId());
-				$cmd->setName(__($info['name'], __FILE__));
+				// Données techniques : toujours propagées (cohérence après mise à jour plugin)
 				$cmd->setType($info['type'] ?? 'info');
 				$cmd->setSubType($info['subtype'] ?? 'numeric');
-				$cmd->setOrder($order);
-				// Toujours écraser l'unité et la variable NUT pour propager les changements lors des mises à jour
-				$cmd->setUnite($info['unite'] ?? '');
-				$cmd->setConfiguration('nutCmd', $info['nutCmd'] ?? '');
-				if (isset($info['icon'])) {
-					$cmd->setDisplay('icon', $info['icon']);
-				}
-				if (isset($info['template_dashboard'])) {
-					$cmd->setTemplate('dashboard', $info['template_dashboard']);
-				}
-				if (isset($info['isVisible'])) {
-					$cmd->setIsVisible($info['isVisible']);
+				$cmd->setConfiguration('nutCmd',      $info['nutCmd']      ?? '');
+				$cmd->setConfiguration('derivedFrom', $info['derivedFrom'] ?? '');
+				// Données utilisateur : initialisées à la création uniquement (l'utilisateur est maître)
+				if ($isNew) {
+					$cmd->setName(__($info['name'], __FILE__));
+					$cmd->setOrder($order);
+					$cmd->setUnite($info['unite'] ?? '');
+					if (isset($info['icon'])) {
+						$cmd->setDisplay('icon', $info['icon']);
+					}
+					if (($info['type'] ?? 'info') === 'info') {
+						$cmd->setDisplay('showIconAndNamedashboard', 1);
+						$cmd->setDisplay('showIconAndNamemobile', 1);
+						$cmd->setTemplate('dashboard', 'Nut_free::ups');
+						$cmd->setTemplate('mobile', 'Nut_free::ups');
+					}
+					if (isset($info['isVisible'])) {
+						$cmd->setIsVisible($info['isVisible']);
+					}
 				}
 				try {
 					$cmd->save();
@@ -332,15 +326,198 @@ class Nut_free extends eqLogic {
 		}
 	}
 
+	/**
+	 * Crée ou met à jour les commandes dynamiques découvertes via "Synchroniser avec l'onduleur".
+	 * Toutes sont marquées isDynamic=1 pour pouvoir être supprimées par cleanDynamicCmds().
+	 * Les logicalIds sont directs (pas de préfixe) : la distinction statique/dynamique se fait via isDynamic.
+	 * Pour les vars RW, l'action d'écriture a le logicalId <logicalId>_set.
+	 * Pour toute var avec unit='sec', une commande jumelle <logicalId>_min est aussi créée.
+	 *
+	 * @param Nut_free $eqLogic   Équipement cible
+	 * @param array    $payload   {info_vars: [...], rw_vars: [...], instcmds: [...]}
+	 */
+	public static function createDynamicCmd(Nut_free $eqLogic, array $payload): void {
+		$eqId  = $eqLogic->getId();
+		$order = 1000; // après les commandes statiques (ordre < 100)
+
+		// Helper interne : crée ou met à jour une commande info dynamique
+		// $derivedFrom : logicalId de la commande source si cette commande est calculée (pas de nutCmd direct)
+		$makeInfo = function(string $logicalId, string $name, string $subtype, string $unit, string $nutVar, string $icon, string $value, string $derivedFrom = '') use ($eqLogic, &$order): void {
+			$cmd   = $eqLogic->getCmd(null, $logicalId);
+			$isNew = !is_object($cmd);
+			if ($isNew) {
+				$cmd = new Nut_freeCmd();
+				$cmd->setLogicalId($logicalId);
+			}
+			$cmd->setEqLogic_id($eqLogic->getId());
+			// Données techniques : toujours propagées
+			$cmd->setType('info');
+			$cmd->setSubType($subtype);
+			$cmd->setConfiguration('nutCmd',      $nutVar);
+			$cmd->setConfiguration('derivedFrom', $derivedFrom);
+			// isDynamic : positionné seulement à la création pour ne pas écraser les commandes statiques préexistantes
+			if ($isNew) {
+				$cmd->setConfiguration('isDynamic', 1);
+			}
+			// Données utilisateur : initialisées à la création uniquement
+			if ($isNew) {
+				$cmd->setName($name);
+				$cmd->setUnite($unit);
+				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($icon, ENT_QUOTES) . '"></i>');
+				$cmd->setDisplay('showIconAndNamedashboard', 1);
+				$cmd->setDisplay('showIconAndNamemobile', 1);
+				$cmd->setTemplate('dashboard', 'Nut_free::ups');
+				$cmd->setTemplate('mobile', 'Nut_free::ups');
+				$cmd->setIsVisible(0);
+				$cmd->setOrder($order);
+			}
+			$order++;
+			try {
+				$cmd->save();
+				if ($value !== '') {
+					$cmd->event($value);
+				}
+			} catch (\Throwable $th) {
+				log::add('Nut_free', 'error', '[createDynamicCmd] Erreur sauvegarde ' . $logicalId . ' : ' . $th->getMessage());
+			}
+		};
+
+		// Helper : calcule la valeur _min depuis une valeur en secondes
+		$toMin = static function(string $v): string {
+			if (trim($v) === '-1' || $v === '') return $v;
+			return (string) round((float) $v / 60, 2);
+		};
+
+		// --- info_vars : commandes info lecture seule ---
+		foreach ($payload['info_vars'] ?? [] as $entry) {
+			$logicalId = $entry['logicalId'];
+			$rawVal    = isset($entry['value']) ? (string) $entry['value'] : '';
+			$unit      = $entry['unit'] ?? '';
+			$makeInfo($logicalId, $entry['name'], $entry['subtype'] ?? 'string', $unit, $entry['nut_var'], $entry['icon'] ?? 'fas fa-circle', $rawVal);
+			if ($unit === 'sec') {
+				// Commande dérivée : pas de nutCmd propre, valeur calculée depuis $logicalId
+				$makeInfo($logicalId . '_min', $entry['name'] . ' (min)', 'numeric', 'min', '', $entry['icon'] ?? 'fas fa-clock', $toMin($rawVal), $logicalId);
+			}
+		}
+
+		// --- rw_vars : commande info (valeur courante) + commande action écriture (<logicalId>_set) ---
+		foreach ($payload['rw_vars'] ?? [] as $entry) {
+			$logicalId = $entry['logicalId'];
+			$rawVal    = isset($entry['value']) ? (string) $entry['value'] : '';
+			$unit      = $entry['unit'] ?? '';
+			// Info
+			$makeInfo($logicalId, $entry['name'], $entry['subtype'] ?? 'string', $unit, $entry['nut_var'], $entry['icon'] ?? 'fas fa-sliders-h icon_blue', $rawVal);
+			if ($unit === 'sec') {
+				// Commande dérivée : pas de nutCmd propre, valeur calculée depuis $logicalId
+				$makeInfo($logicalId . '_min', $entry['name'] . ' (min)', 'numeric', 'min', '', 'fas fa-clock', $toMin($rawVal), $logicalId);
+			}
+			// Action écriture
+			$setId    = $logicalId . '_set';
+			$cmdRw    = $eqLogic->getCmd(null, $setId);
+			$isNewRw  = !is_object($cmdRw);
+			if ($isNewRw) {
+				$cmdRw = new Nut_freeCmd();
+				$cmdRw->setLogicalId($setId);
+			}
+			$cmdRw->setEqLogic_id($eqId);
+			// Données techniques : toujours propagées
+			$cmdRw->setType('action');
+			$cmdRw->setSubType('message');
+			$cmdRw->setConfiguration('nutRwVar', $entry['nut_var']);
+			// isDynamic : positionné seulement à la création pour ne pas écraser les commandes statiques préexistantes
+			if ($isNewRw) {
+				$cmdRw->setConfiguration('isDynamic', 1);
+			}
+			// Données utilisateur : initialisées à la création uniquement
+			if ($isNewRw) {
+				$cmdRw->setName(__('Modifier', __FILE__) . ' ' . $entry['name']);
+				$cmdRw->setUnite($unit);
+				$cmdRw->setDisplay('icon', '<i class="fas fa-pencil-alt icon_orange"></i>');
+				$cmdRw->setIsVisible(0);
+				$cmdRw->setOrder($order);
+			}
+			$order++;
+			try {
+				$cmdRw->save();
+			} catch (\Throwable $th) {
+				log::add('Nut_free', 'error', '[createDynamicCmd] Erreur sauvegarde rw ' . $setId . ' : ' . $th->getMessage());
+			}
+		}
+
+		// --- instcmds : commandes action (exécution) ---
+		foreach ($payload['instcmds'] ?? [] as $entry) {
+			$logicalId = $entry['logicalId'];
+			$cmd   = $eqLogic->getCmd(null, $logicalId);
+			$isNew = !is_object($cmd);
+			if ($isNew) {
+				$cmd = new Nut_freeCmd();
+				$cmd->setLogicalId($logicalId);
+			}
+			$cmd->setEqLogic_id($eqId);
+			// Données techniques : toujours propagées
+			$cmd->setType('action');
+			$cmd->setSubType('other');
+			$cmd->setConfiguration('nutCmd', $entry['nut_cmd']);
+			// isDynamic : positionné seulement à la création pour ne pas écraser les commandes statiques préexistantes
+			if ($isNew) {
+				$cmd->setConfiguration('isDynamic', 1);
+			}
+			// Données utilisateur : initialisées à la création uniquement
+			if ($isNew) {
+				$cmd->setName($entry['name']);
+				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($entry['icon'] ?? 'fas fa-terminal icon_blue', ENT_QUOTES) . '"></i>');
+				$cmd->setIsVisible(0);
+				$cmd->setOrder($order);
+			}
+			$order++;
+			try {
+				$cmd->save();
+			} catch (\Throwable $th) {
+				log::add('Nut_free', 'error', '[createDynamicCmd] Erreur sauvegarde instcmd ' . $logicalId . ' : ' . $th->getMessage());
+			}
+		}
+
+		$nInfo    = count($payload['info_vars'] ?? []);
+		$nRw      = count($payload['rw_vars'] ?? []);
+		$nInstcmd = count($payload['instcmds'] ?? []);
+		log::add('Nut_free', 'info', '[createDynamicCmd] eqLogic ' . $eqId . ' :: ' . $nInfo . ' info_vars, ' . $nRw . ' rw_vars (+' . $nRw . ' actions), ' . $nInstcmd . ' instcmds');
+		$eqLogic->setConfiguration('discover_error', '');
+		$eqLogic->setConfiguration('discover_status', 'done');
+		$eqLogic->save();
+		$eqLogic->refreshWidget();
+	}
+
+	/**
+	 * Supprime toutes les commandes dynamiques de cet équipement (isDynamic=1).
+	 * À appeler avant une re-synchronisation ou depuis le bouton "Supprimer commandes dynamiques".
+	 */
+	public function cleanDynamicCmds(): void {
+		$count = 0;
+		foreach ($this->getCmd() as $cmd) {
+			if ($cmd->getConfiguration('isDynamic', 0)) {
+				try {
+					$cmd->remove();
+					$count++;
+				} catch (\Throwable $th) {
+					log::add('Nut_free', 'error', '[cleanDynamicCmds] Erreur suppression ' . $cmd->getLogicalId() . ' : ' . $th->getMessage());
+				}
+			}
+		}
+		$this->setConfiguration('discover_status', '');
+		$this->setConfiguration('discover_error', '');
+		$this->save();
+		log::add('Nut_free', 'info', '[cleanDynamicCmds] ' . $count . ' commandes dynamiques supprimées pour eqLogic ' . $this->getId());
+	}
+
 	/*
 	 * Permet de crypter/décrypter automatiquement des champs de configuration des équipements
 	 */
 	public function decrypt() {
-		$this->setConfiguration('nutLogin', utils::decrypt($this->getConfiguration('nutLogin')));
+		$this->setConfiguration('nutUsername', utils::decrypt($this->getConfiguration('nutUsername')));
 		$this->setConfiguration('nutPassword', utils::decrypt($this->getConfiguration('nutPassword')));
 	}
 	public function encrypt() {
-		$this->setConfiguration('nutLogin', utils::encrypt($this->getConfiguration('nutLogin')));
+		$this->setConfiguration('nutUsername', utils::encrypt($this->getConfiguration('nutUsername')));
 		$this->setConfiguration('nutPassword', utils::encrypt($this->getConfiguration('nutPassword')));
 	}
 
@@ -365,7 +542,7 @@ class Nut_free extends eqLogic {
 		$flags  = array_filter(explode(' ', strtoupper(trim($raw))));
 		$labels = array();
 		foreach ($flags as $flag) {
-			$labels[] = isset($map[$flag]) ? $map[$flag] : $flag;
+			$labels[] = $map[$flag] ?? $flag;
 		}
 		return implode(' / ', $labels) ?: $raw;
 	}
@@ -377,27 +554,61 @@ class Nut_free extends eqLogic {
 		}
 		$_version = jeedom::versionAlias($_version);
 
+		// Format du title selon la version : mobile ne supporte pas le HTML dans les tooltips
+		$isMobile = ($_version === 'mobile');
+
+		$cmdsHtml = '';
 		foreach ($this->getCmd() as $cmd) {
 			$logicalId = $cmd->getLogicalId();
-			$replace['#' . $logicalId . 'id#']       = $cmd->getId();
-			$replace['#' . $logicalId . '_display#'] = $cmd->getIsVisible() ? 'block' : 'none';
-			$replace['#' . $logicalId . '_icon#']    = !empty($cmd->getDisplay('icon')) ? $cmd->getDisplay('icon') : '<i class="fas fa-circle"></i>';
-			$replace['#' . $logicalId . '_collect#'] = $cmd->getCollectDate() ?: '-';
-			$replace['#' . $logicalId . '_value#']   = $cmd->getValueDate() ?: '-';
-			$replace['#' . $logicalId . '_name#']    = $cmd->getName();
-			$replace['#' . $logicalId . '_unite#']       = $cmd->getUnite();
-			$replace['#' . $logicalId . '_historized#'] = $cmd->getIsHistorized() ? 'history cursor' : '';
-			// Ne pas appeler execCmd() sur les commandes action (refresh, etc.)
+			$cmdId     = $cmd->getId();
+
+			// Tokens nécessaires au header (id du refresh + valeurs pour le script icônes)
+			$replace['#' . $logicalId . 'id#'] = $cmdId;
+			$rawValue = null;
 			if ($cmd->getType() === 'info') {
-				$replace['#' . $logicalId . '#'] = $cmd->execCmd();
+				$rawValue = $cmd->execCmd();
+				$replace['#' . $logicalId . '#'] = $rawValue;
+			}
+
+			// Corps : refresh géré dans le header ; commandes masquées et actions ignorées
+			if ($logicalId === 'refresh' || !$cmd->getIsVisible() || $cmd->getType() !== 'info') {
+				continue;
+			}
+
+			$name    = $cmd->getName();
+			$nameEnc = htmlspecialchars($name, ENT_QUOTES);
+			$icon    = !empty($cmd->getDisplay('icon')) ? $cmd->getDisplay('icon') : '<i class="fas fa-circle"></i>';
+
+			if ($cmd->getType() === 'info') {
+				$value      = htmlspecialchars((string) $rawValue, ENT_QUOTES);
+				$unite      = htmlspecialchars($cmd->getUnite(), ENT_QUOTES);
+				$historized = $cmd->getIsHistorized() ? 'history cursor' : '';
+				$dateVal    = $cmd->getValueDate() ?: '-';
+				$dateCol    = $cmd->getCollectDate() ?: '-';
+				if ($isMobile) {
+					$titleAttr = $nameEnc . ' || Date valeur : ' . $dateVal . ' || Date collecte : ' . $dateCol;
+				} else {
+					$titleAttr = $nameEnc . '<br><i>Date de valeur : ' . $dateVal . '<br>Date de collecte : ' . $dateCol . '</i>';
+				}
+				$cmdsHtml  .= '<div class="tooltips" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
+				$cmdsHtml  .= '<span title="' . $titleAttr . '"';
+				$cmdsHtml  .= ' style="width:15px;max-width:15px;max-height:15px;">' . $icon . '</span>' . "\n\t\t";
+				$cmdsHtml  .= '<span class="nut-label">' . $nameEnc . ' : </span>';
+				$cmdsHtml  .= '<span data-cmd_id="' . $cmdId . '" class="' . $historized . '">' . $value . '</span>';
+				if ($unite !== '') {
+					$cmdsHtml .= ' ' . $unite;
+				}
+				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
+
 			}
 		}
 
+		$replace['#cmds_html#'] = $cmdsHtml;
 		$html = template_replace($replace, getTemplate('core', $_version, 'Nut_free', 'Nut_free'));
 		return $html;
 	}
 	
-    public function getInfosSSH() {
+    public function getInfosSSH(): void {
         if (!$this->getIsEnable()) return;
 
         $equipment      = $this->getName();
@@ -410,11 +621,11 @@ class Nut_free extends eqLogic {
         // --- Vérification SSH-Manager ---
         if (!class_exists('sshmanager')) {
             log::add('Nut_free', 'error', '[' . $equipment . '] Plugin SSH-Manager introuvable - vérifiez les dépendances');
-            return false;
+            return;
         }
         if (empty($sshHostId)) {
             log::add('Nut_free', 'error', '[' . $equipment . '] SSHHostId non configuré');
-            return false;
+            return;
         }
 
         // --- Résolution du nom de l'UPS (auto-détection si upsAutoSelect = '0') ---
@@ -423,9 +634,9 @@ class Nut_free extends eqLogic {
                 $upsListCmd = "upsc -l 2>&1 | grep -v '^Init SSL'";
                 $ups = trim((string) sshmanager::executeCmds($sshHostId, $upsListCmd));
                 log::add('Nut_free', 'debug', '[' . $equipment . '] UPS auto-détecté : ' . $ups);
-            } catch (\Exception $e) {
+            } catch (\Throwable $e) {
                 log::add('Nut_free', 'error', '[' . $equipment . '] Auto-détection UPS échouée : ' . $e->getMessage());
-                return false;
+                return;
             }
         } else {
             log::add('Nut_free', 'debug', '[' . $equipment . '] UPS manuel : ' . $ups);
@@ -433,59 +644,86 @@ class Nut_free extends eqLogic {
 
         if (empty($ups)) {
             log::add('Nut_free', 'error', '[' . $equipment . '] Impossible de déterminer le nom de l\'UPS');
-            return false;
+            return;
         }
 
-        // --- Collecte des valeurs NUT via SSH ---
-        $notOnline = 0;
+        // --- Collecte unique de toutes les variables NUT (1 seul appel SSH) ---
+        try {
+            $allVarsRaw = (string) sshmanager::executeCmds(
+                $sshHostId,
+                'upsc ' . escapeshellarg($ups) . " 2>&1 | grep -v '^Init SSL'"
+            );
+        } catch (\Throwable $e) {
+            log::add('Nut_free', 'error', '[' . $equipment . '] upsc erreur : ' . $e->getMessage());
+            return;
+        }
+
+        // Parsing : "var.name: value" → ['var.name' => 'value', ...]
+        $nutData = [];
+        foreach (explode("\n", $allVarsRaw) as $line) {
+            $line = trim($line);
+            if ($line === '' || strpos($line, ':') === false) continue;
+            [$varName, $varValue] = explode(':', $line, 2);
+            $nutData[trim($varName)] = trim($varValue);
+        }
+        log::add('Nut_free', 'debug', '[' . $equipment . '] ' . count($nutData) . ' variable(s) reçues via upsc');
+
+        // --- Distribution aux commandes Jeedom ---
+        // Passe 1 : commandes directes (nutCmd défini) — construit aussi $logicalIdMap pour la passe 2
+        // Passe 2 : commandes dérivées (derivedFrom défini) — calculées depuis les valeurs de la passe 1
+        $logicalIdMap = []; // logicalId => valeur brute
+        $derivedCmds  = []; // commandes dérivées, traitées après
 
         foreach ($this->getCmd() as $cmd) {
-            $logicalId = $cmd->getLogicalId();
-            $nutVar    = $cmd->getConfiguration('nutCmd', '');
-            if (empty($nutVar)) continue;
+            if ($cmd->getType() === 'action') continue; // instcmds et actions RW : pas de lecture upsc
 
-            $result = '';
-            try {
-                $cmdLine = 'upsc ' . escapeshellarg($ups) . ' ' . escapeshellarg($nutVar) . " 2>&1 | grep -v '^Init SSL'";
-                $result  = trim((string) sshmanager::executeCmds($sshHostId, $cmdLine));
-            } catch (\Exception $e) {
-                log::add('Nut_free', 'warning', '[' . $equipment . '] ' . $cmd->getName() . ' erreur : ' . $e->getMessage());
+            $nutVar      = $cmd->getConfiguration('nutCmd', '');
+            $derivedFrom = $cmd->getConfiguration('derivedFrom', '');
+
+            // Commande dérivée : mise de côté pour la passe 2
+            if (!empty($derivedFrom)) {
+                $derivedCmds[] = $cmd;
                 continue;
             }
+            if (empty($nutVar)) continue; // commande sans var NUT (ex: cmd_result)
 
-            $errorResult = (strpos($result, 'not supported by UPS') !== false) ? $result : '';
-
-            // Mode ligne / batterie
-            if ($logicalId === 'ups_status') {
-                $notOnline = (stripos($result, 'OL') === false) ? 1 : 0;
-                log::add('Nut_free', 'debug', '[' . $equipment . '] ups_status=' . $result . ' (notOnline=' . $notOnline . ')');
-            }
-
-            // Statut UPS traduit en français
-            if ($logicalId === 'ups_status_label') {
-                $result = Nut_free::translateUpsStatus($result);
-            }
-
-            // Tension entrée forcée à 0 quand sur batterie
-            if ($logicalId === 'input_voltage' && $notOnline === 1) {
-                $result = 0;
-                log::add('Nut_free', 'debug', '[' . $equipment . '] input_voltage forcé à 0 (mode batterie)');
-            }
-
-            // Conversion secondes → minutes
-            if ($logicalId === 'batt_runtime_min' || $logicalId === 'timer_shutdown_min') {
-                $result = round((float) $result / 60, 2);
-            }
-
-            if ($errorResult !== '') {
+            if (!array_key_exists($nutVar, $nutData)) {
+                // Variable non retournée par l'UPS : masquer la commande
                 log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : non supporté par l\'UPS');
                 $cmd->setIsVisible(0);
                 $cmd->setEqLogic_id($this->getId());
                 $cmd->save();
-            } else {
-                log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : ' . $result);
-                $cmd->event($result);
+                continue;
             }
+
+            $result = $nutData[$nutVar];
+            $logicalIdMap[$cmd->getLogicalId()] = $result; // mémorise la valeur brute pour les dérivées
+
+            // Conversion sec → min : toute commande avec unite='min' (-1 passé tel quel)
+            if ($cmd->getUnite() === 'min' && trim((string) $result) !== '-1' && is_numeric($result)) {
+                $result = (string) round((float) $result / 60, 2);
+            }
+
+            log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : ' . $result);
+            $cmd->event($result);
+        }
+
+        // Passe 2 : commandes dérivées (ups_status_label, battery_runtime_min, _min dynamiques…)
+        foreach ($derivedCmds as $cmd) {
+            $derivedFrom = $cmd->getConfiguration('derivedFrom', '');
+            if (!isset($logicalIdMap[$derivedFrom])) continue; // source non disponible
+
+            $sourceValue = $logicalIdMap[$derivedFrom];
+            $result      = $sourceValue;
+
+            if ($cmd->getLogicalId() === 'ups_status_label') {
+                $result = Nut_free::translateUpsStatus($sourceValue);
+            } elseif ($cmd->getUnite() === 'min' && trim($sourceValue) !== '-1' && is_numeric($sourceValue)) {
+                $result = (string) round((float) $sourceValue / 60, 2);
+            }
+
+            log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : ' . $result . ' (dérivé de ' . $derivedFrom . ')');
+            $cmd->event($result);
         }
 
         log::add('Nut_free', 'debug', '--- [' . $equipment . '] Fin collecte NUT ---');
@@ -495,10 +733,11 @@ class Nut_free extends eqLogic {
         $return = array('log' => 'Nut_free_daemon', 'state' => 'nok', 'launchable' => 'ok');
         $pidFile = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
         if (file_exists($pidFile)) {
-            if (@posix_getsid(trim(file_get_contents($pidFile)))) {
+            $pid = (int) trim((string) file_get_contents($pidFile));
+            if ($pid > 0 && @posix_getsid($pid)) {
                 $return['state'] = 'ok';
             } else {
-                shell_exec(system::getCmdSudo() . 'rm -rf ' . $pidFile . ' 2>&1 > /dev/null');
+                @unlink($pidFile);
             }
         }
         return $return;
@@ -515,7 +754,7 @@ class Nut_free extends eqLogic {
             self::getPythonDepFromRequirements();
             self::getPyEnvVersion();
             self::getPythonVersion();
-        } catch (Exception $e) {
+        } catch (\Throwable $e) {
             log::add('Nut_free', 'error', '[DAEMON][START][PythonDep] Exception :: ' . $e->getMessage());
         }
 
@@ -542,14 +781,14 @@ class Nut_free extends eqLogic {
         @mkdir(dirname($pidFile), 0755, true);
 
         $cmd = $python3 . ' ' . escapeshellarg($script)
-            . ' --socketport '    . $socketPort
+            . ' --socketport '    . (int) $socketPort
             . ' --callback '      . escapeshellarg($callbackUrl)
             . ' --apikey '        . escapeshellarg($apiKey)
             . ' --loglevel '      . escapeshellarg($logLevel)
             . ' --pluginversion ' . escapeshellarg(config::byKey('pluginVersion', 'Nut_free', '0.0.0'))
-            . ' --cyclepolling '  . escapeshellarg($cyclePolling)
-            . ' --cyclewatcher '  . escapeshellarg($cycleWatcher)
-            . ' --cyclefactor '   . escapeshellarg($cycleFactor)
+            . ' --cyclepolling '  . (float) $cyclePolling
+            . ' --cyclewatcher '  . (float) $cycleWatcher
+            . ' --cyclefactor '   . (float) $cycleFactor
             . ' --pid '           . escapeshellarg($pidFile)
             . ' >> ' . log::getPathToLog('Nut_free_daemon') . ' 2>&1 &';
 
@@ -574,16 +813,7 @@ class Nut_free extends eqLogic {
                 if ($eqLogic->getIsEnable() && $eqLogic->getConfiguration('connexionMode', 'nut') === 'nut') {
                     self::sendToDaemon(array(
                         'action' => 'add_device',
-                        'device' => array(
-                            'eqLogicId'   => $eqLogic->getId(),
-                            'eqName'      => $eqLogic->getName(),
-                            'host'        => $eqLogic->getConfiguration('addressIp', '127.0.0.1'),
-                            'port'        => (int) $eqLogic->getConfiguration('nutPort', 3493),
-                            'upsName'     => $eqLogic->getConfiguration('ups', ''),
-                            'autoDetect'  => ($eqLogic->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
-                            'nutLogin'    => $eqLogic->getConfiguration('nutLogin', ''),
-                            'nutPassword' => $eqLogic->getConfiguration('nutPassword', ''),
-                        ),
+                        'device' => self::buildDevicePayload($eqLogic),
                     ));
                 }
             }
@@ -597,7 +827,7 @@ class Nut_free extends eqLogic {
     public static function deamon_stop() {
         $pidFile = jeedom::getTmpFolder(__CLASS__) . '/deamon.pid';
         if (file_exists($pidFile)) {
-            $pid = intval(trim(file_get_contents($pidFile)));
+            $pid = (int) trim((string) file_get_contents($pidFile));
             if ($pid > 0) {
                 // SIGTERM uniquement (pas de SIGKILL immédiat) → le daemon gère son arrêt proprement
                 system::kill($pid, false);
@@ -610,13 +840,17 @@ class Nut_free extends eqLogic {
         }
         // Filet de sécurité si le processus traîne encore
         system::kill('nutfreed.py');
-        system::fuserk(config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT));
+        system::fuserk((int) config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT));
         log::add('Nut_free', 'info', '[DAEMON] Arrêté');
     }
 
     public static function sendToDaemon(array $params) {
         $params['apikey'] = jeedom::getApiKey('Nut_free');
         $payload = json_encode($params);
+        if ($payload === false) {
+            log::add('Nut_free', 'error', '[DAEMON] json_encode erreur : ' . json_last_error_msg());
+            return false;
+        }
         $socket  = socket_create(AF_INET, SOCK_STREAM, SOL_TCP);
         if ($socket === false) {
             log::add('Nut_free', 'error', '[DAEMON] socket_create erreur');
@@ -624,13 +858,17 @@ class Nut_free extends eqLogic {
         }
         socket_set_option($socket, SOL_SOCKET, SO_RCVTIMEO, array('sec' => 3, 'usec' => 0));
         socket_set_option($socket, SOL_SOCKET, SO_SNDTIMEO, array('sec' => 3, 'usec' => 0));
-        if (!@socket_connect($socket, '127.0.0.1', config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT))) {
+        if (!@socket_connect($socket, '127.0.0.1', (int) config::byKey('socketPort', 'Nut_free', self::DAEMON_PORT))) {
             log::add('Nut_free', 'warning', '[DAEMON] socket_connect impossible (daemon arrêté ?)');
             socket_close($socket);
             return false;
         }
         $msg = $payload . "\n";
-        socket_write($socket, $msg, strlen($msg));
+        if (socket_write($socket, $msg, strlen($msg)) === false) {
+            log::add('Nut_free', 'warning', '[DAEMON] socket_write erreur : ' . socket_strerror(socket_last_error($socket)));
+            socket_close($socket);
+            return false;
+        }
         socket_close($socket);
         log::add('Nut_free', 'debug', '[DAEMON] Envoi : ' . $payload);
         return true;
@@ -671,6 +909,24 @@ class Nut_freeCmd extends cmd {
             return;
         }
 
+        // Commandes RW dynamiques : envoi SetRWVar au daemon (routage par nutRwVar configuré)
+        $nutRwVar = $this->getConfiguration('nutRwVar', '');
+        if (!empty($nutRwVar)) {
+            $value = $_options['message'] ?? '';
+            log::add('Nut_free', 'info', '[' . $equipment . '] setrwvar : ' . $nutRwVar . ' = ' . $value);
+            if ($connexionType === 'nut') {
+                Nut_free::sendToDaemon(array(
+                    'action'    => 'setrwvar',
+                    'eqLogicId' => $eqLogic->getId(),
+                    'nutRwVar'  => $nutRwVar,
+                    'value'     => (string) $value,
+                ));
+            } else {
+                throw new Exception(__('setrwvar non supporté en mode SSH (commande ' . $logicalId . ')', __FILE__));
+            }
+            return;
+        }
+
         // Commandes instcmd NUT
         $nutInstCmd = $this->getConfiguration('nutCmd', '');
         if (empty($nutInstCmd)) {
@@ -707,11 +963,9 @@ class Nut_freeCmd extends cmd {
                     $cmdResult->event($nutInstCmd . ' → ' . ($result ?: 'OK'));
                 }
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             log::add('Nut_free', 'error', '[' . $equipment . '] Erreur instcmd ' . $nutInstCmd . ' : ' . $e->getMessage());
             throw $e;
         }
     }
 }
-
-?>

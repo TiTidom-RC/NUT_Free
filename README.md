@@ -76,12 +76,12 @@ Sauvegarder — toutes les commandes de supervision sont créées automatiquemen
 
 ## Liens
 
-- [Documentation](https://titidom-rc.github.io/Documentation/fr_FR/Nut_free/index)
-- [Changelog](https://titidom-rc.github.io/Documentation/fr_FR/Nut_free/changelog)
-- [Community Jeedom](https://community.jeedom.com/tag/plugin-Nut_free)
+- <a href="https://titidom-rc.github.io/Documentation/fr_FR/Nut_free/index" target="_blank" rel="noopener noreferrer">Documentation</a>
+- <a href="https://titidom-rc.github.io/Documentation/fr_FR/Nut_free/changelog" target="_blank" rel="noopener noreferrer">Changelog</a>
+- <a href="https://community.jeedom.com/tag/plugin-Nut_free" target="_blank" rel="noopener noreferrer">Community Jeedom</a>
 
 ---
 
 ## Licence
 
-AGPL — Auteur : [TiTidom](https://github.com/TiTidom-RC)
+AGPL — Auteur : <a href="https://github.com/TiTidom-RC" target="_blank" rel="noopener noreferrer">TiTidom</a>

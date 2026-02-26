@@ -99,7 +99,7 @@ switch ($argv[1]) {
                         $_plugin->setIsEnable(1, true, true);
                         log::add($_logName, 'info', '[DEP-INSTALL] Le plugin SSH-Manager est maintenant activé');
                         jeedom::cleanFileSystemRight();
-                    } catch (Exception $e) {
+                    } catch (\Throwable $e) {
                         log::add($_logName, 'warning', '[DEP-INSTALL] Exception :: ' . $e->getMessage());
                         log::add($_logName, 'error', '[DEP-INSTALL] Le plugin SSH-Manager n\'a pas pu être activé !');
                     }
