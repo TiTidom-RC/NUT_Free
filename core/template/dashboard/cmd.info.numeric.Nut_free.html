@@ -1,6 +1,16 @@
-<div class="cmd cmd-widget" data-type="info" data-subtype="numeric" data-cmd_id="#id#"
+<div class="cmd cmd-widget #history#" data-type="info" data-subtype="numeric" data-template="Nut_free" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#"
 	style="display:block;text-align:left;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 0;">
-	<span title="#name#&#013;Date valeur : #valueDate#&#013;Date collecte : #collectDate#"
-		style="width:15px;max-width:15px;max-height:15px;display:inline-block;vertical-align:middle;">#icon#</span>
-	<span style="opacity:0.6;font-style:italic;">#name_display# : </span><span data-cmd_id="#id#" class="#history#">#state#</span> #unite#
+	<span class="cmdName #hide_name#" style="opacity:0.6;font-style:italic;">#name_display# :</span>
+	<span class="value" style="font-weight:500;margin-left:4px;">#state#</span>
+	<strong class="unit">#unite#</strong>
+	<script>
+		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
+			if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+				cmd.setAttribute('title', '{{Date de valeur}}: ' + _options.valueDate + '\n{{Date de collecte}}: ' + _options.collectDate);
+				cmd.querySelector('.value').innerHTML = _options.display_value;
+				cmd.querySelector('.unit').innerHTML = _options.unit;
+			}
+		});
+		jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }]);
+	</script>
 </div>

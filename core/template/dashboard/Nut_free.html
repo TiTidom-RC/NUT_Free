@@ -83,23 +83,6 @@
 		}
 	</script>
 
-	<script>
-		// Gestion générique des boutons action (instcmds, RW vars)
-		$('[data-eqLogic_uid="#uid#"]').off('click.nut-action').on('click.nut-action', '.nut-action-btn', function() {
-			var $btn   = $(this);
-			var cmdId  = $btn.data('cmd_id');
-			var subtype = $btn.data('subtype');
-			if (subtype === 'slider' || subtype === 'message') {
-				var label = $btn.closest('.nut-action-row').find('.nut-label').text().replace(/\s*:\s*$/, '');
-				var val = window.prompt(label || 'Valeur :');
-				if (val !== null) {
-					jeedom.cmd.execute({ id: cmdId, options: { message: val } });
-				}
-			} else {
-				jeedom.cmd.execute({ id: cmdId });
-			}
-		});
-	</script>
 
 	<div class="nut-cmds">
 		#cmds_html#
