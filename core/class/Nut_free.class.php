@@ -230,7 +230,7 @@ class Nut_free extends eqLogic {
 			'port'        => (int) $eq->getConfiguration('nutPort', 3493),
 			'upsName'     => $eq->getConfiguration('ups', ''),
 			'autoDetect'  => ($eq->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
-			'nutLogin'    => $eq->getConfiguration('nutLogin', ''),
+			'nutUsername' => $eq->getConfiguration('nutUsername', ''),
 			'nutPassword' => $eq->getConfiguration('nutPassword', ''),
 		];
 	}
@@ -475,11 +475,11 @@ class Nut_free extends eqLogic {
 	 * Permet de crypter/décrypter automatiquement des champs de configuration des équipements
 	 */
 	public function decrypt() {
-		$this->setConfiguration('nutLogin', utils::decrypt($this->getConfiguration('nutLogin')));
+		$this->setConfiguration('nutUsername', utils::decrypt($this->getConfiguration('nutUsername')));
 		$this->setConfiguration('nutPassword', utils::decrypt($this->getConfiguration('nutPassword')));
 	}
 	public function encrypt() {
-		$this->setConfiguration('nutLogin', utils::encrypt($this->getConfiguration('nutLogin')));
+		$this->setConfiguration('nutUsername', utils::encrypt($this->getConfiguration('nutUsername')));
 		$this->setConfiguration('nutPassword', utils::encrypt($this->getConfiguration('nutPassword')));
 	}
 
