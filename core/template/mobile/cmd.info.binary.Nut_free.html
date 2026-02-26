@@ -6,7 +6,7 @@
 	<script>
 		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
 			var cmd = $('.cmd[data-cmd_id=#id#]');
-			cmd.attr('title', '{{Date de valeur}}: ' + _options.valueDate + ' - {{Date de collecte}}: ' + _options.collectDate);
+			cmd.attr('title', '#name_display# - {{Date de valeur}}: ' + _options.valueDate + ' - {{Date de collecte}}: ' + _options.collectDate);
 			cmd.find('.value').empty().append(_options.display_value);
 			cmd.find('.unit').empty().append(_options.unit);
 		});
