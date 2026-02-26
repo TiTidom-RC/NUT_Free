@@ -9,18 +9,52 @@
     },
     "plugins\/Nut_free\/core\/class\/Nut_free.class.php": {
         "Commande non implémentée actuellement": "Befehl derzeit nicht implementiert",
+        "Modifier": "Bearbeiten",
         "Nom UPS non configuré pour l\\'équipement ": "UPS-Name für Gerät nicht konfiguriert ",
         "Plugin SSH-Manager introuvable - vérifiez les dépendances": "Plugin SSH-Manager nicht gefunden – überprüfen Sie die Abhängigkeiten",
         "SSHHostId non configuré pour l\\'équipement ": "SSHHostId für Gerät nicht konfiguriert "
     },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.binary.ups.html": {
+        "Date de collecte": "Datum der Erhebung",
+        "Date de valeur": "Valutadatum"
+    },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.numeric.ups.html": {
+        "Date de collecte": "Datum der Erhebung",
+        "Date de valeur": "Valutadatum"
+    },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.string.ups.html": {
+        "Date de collecte": "Datum der Erhebung",
+        "Date de valeur": "Valutadatum"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.binary.ups.html": {
+        "Date de collecte": "Datum der Erhebung",
+        "Date de valeur": "Valutadatum"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.numeric.ups.html": {
+        "Date de collecte": "Datum der Erhebung",
+        "Date de valeur": "Valutadatum"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.string.ups.html": {
+        "Date de collecte": "Datum der Erhebung",
+        "Date de valeur": "Valutadatum"
+    },
     "plugins\/Nut_free\/desktop\/js\/Nut_free.js": {
         "Afficher": "Anzeigen",
         "Choisir une icône": "Symbol auswählen",
+        "Commandes dynamiques supprimées. Rechargez la page des commandes.": "Dynamische Befehle wurden entfernt. Laden Sie die Befehlsseite neu.",
+        "Dernière Synchronisation : terminée avec succès": "Letzte Synchronisierung: erfolgreich abgeschlossen",
         "Erreur inconnue": "Unbekannter Fehler",
+        "Erreur lors de la dernière synchronisation": "Fehler bei der letzten Synchronisierung",
         "Historiser": "Historisieren",
         "Nom de la commande": "Befehlsname",
-
+        "Requête envoyée. Les commandes seront créées dans quelques instants — rechargez la page des commandes pour les voir.": "Anfrage gesendet. Die Bestellungen werden in wenigen Augenblicken erstellt – laden Sie die Bestellseite neu, um sie anzuzeigen.",
+        "Sauvegardez d\\'abord l\\'équipement": "Sichern Sie zuerst die Ausrüstung",
+        "Sauvegardez d\\'abord l\\'équipement avant de lancer la synchronisation": "Sichern Sie zunächst die Geräte, bevor Sie die Synchronisierung starten.",
         "Supprimer la commande": "Bestellung löschen",
+        "Supprimer toutes les commandes dynamiques de cet équipement ?": "Alle dynamischen Befehle für dieses Gerät löschen?",
+        "Synchronisation en cours ou en attente...": "Synchronisierung läuft oder wartet...",
+        "Synchronisation en cours...": "Synchronisierung läuft...",
+        "Synchronisation lancée. Rechargez la page des commandes dans quelques instants.": "Synchronisierung gestartet. Laden Sie die Bestellseite in wenigen Augenblicken neu.",
         "Tester": "Testen",
         "Unité": "Einheit"
     },
@@ -37,13 +71,13 @@
         "Auto-détection UPS ?": "Automatische USV-Erkennung?",
         "Catégorie": "Kategorie",
         "Choisir un hôte SSH dans la liste ou en créer un nouveau": "Wählen Sie einen SSH-Host aus der Liste aus oder erstellen Sie einen neuen.",
-
         "Commande": "Steuerung",
         "Commandes": "Steuerungen",
         "Community": "Community",
         "Configuration": "Konfiguration",
         "Configuration avancée": "Erweiterte Konfiguration",
         "Connexion NUT": "NUT-Anschluss",
+        "Crée automatiquement les commandes Jeedom correspondant aux variables et commandes supportées par votre onduleur.": "Erstellt automatisch Jeedom-Befehle, die den von Ihrer USV unterstützten Variablen und Befehlen entsprechen.",
         "Documentation": "Dokumentation",
         "Dupliquer": "Duplizieren",
         "Editer cet hôte SSH": "Diesen SSH-Host bearbeiten",
@@ -52,8 +86,6 @@
         "Général": "Allgemeines",
         "Hôte SSH": "SSH-Host",
         "Id": "Id",
-        "Utilisateur NUT": "NUT-Benutzer",
-        "Utilisateur d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "upsd-Authentifizierungsbenutzer (optional, leer lassen, wenn der NUT-Server dies nicht verlangt)",
         "Mes NUT Free": "Meine NUT Free",
         "Mot de passe NUT": "NUT-Passwort",
         "Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "Passwort upsd (optional, leer lassen, wenn der NUT-Server dies nicht verlangt)",
@@ -76,7 +108,12 @@
         "Sauvegarder": "Speichern",
         "Si activé, le nom de l'UPS sera détecté automatiquement via upsc -l": "Wenn aktiviert, wird der Name der USV automatisch über upsc -l erkannt.",
         "Supprimer": "Löschen",
+        "Supprimer Commandes Synchronisées": "Synchronisierte Befehle löschen",
+        "Synchronisation des Commandes": "Synchronisierung der Befehle",
+        "Synchroniser les Commandes": "Befehle synchronisieren",
         "Unité": "Einheit",
+        "Utilisateur NUT": "NUT-Benutzer",
+        "Utilisateur d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "upsd-Authentifizierungsbenutzer (optional, leer lassen, wenn der NUT-Server dies nicht verlangt)",
         "Visible": "Sichtbar",
         "ex: 192.168.1.100": "Beispiel: 192.168.1.100",
         "ex: myups": "Beispiel: myups",
