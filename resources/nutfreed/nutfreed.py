@@ -28,7 +28,6 @@ Actions reçues via socket :
   remove_device   : supprime un équipement de la liste de polling
   query_now       : force une interrogation immédiate d'un équipement
   instcmd         : exécute une commande NUT instcmd
-  list_query      : récupère instcmds + RW vars disponibles
   discover_all    : découverte complète des capacités de l'UPS
   setrwvar        : modifie une variable RW sur l'UPS
   shutdown        : arrête le daemon proprement
@@ -287,45 +286,6 @@ def runInstCmd(device: NutDevice, nutInstCmd: str) -> None:
     })
 
 
-def runListQueryAll(device: NutDevice) -> None:
-    """
-    Récupère instcmds ET RW vars en une seule connexion NUT,
-    puis envoie deux messages list_result distincts à Jeedom.
-    """
-    upsName = _resolveUpsName(device)
-    if not upsName:
-        logging.error('[DAEMON][%s] runListQueryAll() :: UPS non résolu', device.name)
-        for qtype in ('instcmds', 'rwvars'):
-            Comm.sendToJeedom.send_change_immediate({
-                'list_result': {device.eqLogicId: {'type': qtype, 'result': 'ERR: nom UPS non résolu'}}
-            })
-        return
-    try:
-        client = PyNUTClient(host=device.host, port=device.port,
-                             login=device.nutUsername, password=device.nutPassword)
-        raw_cmds = client.GetUPSCommands(upsName) or {}
-        raw_rw   = client.GetRWVars(upsName) or {}
-    except Exception as e:
-        logging.error('[DAEMON][%s] runListQueryAll() :: %s', device.name, e)
-        for qtype in ('instcmds', 'rwvars'):
-            Comm.sendToJeedom.send_change_immediate({
-                'list_result': {device.eqLogicId: {'type': qtype, 'result': f'ERR: {e}'}}
-            })
-        return
-    cmds = sorted(_nutToStr(k) for k in raw_cmds)
-    result_cmds = '\n'.join(cmds) if cmds else '(aucune commande disponible)'
-    lines = sorted(f'{_nutToStr(k)} = {_nutToStr(v)}' for k, v in raw_rw.items())
-    result_rw = '\n'.join(lines) if lines else '(aucune variable RW disponible)'
-    logging.info('[DAEMON][%s] runListQueryAll() :: %d instcmds, %d rwvars',
-                 device.name, len(raw_cmds), len(raw_rw))
-    Comm.sendToJeedom.send_change_immediate({
-        'list_result': {device.eqLogicId: {'type': 'instcmds', 'result': result_cmds}}
-    })
-    Comm.sendToJeedom.send_change_immediate({
-        'list_result': {device.eqLogicId: {'type': 'rwvars', 'result': result_rw}}
-    })
-
-
 def runDiscoverAll(device: NutDevice) -> None:
     """
     Découverte complète des capacités d'un UPS :
@@ -545,17 +505,6 @@ class Loops:
                         else:
                             threading.Thread(
                                 target=runInstCmd, args=(device, nutInstCmd), daemon=True
-                            ).start()
-
-                    elif action == 'list_query':
-                        eqLogicId = str(message.get('eqLogicId', ''))
-                        with myConfig.devicesLock:
-                            device = myConfig.devices.get(eqLogicId)
-                        if not device:
-                            logging.warning('[DAEMON][SOCKET] list_query : équipement %s inconnu', eqLogicId)
-                        else:
-                            threading.Thread(
-                                target=runListQueryAll, args=(device,), daemon=True
                             ).start()
 
                     elif action == 'discover_all':

@@ -142,32 +142,6 @@ function printEqLogic(_eqLogic) {
     selConnexionMode.addEventListener('change', handleConnexionModeChange)
   }
 
-  // Bouton Rafraîchir — une seule requête qui déclenche les deux listes
-  const btAll = document.querySelector('#bt_refresh_nut_lists')
-  if (btAll) btAll.onclick = () => {
-    const eqLogicId = _eqLogic.id
-    if (!eqLogicId) {
-      jeedomUtils.showAlert({ message: '{{Sauvegardez d\'abord l\'équipement avant de lancer une requête}}', level: 'warning' })
-      return
-    }
-    fetch('plugins/Nut_free/core/ajax/Nut_free.ajax.php', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({ action: 'getNutList', eqLogicId })
-    })
-    .then(r => r.json())
-    .then(data => {
-      if (data.state === 'ok') {
-        jeedomUtils.showAlert({ message: '{{Requêtes envoyées au démon. Rafraîchissez la page dans quelques instants pour voir les résultats.}}', level: 'info' })
-      } else {
-        jeedomUtils.showAlert({ message: data.result ?? '{{Erreur inconnue}}', level: 'danger' })
-      }
-    })
-    .catch(err => {
-      jeedomUtils.showAlert({ message: String(err), level: 'danger' })
-    })
-  }
-
   // Bouton Synchroniser avec l'onduleur
   const btDiscover = document.querySelector('#bt_discover_all')
   if (btDiscover) btDiscover.onclick = () => {

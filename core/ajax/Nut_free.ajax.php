@@ -31,35 +31,6 @@ try {
 
     ajax::init(array());
 
-    // ----- Action : Interroger le démon pour les instcmds et RW vars d'un UPS -----
-    if (init('action') == 'getNutList') {
-        $eqLogicId = init('eqLogicId');
-
-        if (empty($eqLogicId)) {
-            throw new Exception(__('ID équipement manquant', __FILE__));
-        }
-
-        /** @var Nut_free $eqLogic */
-        $eqLogic = Nut_free::byId($eqLogicId);
-        if (!is_object($eqLogic)) {
-            throw new Exception(__('Équipement introuvable', __FILE__));
-        }
-        if ($eqLogic->getConfiguration('connexionMode', 'nut') !== 'nut') {
-            throw new Exception(__('Fonctionnalité disponible uniquement en mode NUT direct', __FILE__));
-        }
-
-        $sent = Nut_free::sendToDaemon(array(
-            'action'    => 'list_query',
-            'eqLogicId' => $eqLogicId,
-        ));
-
-        if (!$sent) {
-            throw new Exception(__('Impossible de contacter le démon (vérifiez qu\'il est démarré)', __FILE__));
-        }
-
-        ajax::success(__('ok', __FILE__));
-    }
-
     // ----- Action : Synchroniser toutes les commandes dynamiques avec l'onduleur -----
     if (init('action') == 'discoverAll') {
         $eqLogicId = init('eqLogicId');
