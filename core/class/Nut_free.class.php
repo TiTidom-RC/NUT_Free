@@ -418,7 +418,7 @@ class Nut_free extends eqLogic {
 			$cmdRw->setEqLogic_id($eqId);
 			// Données techniques : toujours propagées
 			$cmdRw->setType('action');
-			$cmdRw->setSubType(($entry['subtype'] === 'numeric') ? 'slider' : 'message');
+			$cmdRw->setSubType('message');
 			$cmdRw->setConfiguration('nutRwVar', $entry['nut_var']);
 			// isDynamic : positionné seulement à la création pour ne pas écraser les commandes statiques préexistantes
 			if ($isNewRw) {
@@ -908,7 +908,7 @@ class Nut_freeCmd extends cmd {
         // Commandes RW dynamiques : envoi SetRWVar au daemon (routage par nutRwVar configuré)
         $nutRwVar = $this->getConfiguration('nutRwVar', '');
         if (!empty($nutRwVar)) {
-            $value = $_options['slider'] ?? $_options['message'] ?? '';
+            $value = $_options['message'] ?? '';
             log::add('Nut_free', 'info', '[' . $equipment . '] setrwvar : ' . $nutRwVar . ' = ' . $value);
             if ($connexionType === 'nut') {
                 Nut_free::sendToDaemon(array(
