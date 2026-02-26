@@ -15,37 +15,48 @@
 
 import time
 import threading
-from typing import Any
+from pathlib import Path
+from typing import TYPE_CHECKING, Any, ClassVar, Final
+
+if TYPE_CHECKING:
+    from nutfreed import NutDevice
 
 
 class Config:
-    IS_ENDING: bool = False
+    # --- Constantes immuables au niveau classe ---
+    heartbeatFrequency: Final[int] = 600  # intervalle heartbeat en secondes
+    NUT_VARS_PATH: ClassVar[Path] = (Path(__file__).parent.parent / 'nut_vars.json').resolve()
+    nutVarsCache: ClassVar[dict[str, Any] | None] = None
+    nutVarsLock: ClassVar[threading.Lock] = threading.Lock()
 
-    pluginVersion = '0.0.0'
-    logLevel = 'error'
-    socketPort = 55113
-    socketHost = '127.0.0.1'
-    pidFile = ''
-    apiKey = ''
-    callBack = ''
+    def __init__(self) -> None:
+        # --- État d'exécution ---
+        self.IS_ENDING: bool = False
+        self.heartbeatLastTime: int = int(time.time())
 
-    cyclePolling = 60.0
-    cycleMain = 2.0  # cycle de la boucle principale (tick détection IS_ENDING)
-    cycleEvent = 1.0  # cycle de la boucle events from Jeedom
-    cycleComm = 1.0  # cycle de la boucle comm vers Jeedom
-    cycleFactor = 1.0  # facteur multiplicateur appliqué aux cycles internes
-    cycleWatcher = 5.0    # cycle du status watcher par équipement (normal)
-    cycleWatcherAlert = 2.0  # cycle réduit quand UPS sur batterie (OB)
+        # --- Configuration (valorisée par les args CLI) ---
+        self.pluginVersion: str = '0.0.0'
+        self.logLevel: str = 'error'
+        self.socketPort: int = 55113
+        self.socketHost: str = '127.0.0.1'
+        self.pidFile: str = ''
+        self.apiKey: str = ''
+        self.callBack: str = ''
 
-    heartbeatFrequency = 600  # intervalle heartbeat en secondes
-    heartbeatLastTime = int(time.time())
+        self.cyclePolling: float = 60.0
+        self.cycleMain: float = 2.0    # cycle de la boucle principale (tick détection IS_ENDING)
+        self.cycleEvent: float = 1.0   # cycle de la boucle events from Jeedom
+        self.cycleComm: float = 1.0    # cycle de la boucle comm vers Jeedom
+        self.cycleFactor: float = 1.0  # facteur multiplicateur appliqué aux cycles internes
+        self.cycleWatcher: float = 5.0       # cycle du status watcher par équipement (normal)
+        self.cycleWatcherAlert: float = 2.0  # cycle réduit quand UPS sur batterie (OB)
 
-    devices: dict = {}  # dict[eqLogicId, NutDevice]
-    devicesLock = threading.Lock()
-
-    watcherStopEvents: dict = {}   # dict[eqLogicId, threading.Event]
-    deviceLastStatus: dict = {}    # dict[eqLogicId, str] — dernier ups.status connu
+        # --- Équipements surveillés ---
+        self.devices: dict[str, 'NutDevice'] = {}                # dict[eqLogicId, NutDevice]
+        self.devicesLock: threading.Lock = threading.Lock()
+        self.watcherStopEvents: dict[str, threading.Event] = {}  # dict[eqLogicId, Event]
+        self.deviceLastStatus: dict[str, str] = {}               # dict[eqLogicId, ups.status]
 
 
 class Comm:
-    sendToJeedom: Any = None
+    sendToJeedom: ClassVar[Any] = None

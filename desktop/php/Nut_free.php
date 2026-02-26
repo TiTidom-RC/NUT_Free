@@ -230,6 +230,28 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     </div>
                     <!-- Colonne droite : Données UPS disponibles (mode NUT direct uniquement) -->
                     <div class="col-sm-6 nut-list-section">
+                        <!-- Synchronisation dynamique des commandes -->
+                        <fieldset>
+                            <legend><i class="fas fa-sync-alt icon_blue"></i> {{Synchronisation avec l'onduleur}}</legend>
+                            <p class="help-block">{{Crée automatiquement les commandes Jeedom correspondant aux variables et commandes supportées par votre onduleur.}}</p>
+                            <div class="form-group">
+                                <div class="col-sm-12">
+                                    <a id="bt_discover_all" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-sync-alt"></i> {{Synchroniser avec l'onduleur}}
+                                    </a>
+                                    &nbsp;
+                                    <a id="bt_clean_dynamic_cmds" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash-alt"></i> {{Supprimer commandes dynamiques}}
+                                    </a>
+                                </div>
+                            </div>
+                            <div id="discover_status_block" class="form-group" style="display:none;">
+                                <div class="col-sm-12">
+                                    <span id="discover_status_msg" class="label label-info"></span>
+                                </div>
+                            </div>
+                        </fieldset>
+                        <!-- Aperçu brut des listes NUT (historique) -->
                         <fieldset>
                             <legend><i class="fas fa-list"></i> {{Données UPS disponibles}} <a id="bt_refresh_nut_lists" class="btn btn-xs btn-default" title="{{Rafraîchir}}"><i class="fas fa-sync"></i></a></legend>
                             <div class="row">
@@ -237,13 +259,13 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                     <label>{{Commandes instcmd}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Liste des commandes instcmd supportées par l'UPS (ex: beeper.disable, test.battery.start.quick)}}"></i></sup>
                                     </label>
-                                    <textarea id="ta_list_instcmds" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_instcmds" rows="12" readonly placeholder="{{Cliquer sur Rafraîchir...}}"></textarea>
+                                    <textarea id="ta_list_instcmds" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_instcmds" rows="8" readonly placeholder="{{Cliquer sur Rafraîchir...}}"></textarea>
                                 </div>
                                 <div class="col-xs-6">
                                     <label>{{Variables RW}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Variables NUT accessibles en lecture/écriture (ex: battery.runtime.low, ups.delay.shutdown)}}"></i></sup>
                                     </label>
-                                    <textarea id="ta_list_rwvars" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_rwvars" rows="12" readonly placeholder="{{Cliquer sur Rafraîchir...}}"></textarea>
+                                    <textarea id="ta_list_rwvars" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="list_rwvars" rows="8" readonly placeholder="{{Cliquer sur Rafraîchir...}}"></textarea>
                                 </div>
                             </div>
                         </fieldset>

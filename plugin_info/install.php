@@ -18,50 +18,35 @@
 
 require_once dirname(__FILE__) . '/../../../core/php/core.inc.php';
 
-function Nut_free_install() {
-    $pluginVersion = Nut_free::getPluginVersion();
-    config::save('pluginVersion', $pluginVersion, 'Nut_free');
+/**
+ * Initialise les clés de configuration par défaut si elles sont absentes.
+ * Appelé à l'installation et à la mise à jour.
+ */
+function initDefaultConfig(): void {
+    $defaults = array(
+        'pythonVersion'       => '?.?.?',
+        'pyenvVersion'        => '?.?.?',
+        'socketPort'          => '55113',
+        'cyclePolling'        => '60',
+        'cycleWatcher'        => '5',
+        'cycleFactor'         => '1.0',
+        'debugInstallUpdates' => '0',
+        'debugRestorePyEnv'   => '0',
+        'debugRestoreVenv'    => '0',
+        'disableUpdateMsg'    => '0',
+    );
+    foreach ($defaults as $key => $value) {
+        if (config::byKey($key, 'Nut_free') == '') {
+            config::save($key, $value, 'Nut_free');
+        }
+    }
+}
 
-    $pluginBranch = Nut_free::getPluginBranch();
-    config::save('pluginBranch', $pluginBranch, 'Nut_free');
-
-    message::removeAll('Nut_free');
-    message::add('Nut_free', 'Installation du plugin NUT Free (Version : ' . $pluginVersion . ')', null, null);
-
-    Nut_free::getPythonDepFromRequirements();
-
-    if (config::byKey('pythonVersion', 'Nut_free') == '') {
-        config::save('pythonVersion', '?.?.?', 'Nut_free');
-    }
-    if (config::byKey('pyenvVersion', 'Nut_free') == '') {
-        config::save('pyenvVersion', '?.?.?', 'Nut_free');
-    }
-    if (config::byKey('socketPort', 'Nut_free') == '') {
-        config::save('socketPort', '55113', 'Nut_free');
-    }
-    if (config::byKey('cyclePolling', 'Nut_free') == '') {
-        config::save('cyclePolling', '60', 'Nut_free');
-    }
-    if (config::byKey('cycleWatcher', 'Nut_free') == '') {
-        config::save('cycleWatcher', '5', 'Nut_free');
-    }
-    if (config::byKey('cycleFactor', 'Nut_free') == '') {
-        config::save('cycleFactor', '1.0', 'Nut_free');
-    }
-    if (config::byKey('debugInstallUpdates', 'Nut_free') == '') {
-        config::save('debugInstallUpdates', '0', 'Nut_free');
-    }
-    if (config::byKey('debugRestorePyEnv', 'Nut_free') == '') {
-        config::save('debugRestorePyEnv', '0', 'Nut_free');
-    }
-    if (config::byKey('debugRestoreVenv', 'Nut_free') == '') {
-        config::save('debugRestoreVenv', '0', 'Nut_free');
-    }
-    if (config::byKey('disableUpdateMsg', 'Nut_free') == '') {
-        config::save('disableUpdateMsg', '0', 'Nut_free');
-    }
-
-    // Enregistrement du cron de collecte (toutes les minutes)
+/**
+ * Crée le cron de collecte (toutes les minutes) s'il n'existe pas encore.
+ * Idempotent : ne recrée pas si déjà présent.
+ */
+function ensureCron(): void {
     $cron = cron::byClassAndFunction('Nut_free', 'cron');
     if (!is_object($cron)) {
         $cron = new cron();
@@ -73,6 +58,21 @@ function Nut_free_install() {
         $cron->setTimeout(1);
         $cron->save();
     }
+}
+
+function Nut_free_install() {
+    $pluginVersion = Nut_free::getPluginVersion();
+    config::save('pluginVersion', $pluginVersion, 'Nut_free');
+
+    $pluginBranch = Nut_free::getPluginBranch();
+    config::save('pluginBranch', $pluginBranch, 'Nut_free');
+
+    message::removeAll('Nut_free');
+    message::add('Nut_free', 'Installation du plugin NUT Free (Version : ' . $pluginVersion . ')', null, null);
+
+    Nut_free::getPythonDepFromRequirements();
+    initDefaultConfig();
+    ensureCron();
 
     $dependencyInfo = Nut_free::dependancy_info();
     if (!isset($dependencyInfo['state'])) {
@@ -103,37 +103,7 @@ function Nut_free_update() {
     }
 
     Nut_free::getPythonDepFromRequirements();
-
-    if (config::byKey('pythonVersion', 'Nut_free') == '') {
-        config::save('pythonVersion', '?.?.?', 'Nut_free');
-    }
-    if (config::byKey('pyenvVersion', 'Nut_free') == '') {
-        config::save('pyenvVersion', '?.?.?', 'Nut_free');
-    }
-    if (config::byKey('socketPort', 'Nut_free') == '') {
-        config::save('socketPort', '55113', 'Nut_free');
-    }
-    if (config::byKey('cyclePolling', 'Nut_free') == '') {
-        config::save('cyclePolling', '60', 'Nut_free');
-    }
-    if (config::byKey('cycleWatcher', 'Nut_free') == '') {
-        config::save('cycleWatcher', '5', 'Nut_free');
-    }
-    if (config::byKey('cycleFactor', 'Nut_free') == '') {
-        config::save('cycleFactor', '1.0', 'Nut_free');
-    }
-    if (config::byKey('debugInstallUpdates', 'Nut_free') == '') {
-        config::save('debugInstallUpdates', '0', 'Nut_free');
-    }
-    if (config::byKey('debugRestorePyEnv', 'Nut_free') == '') {
-        config::save('debugRestorePyEnv', '0', 'Nut_free');
-    }
-    if (config::byKey('debugRestoreVenv', 'Nut_free') == '') {
-        config::save('debugRestoreVenv', '0', 'Nut_free');
-    }
-    if (config::byKey('disableUpdateMsg', 'Nut_free') == '') {
-        config::save('disableUpdateMsg', '0', 'Nut_free');
-    }
+    initDefaultConfig();
 
     // Nettoyage des fichiers et répertoires obsolètes des anciennes versions
     // À compléter au fur et à mesure des migrations
@@ -142,7 +112,8 @@ function Nut_free_update() {
     );
 
     $filesToDelete = array(
-        __DIR__ . '/../plugin_info/packages.json',
+        __DIR__ . '/packages.json',                  // remplacé par info.json
+        __DIR__ . '/../resources/install.sh',        // remplacé par install_apt.sh
     );
 
     try {
@@ -163,32 +134,20 @@ function Nut_free_update() {
         foreach ($filesToDelete as $file) {
             log::add('Nut_free', 'debug', '[CLEAN] Vérification fichier :: ' . $file);
             if (file_exists($file)) {
-                $output = shell_exec('sudo rm -f ' . escapeshellarg($file) . ' 2>&1');
-                if (file_exists($file)) {
-                    log::add('Nut_free', 'warning', '[CLEAN] Échec suppression fichier :: ' . $file . (!empty($output) ? ' :: ' . trim($output) : ''));
-                } else {
+                if (@unlink($file)) {
                     log::add('Nut_free', 'debug', '[CLEAN] Supprimé :: ' . $file);
+                } else {
+                    log::add('Nut_free', 'warning', '[CLEAN] Échec suppression fichier :: ' . $file);
                 }
             } else {
                 log::add('Nut_free', 'debug', '[CLEAN] Absent (OK) :: ' . $file);
             }
         }
-    } catch (Exception $e) {
+    } catch (\Throwable $e) {
         log::add('Nut_free', 'warning', '[CLEAN] Exception :: ' . $e->getMessage());
     }
 
-    // S'assurer que le cron existe toujours après une mise à jour
-    $cron = cron::byClassAndFunction('Nut_free', 'cron');
-    if (!is_object($cron)) {
-        $cron = new cron();
-        $cron->setClass('Nut_free');
-        $cron->setFunction('cron');
-        $cron->setEnable(1);
-        $cron->setDeamon(0);
-        $cron->setSchedule('* * * * *');
-        $cron->setTimeout(1);
-        $cron->save();
-    }
+    ensureCron();
 
     // Mise à jour des commandes de tous les équipements existants (propage nutCmd, unité, etc.)
     Nut_free::createCmd();
