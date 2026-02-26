@@ -1,8 +1,38 @@
-<div class="cmd cmd-widget" data-type="info" data-subtype="numeric" data-template="Nut_free" data-cmd_id="#id#" data-cmd_uid="#uid#" data-version="#version#" data-eqLogic_id="#eqLogic_id#"
-	style="display:block;line-height:1.6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:1px 0;">
-	<span class="cmdName #hide_name#" style="opacity:0.6;font-style:italic;">#name_display# :</span>
-	<span class="value" style="font-weight:500;margin-left:4px;">#state#</span>
+<div class="cmd cmd-widget"
+	data-type="info"
+	data-subtype="numeric"
+	data-template="Nut_free"
+	data-cmd_id="#id#"
+	data-cmd_uid="#uid#"
+	data-version="#version#"
+	data-eqLogic_id="#eqLogic_id#">
+
+	<style>
+		.cmd[data-cmd_uid="#uid#"] {
+			display: block;
+			line-height: 1.6;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			padding: 1px 0;
+		}
+		.cmd[data-cmd_uid="#uid#"] .cmdName {
+			opacity: 0.6;
+			font-style: italic;
+		}
+		.cmd[data-cmd_uid="#uid#"] .cmdName::after {
+			content: ' :';
+		}
+		.cmd[data-cmd_uid="#uid#"] .value {
+			font-weight: 500;
+			margin-left: 4px;
+		}
+	</style>
+
+	<span class="cmdName #hide_name#">#name_display#</span>
+	<span class="value">#state#</span>
 	<strong class="unit">#unite#</strong>
+
 	<script>
 		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
 			var cmd = $('.cmd[data-cmd_id=#id#]');
@@ -12,4 +42,5 @@
 		});
 		jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }]);
 	</script>
+
 </div>
