@@ -9,18 +9,52 @@
     },
     "plugins\/Nut_free\/core\/class\/Nut_free.class.php": {
         "Commande non implémentée actuellement": "Command not currently implemented",
+        "Modifier": "Edit",
         "Nom UPS non configuré pour l\\'équipement ": "UPS name not configured for the equipment ",
         "Plugin SSH-Manager introuvable - vérifiez les dépendances": "SSH Manager plugin not found - check dependencies",
         "SSHHostId non configuré pour l\\'équipement ": "SSHHostId not configured for the equipment "
     },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.binary.ups.html": {
+        "Date de collecte": "Date of collection",
+        "Date de valeur": "Value date"
+    },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.numeric.ups.html": {
+        "Date de collecte": "Date of collection",
+        "Date de valeur": "Value date"
+    },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.string.ups.html": {
+        "Date de collecte": "Date of collection",
+        "Date de valeur": "Value date"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.binary.ups.html": {
+        "Date de collecte": "Date of collection",
+        "Date de valeur": "Value date"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.numeric.ups.html": {
+        "Date de collecte": "Date of collection",
+        "Date de valeur": "Value date"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.string.ups.html": {
+        "Date de collecte": "Date of collection",
+        "Date de valeur": "Value date"
+    },
     "plugins\/Nut_free\/desktop\/js\/Nut_free.js": {
         "Afficher": "Display",
         "Choisir une icône": "Select an icon",
+        "Commandes dynamiques supprimées. Rechargez la page des commandes.": "Dynamic commands removed. Reload the commands page.",
+        "Dernière Synchronisation : terminée avec succès": "Last synchronization: completed successfully",
         "Erreur inconnue": "Unknown error",
+        "Erreur lors de la dernière synchronisation": "Error during last synchronization",
         "Historiser": "Historize",
         "Nom de la commande": "Name of the command",
-
+        "Requête envoyée. Les commandes seront créées dans quelques instants — rechargez la page des commandes pour les voir.": "Request sent. Commands will be created in a few moments — reload the commands page to see them.",
+        "Sauvegardez d\\'abord l\\'équipement": "Back up your equipment first",
+        "Sauvegardez d\\'abord l\\'équipement avant de lancer la synchronisation": "Back up your equipment before starting synchronization.",
         "Supprimer la commande": "Delete command",
+        "Supprimer toutes les commandes dynamiques de cet équipement ?": "Delete all dynamic commands for this device?",
+        "Synchronisation en cours ou en attente...": "Synchronization in progress or pending...",
+        "Synchronisation en cours...": "Synchronizing...",
+        "Synchronisation lancée. Rechargez la page des commandes dans quelques instants.": "Synchronization started. Please reload the commands page in a few moments.",
         "Tester": "Test",
         "Unité": "Unit"
     },
@@ -43,6 +77,7 @@
         "Configuration": "Configuration",
         "Configuration avancée": "Advanced configuration",
         "Connexion NUT": "NUT connection",
+        "Crée automatiquement les commandes Jeedom correspondant aux variables et commandes supportées par votre onduleur.": "Automatically creates Jeedom commands corresponding to the variables and commands supported by your UPS.",
         "Documentation": "Documentation",
         "Dupliquer": "Duplicate",
         "Editer cet hôte SSH": "Edit this SSH host",
@@ -51,8 +86,6 @@
         "Général": "General",
         "Hôte SSH": "SSH host",
         "Id": "Id",
-        "Utilisateur NUT": "NUT username",
-        "Utilisateur d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "UPSD authentication username (optional, leave blank if the NUT server does not require it)",
         "Mes NUT Free": "My NUT Free",
         "Mot de passe NUT": "NUT password",
         "Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "upsd password (optional, leave blank if the NUT server does not require it)",
@@ -75,7 +108,12 @@
         "Sauvegarder": "Save",
         "Si activé, le nom de l'UPS sera détecté automatiquement via upsc -l": "If enabled, the UPS name will be detected automatically via upsc -l",
         "Supprimer": "Delete",
+        "Supprimer Commandes Synchronisées": "Delete Synchronized Commands",
+        "Synchronisation des Commandes": "Synchronization of Commands",
+        "Synchroniser les Commandes": "Synchronize Commands",
         "Unité": "Unit",
+        "Utilisateur NUT": "NUT username",
+        "Utilisateur d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "UPSD authentication username (optional, leave blank if the NUT server does not require it)",
         "Visible": "Visible",
         "ex: 192.168.1.100": "e.g.: 192.168.1.100",
         "ex: myups": "e.g.: myups",
