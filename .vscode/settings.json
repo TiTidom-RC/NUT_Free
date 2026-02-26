@@ -1,10 +1,12 @@
 {
     "cSpell.words": [
         "ajax",
+        "commandtab",
         "cyclepolling",
         "cyclewatcher",
         "Eiwc",
         "energysave",
+        "eqlogictab",
         "highwarn",
         "historized",
         "Historized",
@@ -16,6 +18,7 @@
         "lowwarn",
         "macaddr",
         "minmax",
+        "myups",
         "nutfreed",
         "offdelay",
         "ondelay",
@@ -33,6 +36,7 @@
         "SSHM",
         "sshmanager",
         "stayoff",
+        "upsc",
         "upscmd",
         "upsd",
         "upsmon",

@@ -142,7 +142,7 @@ function printEqLogic(_eqLogic) {
     selConnexionMode.addEventListener('change', handleConnexionModeChange)
   }
 
-  // Bouton Synchroniser avec l'onduleur
+  // Bouton Synchroniser les Commandes
   const btDiscover = document.querySelector('#bt_discover_all')
   if (btDiscover) btDiscover.onclick = () => {
     const eqLogicId = _eqLogic.id
@@ -191,7 +191,7 @@ function printEqLogic(_eqLogic) {
     })
   }
 
-  // Bouton Supprimer commandes dynamiques
+  // Bouton Supprimer Commandes Synchronisées
   const btClean = document.querySelector('#bt_clean_dynamic_cmds')
   if (btClean) btClean.onclick = () => {
     const eqLogicId = _eqLogic.id
@@ -232,7 +232,7 @@ function printEqLogic(_eqLogic) {
     if (discoverStatus === 'done') {
       statusBlock.style.display = ''
       statusMsg.className = 'label label-success'
-      statusMsg.textContent = '{{Dernière synchronisation : terminée avec succès}}'
+      statusMsg.textContent = '{{Dernière Synchronisation : terminée avec succès}}'
     } else if (discoverStatus === 'error') {
       statusBlock.style.display = ''
       statusMsg.className = 'label label-danger'

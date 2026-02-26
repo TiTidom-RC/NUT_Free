@@ -232,16 +232,16 @@ $eqLogics = eqLogic::byType($plugin->getId());
                     <div class="col-sm-6 nut-list-section">
                         <!-- Synchronisation dynamique des commandes -->
                         <fieldset>
-                            <legend><i class="fas fa-sync-alt icon_blue"></i> {{Synchronisation avec l'onduleur}}</legend>
+                            <legend><i class="fas fa-sync-alt icon_blue"></i> {{Synchronisation des Commandes}}</legend>
                             <p class="help-block">{{Crée automatiquement les commandes Jeedom correspondant aux variables et commandes supportées par votre onduleur.}}</p>
                             <div class="form-group">
                                 <div class="col-sm-12">
                                     <a id="bt_discover_all" class="btn btn-sm btn-primary">
-                                        <i class="fas fa-sync-alt"></i> {{Synchroniser avec l'onduleur}}
+                                        <i class="fas fa-sync-alt"></i> {{Synchroniser les Commandes}}
                                     </a>
                                     &nbsp;
                                     <a id="bt_clean_dynamic_cmds" class="btn btn-sm btn-danger">
-                                        <i class="fas fa-trash-alt"></i> {{Supprimer commandes dynamiques}}
+                                        <i class="fas fa-trash-alt"></i> {{Supprimer Commandes Synchronisées}}
                                     </a>
                                 </div>
                             </div>
