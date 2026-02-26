@@ -352,7 +352,10 @@ class Nut_free extends eqLogic {
 			$cmd->setSubType($subtype);
 			$cmd->setConfiguration('nutCmd',      $nutVar);
 			$cmd->setConfiguration('derivedFrom', $derivedFrom);
-			$cmd->setConfiguration('isDynamic', 1);
+			// isDynamic : positionné seulement à la création pour ne pas écraser les commandes statiques préexistantes
+			if ($isNew) {
+				$cmd->setConfiguration('isDynamic', 1);
+			}
 			// Données utilisateur : initialisées à la création uniquement
 			if ($isNew) {
 				$cmd->setName($name);
@@ -414,7 +417,10 @@ class Nut_free extends eqLogic {
 			$cmdRw->setType('action');
 			$cmdRw->setSubType(($entry['subtype'] === 'numeric') ? 'slider' : 'message');
 			$cmdRw->setConfiguration('nutRwVar', $entry['nut_var']);
-			$cmdRw->setConfiguration('isDynamic', 1);
+			// isDynamic : positionné seulement à la création pour ne pas écraser les commandes statiques préexistantes
+			if ($isNewRw) {
+				$cmdRw->setConfiguration('isDynamic', 1);
+			}
 			// Données utilisateur : initialisées à la création uniquement
 			if ($isNewRw) {
 				$cmdRw->setName(__('Modifier', __FILE__) . ' ' . $entry['name']);
@@ -445,7 +451,10 @@ class Nut_free extends eqLogic {
 			$cmd->setType('action');
 			$cmd->setSubType('other');
 			$cmd->setConfiguration('nutCmd', $entry['nut_cmd']);
-			$cmd->setConfiguration('isDynamic', 1);
+			// isDynamic : positionné seulement à la création pour ne pas écraser les commandes statiques préexistantes
+			if ($isNew) {
+				$cmd->setConfiguration('isDynamic', 1);
+			}
 			// Données utilisateur : initialisées à la création uniquement
 			if ($isNew) {
 				$cmd->setName($entry['name']);
