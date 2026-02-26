@@ -9,18 +9,52 @@
     },
     "plugins\/Nut_free\/core\/class\/Nut_free.class.php": {
         "Commande non implémentée actuellement": "Comando não implementado atualmente",
+        "Modifier": "Editar",
         "Nom UPS non configuré pour l\\'équipement ": "Nome UPS não configurado para o equipamento ",
         "Plugin SSH-Manager introuvable - vérifiez les dépendances": "Plugin SSH-Manager não encontrado - verifique as dependências",
         "SSHHostId non configuré pour l\\'équipement ": "SSHHostId não configurado para o equipamento "
     },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.binary.ups.html": {
+        "Date de collecte": "Data de recolha",
+        "Date de valeur": "Data de valor"
+    },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.numeric.ups.html": {
+        "Date de collecte": "Data de recolha",
+        "Date de valeur": "Data de valor"
+    },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.string.ups.html": {
+        "Date de collecte": "Data de recolha",
+        "Date de valeur": "Data de valor"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.binary.ups.html": {
+        "Date de collecte": "Data de recolha",
+        "Date de valeur": "Data de valor"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.numeric.ups.html": {
+        "Date de collecte": "Data de recolha",
+        "Date de valeur": "Data de valor"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.string.ups.html": {
+        "Date de collecte": "Data de recolha",
+        "Date de valeur": "Data de valor"
+    },
     "plugins\/Nut_free\/desktop\/js\/Nut_free.js": {
         "Afficher": "Exibir",
         "Choisir une icône": "Escolher um ícone",
+        "Commandes dynamiques supprimées. Rechargez la page des commandes.": "Comandos dinâmicos removidos. Recarregue a página de comandos.",
+        "Dernière Synchronisation : terminée avec succès": "Última sincronização: concluída com sucesso",
         "Erreur inconnue": "Erro desconhecido",
+        "Erreur lors de la dernière synchronisation": "Erro durante a última sincronização",
         "Historiser": "Historizar",
         "Nom de la commande": "Nome do comando",
-
+        "Requête envoyée. Les commandes seront créées dans quelques instants — rechargez la page des commandes pour les voir.": "Pedido enviado. As encomendas serão criadas em alguns instantes — recarregue a página de encomendas para as ver.",
+        "Sauvegardez d\\'abord l\\'équipement": "Primeiro, guarde o equipamento",
+        "Sauvegardez d\\'abord l\\'équipement avant de lancer la synchronisation": "Faça primeiro uma cópia de segurança do equipamento antes de iniciar a sincronização",
         "Supprimer la commande": "Remover o comando",
+        "Supprimer toutes les commandes dynamiques de cet équipement ?": "Deseja remover todos os comandos dinâmicos deste equipamento?",
+        "Synchronisation en cours ou en attente...": "Sincronização em curso ou em espera...",
+        "Synchronisation en cours...": "Sincronização em curso...",
+        "Synchronisation lancée. Rechargez la page des commandes dans quelques instants.": "Sincronização iniciada. Recarregue a página de comandos dentro de alguns instantes.",
         "Tester": "Testar",
         "Unité": "Unidade"
     },
@@ -43,6 +77,7 @@
         "Configuration": "Configuração",
         "Configuration avancée": "Configuração avançada",
         "Connexion NUT": "Conexão NUT",
+        "Crée automatiquement les commandes Jeedom correspondant aux variables et commandes supportées par votre onduleur.": "Cria automaticamente os comandos Jeedom correspondentes às variáveis e comandos suportados pelo seu inversor.",
         "Documentation": "Documentação",
         "Dupliquer": "Duplicar",
         "Editer cet hôte SSH": "Editar este host SSH",
@@ -51,8 +86,6 @@
         "Général": "Geral",
         "Hôte SSH": "Host SSH",
         "Id": "Id",
-        "Utilisateur NUT": "Utilizador NUT",
-        "Utilisateur d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "Utilizador de autenticação upsd (opcional, deixe em branco se o servidor NUT não exigir)",
         "Mes NUT Free": "Os meus NUT Free",
         "Mot de passe NUT": "Senha NUT",
         "Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "Senha upsd (opcional, deixe em branco se o servidor NUT não exigir)",
@@ -75,7 +108,12 @@
         "Sauvegarder": "Guardar",
         "Si activé, le nom de l'UPS sera détecté automatiquement via upsc -l": "Se ativado, o nome do UPS será detetado automaticamente através do comando upsc -l",
         "Supprimer": "Remover",
+        "Supprimer Commandes Synchronisées": "Remover comandos sincronizados",
+        "Synchronisation des Commandes": "Sincronização dos comandos",
+        "Synchroniser les Commandes": "Sincronizar os comandos",
         "Unité": "Unidade",
+        "Utilisateur NUT": "Utilizador NUT",
+        "Utilisateur d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)": "Utilizador de autenticação upsd (opcional, deixe em branco se o servidor NUT não exigir)",
         "Visible": "Visível",
         "ex: 192.168.1.100": "ex: 192.168.1.100",
         "ex: myups": "ex: myups",
