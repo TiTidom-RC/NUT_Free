@@ -83,139 +83,25 @@
 		}
 	</script>
 
+	<script>
+		// Gestion générique des boutons action (instcmds, RW vars)
+		$('[data-eqLogic_uid="#uid#"]').off('click.nut-action').on('click.nut-action', '.nut-action-btn', function() {
+			var $btn   = $(this);
+			var cmdId  = $btn.data('cmd_id');
+			var subtype = $btn.data('subtype');
+			if (subtype === 'slider' || subtype === 'message') {
+				var label = $btn.closest('.nut-action-row').find('.nut-label').text().replace(/\s*:\s*$/, '');
+				var val = window.prompt(label || 'Valeur :');
+				if (val !== null) {
+					jeedom.cmd.execute({ id: cmdId, options: { message: val } });
+				}
+			} else {
+				jeedom.cmd.execute({ id: cmdId });
+			}
+		});
+	</script>
+
 	<div class="nut-cmds">
-
-		<div class="tooltips" data-cmd_id="#device_mfrid#" style="display:#device_mfr_display#;">
-		<span title="Fabricant<br><i>Date de valeur : #device_mfr_value#<br>Date de collecte : #device_mfr_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#device_mfr_icon#</span>
-		<span class="nut-label">#device_mfr_name# : </span><span data-cmd_id="#device_mfrid#" class="#device_mfr_historized#">#device_mfr#</span>
-	</div>
-
-	<div class="tooltips" data-cmd_id="#device_modelid#" style="display:#device_model_display#;">
-		<span title="Modèle<br><i>Date de valeur : #device_model_value#<br>Date de collecte : #device_model_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#device_model_icon#</span>
-		<span class="nut-label">#device_model_name# : </span><span data-cmd_id="#device_modelid#" class="#device_model_historized#">#device_model#</span>
-	</div>
-
-	<div class="tooltips" data-cmd_id="#ups_serialid#" style="display:#ups_serial_display#;">
-		<span title="Numéro Série<br><i>Date de valeur : #ups_serial_value#<br>Date de collecte : #ups_serial_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#ups_serial_icon#</span>
-		<span class="nut-label">#ups_serial_name# : </span><span data-cmd_id="#ups_serialid#" class="#ups_serial_historized#">#ups_serial#</span>
-	</div>
-
-	<div class="tooltips" data-cmd_id="#ups_statusid#" style="display:#ups_status_display#;">
-		<span title="Code NUT<br><i>Date de valeur : #ups_status_value#<br>Date de collecte : #ups_status_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#ups_status_icon#</span>
-		<span class="nut-label">#ups_status_name# : </span><span data-cmd_id="#ups_statusid#" class="#ups_status_historized#">#ups_status#</span>
-	</div>
-
-	<div class="tooltips" data-cmd_id="#ups_status_labelid#" style="display:#ups_status_label_display#;">
-		<span title="Statut Onduleur<br><i>Date de valeur : #ups_status_label_value#<br>Date de collecte : #ups_status_label_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#ups_status_label_icon#</span>
-		<span class="nut-label">#ups_status_label_name# : </span><span data-cmd_id="#ups_status_labelid#" class="#ups_status_label_historized#">#ups_status_label#</span>
-	</div>
-
-	<div class="tooltips" data-cmd_id="#input_voltageid#" style="display:#input_voltage_display#;">
-		<span title="Tension Entrée<br><i>Date de valeur : #input_voltage_value#<br>Date de collecte : #input_voltage_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#input_voltage_icon#</span>
-		<span class="nut-label">#input_voltage_name# : </span><span data-cmd_id="#input_voltageid#" class="#input_voltage_historized#">#input_voltage#</span> #input_voltage_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#input_freqid#" style="display:#input_freq_display#;">
-		<span title="Fréquence Entrée<br><i>Date de valeur : #input_freq_value#<br>Date de collecte : #input_freq_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#input_freq_icon#</span>
-		<span class="nut-label">#input_freq_name# : </span><span data-cmd_id="#input_freqid#" class="#input_freq_historized#">#input_freq#</span> #input_freq_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#output_voltageid#" style="display:#output_voltage_display#;">
-		<span title="Tension Sortie<br><i>Date de valeur : #output_voltage_value#<br>Date de collecte : #output_voltage_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#output_voltage_icon#</span>
-		<span class="nut-label">#output_voltage_name# : </span><span data-cmd_id="#output_voltageid#" class="#output_voltage_historized#">#output_voltage#</span> #output_voltage_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#output_freqid#" style="display:#output_freq_display#;">
-		<span title="Fréquence Sortie<br><i>Date de valeur : #output_freq_value#<br>Date de collecte : #output_freq_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#output_freq_icon#</span>
-		<span class="nut-label">#output_freq_name# : </span><span data-cmd_id="#output_freqid#" class="#output_freq_historized#">#output_freq#</span> #output_freq_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#output_powerid#" style="display:#output_power_display#;">
-		<span title="Puissance Sortie<br><i>Date de valeur : #output_power_value#<br>Date de collecte : #output_power_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#output_power_icon#</span>
-		<span class="nut-label">#output_power_name# : </span><span data-cmd_id="#output_powerid#" class="#output_power_historized#">#output_power#</span> #output_power_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#output_real_powerid#" style="display:#output_real_power_display#;">
-		<span title="Puissance Sortie Réelle<br><i>Date de valeur : #output_real_power_value#<br>Date de collecte : #output_real_power_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#output_real_power_icon#</span>
-		<span class="nut-label">#output_real_power_name# : </span><span data-cmd_id="#output_real_powerid#" class="#output_real_power_historized#">#output_real_power#</span> #output_real_power_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#batt_chargeid#" style="display:#batt_charge_display#;">
-		<span title="Charge Batterie<br><i>Date de valeur : #batt_charge_value#<br>Date de collecte : #batt_charge_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#batt_charge_icon#</span>
-		<span class="nut-label">#batt_charge_name# : </span><span data-cmd_id="#batt_chargeid#" class="#batt_charge_historized#">#batt_charge#</span> #batt_charge_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#batt_voltageid#" style="display:#batt_voltage_display#;">
-		<span title="Tension Batterie<br><i>Date de valeur : #batt_voltage_value#<br>Date de collecte : #batt_voltage_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#batt_voltage_icon#</span>
-		<span class="nut-label">#batt_voltage_name# : </span><span data-cmd_id="#batt_voltageid#" class="#batt_voltage_historized#">#batt_voltage#</span> #batt_voltage_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#batt_tempid#" style="display:#batt_temp_display#;">
-		<span title="Température Batterie<br><i>Date de valeur : #batt_temp_value#<br>Date de collecte : #batt_temp_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#batt_temp_icon#</span>
-		<span class="nut-label">#batt_temp_name# : </span><span data-cmd_id="#batt_tempid#" class="#batt_temp_historized#">#batt_temp#</span> #batt_temp_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#ups_tempid#" style="display:#ups_temp_display#;">
-		<span title="Température Onduleur<br><i>Date de valeur : #ups_temp_value#<br>Date de collecte : #ups_temp_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#ups_temp_icon#</span>
-		<span class="nut-label">#ups_temp_name# : </span><span data-cmd_id="#ups_tempid#" class="#ups_temp_historized#">#ups_temp#</span> #ups_temp_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#ups_loadid#" style="display:#ups_load_display#;">
-		<span title="Charge Onduleur<br><i>Date de valeur : #ups_load_value#<br>Date de collecte : #ups_load_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#ups_load_icon#</span>
-		<span class="nut-label">#ups_load_name# : </span><span data-cmd_id="#ups_loadid#" class="#ups_load_historized#">#ups_load#</span> #ups_load_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#batt_runtimeid#" style="display:#batt_runtime_display#;">
-		<span title="Autonomie Batterie<br><i>Date de valeur : #batt_runtime_value#<br>Date de collecte : #batt_runtime_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#batt_runtime_icon#</span>
-		<span class="nut-label">#batt_runtime_name# : </span><span data-cmd_id="#batt_runtimeid#" class="#batt_runtime_historized#">#batt_runtime#</span> #batt_runtime_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#batt_runtime_minid#" style="display:#batt_runtime_min_display#;">
-		<span title="Autonomie Batterie (min)<br><i>Date de valeur : #batt_runtime_min_value#<br>Date de collecte : #batt_runtime_min_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#batt_runtime_min_icon#</span>
-		<span class="nut-label">#batt_runtime_min_name# : </span><span data-cmd_id="#batt_runtime_minid#" class="#batt_runtime_min_historized#">#batt_runtime_min#</span> #batt_runtime_min_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#timer_shutdownid#" style="display:#timer_shutdown_display#;">
-		<span title="Minuterie Arrêt<br><i>Date de valeur : #timer_shutdown_value#<br>Date de collecte : #timer_shutdown_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#timer_shutdown_icon#</span>
-		<span class="nut-label">#timer_shutdown_name# : </span><span data-cmd_id="#timer_shutdownid#" class="#timer_shutdown_historized#">#timer_shutdown#</span> #timer_shutdown_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#timer_shutdown_minid#" style="display:#timer_shutdown_min_display#;">
-		<span title="Minuterie Arrêt (min)<br><i>Date de valeur : #timer_shutdown_min_value#<br>Date de collecte : #timer_shutdown_min_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#timer_shutdown_min_icon#</span>
-		<span class="nut-label">#timer_shutdown_min_name# : </span><span data-cmd_id="#timer_shutdown_minid#" class="#timer_shutdown_min_historized#">#timer_shutdown_min#</span> #timer_shutdown_min_unite#
-	</div>
-
-	<div class="tooltips" data-cmd_id="#beeper_statusid#" style="display:#beeper_status_display#;">
-		<span title="Beeper<br><i>Date de valeur : #beeper_status_value#<br>Date de collecte : #beeper_status_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#beeper_status_icon#</span>
-		<span class="nut-label">#beeper_status_name# : </span><span data-cmd_id="#beeper_statusid#" class="#beeper_status_historized#">#beeper_status#</span>
-	</div>
-
-	<div class="tooltips" data-cmd_id="#cmd_resultid#" style="display:#cmd_result_display#;">
-		<span title="Retour Commande<br><i>Date de valeur : #cmd_result_value#<br>Date de collecte : #cmd_result_collect#</i>"
-			style="width:15px;max-width:15px;max-height:15px;">#cmd_result_icon#</span>
-		<span class="nut-label">#cmd_result_name# : </span><span data-cmd_id="#cmd_resultid#" class="#cmd_result_historized#">#cmd_result#</span>
-	</div>
-
+		#cmds_html#
 	</div>
 </div>

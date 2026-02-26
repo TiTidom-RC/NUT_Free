@@ -538,22 +538,65 @@ class Nut_free extends eqLogic {
 		}
 		$_version = jeedom::versionAlias($_version);
 
+		// Format du title selon la version : mobile ne supporte pas le HTML dans les tooltips
+		$isMobile = ($_version === 'mobile');
+
+		$cmdsHtml = '';
 		foreach ($this->getCmd() as $cmd) {
 			$logicalId = $cmd->getLogicalId();
-			$replace['#' . $logicalId . 'id#']       = $cmd->getId();
-			$replace['#' . $logicalId . '_display#'] = $cmd->getIsVisible() ? 'block' : 'none';
-			$replace['#' . $logicalId . '_icon#']    = !empty($cmd->getDisplay('icon')) ? $cmd->getDisplay('icon') : '<i class="fas fa-circle"></i>';
-			$replace['#' . $logicalId . '_collect#'] = $cmd->getCollectDate() ?: '-';
-			$replace['#' . $logicalId . '_value#']   = $cmd->getValueDate() ?: '-';
-			$replace['#' . $logicalId . '_name#']    = $cmd->getName();
-			$replace['#' . $logicalId . '_unite#']       = $cmd->getUnite();
-			$replace['#' . $logicalId . '_historized#'] = $cmd->getIsHistorized() ? 'history cursor' : '';
-			// Ne pas appeler execCmd() sur les commandes action (refresh, etc.)
+			$cmdId     = $cmd->getId();
+
+			// Tokens nécessaires au header (id du refresh + valeurs pour le script icônes)
+			$replace['#' . $logicalId . 'id#'] = $cmdId;
+			$rawValue = null;
 			if ($cmd->getType() === 'info') {
-				$replace['#' . $logicalId . '#'] = $cmd->execCmd();
+				$rawValue = $cmd->execCmd();
+				$replace['#' . $logicalId . '#'] = $rawValue;
+			}
+
+			// Corps : le bouton refresh est géré dans le header ; les commandes masquées sont ignorées
+			if ($logicalId === 'refresh' || !$cmd->getIsVisible()) {
+				continue;
+			}
+
+			$name    = $cmd->getName();
+			$nameEnc = htmlspecialchars($name, ENT_QUOTES);
+			$icon    = !empty($cmd->getDisplay('icon')) ? $cmd->getDisplay('icon') : '<i class="fas fa-circle"></i>';
+
+			if ($cmd->getType() === 'info') {
+				$value      = htmlspecialchars((string) $rawValue, ENT_QUOTES);
+				$unite      = htmlspecialchars($cmd->getUnite(), ENT_QUOTES);
+				$historized = $cmd->getIsHistorized() ? 'history cursor' : '';
+				$dateVal    = $cmd->getValueDate() ?: '-';
+				$dateCol    = $cmd->getCollectDate() ?: '-';
+				if ($isMobile) {
+					$titleAttr = $nameEnc . ' || Date valeur : ' . $dateVal . ' || Date collecte : ' . $dateCol;
+				} else {
+					$titleAttr = $nameEnc . '<br><i>Date de valeur : ' . $dateVal . '<br>Date de collecte : ' . $dateCol . '</i>';
+				}
+				$cmdsHtml  .= '<div class="tooltips" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
+				$cmdsHtml  .= '<span title="' . $titleAttr . '"';
+				$cmdsHtml  .= ' style="width:15px;max-width:15px;max-height:15px;">' . $icon . '</span>' . "\n\t\t";
+				$cmdsHtml  .= '<span class="nut-label">' . $nameEnc . ' : </span>';
+				$cmdsHtml  .= '<span data-cmd_id="' . $cmdId . '" class="' . $historized . '">' . $value . '</span>';
+				if ($unite !== '') {
+					$cmdsHtml .= ' ' . $unite;
+				}
+				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
+
+			} elseif ($cmd->getType() === 'action') {
+				$subtype   = htmlspecialchars($cmd->getSubType(), ENT_QUOTES);
+				$cmdsHtml .= '<div class="tooltips nut-action-row" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
+				$cmdsHtml .= '<span style="width:15px;max-width:15px;max-height:15px;">' . $icon . '</span>';
+				$cmdsHtml .= ' <span class="nut-label">' . $nameEnc . '</span>';
+				$cmdsHtml .= ' <a class="nut-action-btn btn btn-default btn-xs cursor"';
+				$cmdsHtml .= ' data-cmd_id="' . $cmdId . '" data-subtype="' . $subtype . '">';
+				$cmdsHtml .= '<i class="fas fa-play"></i></a>';
+				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
 			}
 		}
 
+		$replace['#cmds_html#'] = $cmdsHtml;
 		$html = template_replace($replace, getTemplate('core', $_version, 'Nut_free', 'Nut_free'));
 		return $html;
 	}
