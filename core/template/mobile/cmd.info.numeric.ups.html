@@ -8,17 +8,7 @@
 	data-eqLogic_id="#eqLogic_id#">
 
 	<style>
-		.cmd[data-cmd_uid="#uid#"] {
-			display: block;
-			text-align: left;
-			line-height: 1.6;
-			white-space: nowrap;
-			overflow: hidden;
-			text-overflow: ellipsis;
-			padding: 1px 0;
-		}
 		.cmd[data-cmd_uid="#uid#"] .cmdName {
-			display: inline;
 			opacity: 0.6;
 			font-style: italic;
 		}
@@ -26,15 +16,13 @@
 			content: ' :';
 		}
 		.cmd[data-cmd_uid="#uid#"] .value {
-			display: inline;
 			font-weight: 500;
-			margin-left: 4px;
 		}
 	</style>
 
-	<span class="cmdName #hide_name#">#name_display#</span>
-	<span class="value">#state#</span>
-	<strong class="unit">#unite#</strong>
+	<div class="content-xs">
+		<span class="cmdName #hide_name#">#name_display#</span> <span class="value">#state#</span> <strong class="unit">#unite#</strong>
+	</div>
 
 	<script>
 		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
