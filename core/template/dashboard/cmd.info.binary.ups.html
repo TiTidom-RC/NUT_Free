@@ -18,6 +18,7 @@
 			padding: 1px 0;
 		}
 		.cmd[data-cmd_uid="#uid#"] .cmdName {
+			display: inline;
 			opacity: 0.6;
 			font-style: italic;
 		}
@@ -25,6 +26,7 @@
 			content: ' :';
 		}
 		.cmd[data-cmd_uid="#uid#"] .value {
+			display: inline;
 			font-weight: 500;
 			margin-left: 4px;
 		}
@@ -37,7 +39,7 @@
 	<script>
 		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
 			if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
-				cmd.setAttribute('title', '#name_display#<br>{{Date de valeur}}: ' + _options.valueDate + '<br>{{Date de collecte}}: ' + _options.collectDate);
+				cmd.setAttribute('title', '#name#<br>{{Date de valeur}}: ' + _options.valueDate + '<br>{{Date de collecte}}: ' + _options.collectDate);
 				cmd.querySelector('.value').innerHTML = _options.display_value;
 				cmd.querySelector('.unit').innerHTML = _options.unit;
 			}

@@ -10,6 +10,7 @@
 	<style>
 		.cmd[data-cmd_uid="#uid#"] {
 			display: block;
+			text-align: left;
 			line-height: 1.6;
 			white-space: nowrap;
 			overflow: hidden;
@@ -17,6 +18,7 @@
 			padding: 1px 0;
 		}
 		.cmd[data-cmd_uid="#uid#"] .cmdName {
+			display: inline;
 			opacity: 0.6;
 			font-style: italic;
 		}
@@ -24,6 +26,7 @@
 			content: ' :';
 		}
 		.cmd[data-cmd_uid="#uid#"] .value {
+			display: inline;
 			font-weight: 500;
 			margin-left: 4px;
 		}
@@ -36,7 +39,7 @@
 	<script>
 		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
 			var cmd = $('.cmd[data-cmd_id=#id#]');
-			cmd.attr('title', '#name_display# - {{Date de valeur}}: ' + _options.valueDate + ' - {{Date de collecte}}: ' + _options.collectDate);
+			cmd.attr('title', '#name# - {{Date de valeur}}: ' + _options.valueDate + ' - {{Date de collecte}}: ' + _options.collectDate);
 			cmd.find('.value').empty().append(_options.display_value);
 			cmd.find('.unit').empty().append(_options.unit);
 		});
