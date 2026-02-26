@@ -86,5 +86,5 @@ try {
     throw new Exception(__('Action inconnue : ' . init('action'), __FILE__));
 
 } catch (\Throwable $e) {
-    ajax::error(displayException($e), $e->getCode());
+    ajax::error($e->getMessage(), $e->getCode());
 }

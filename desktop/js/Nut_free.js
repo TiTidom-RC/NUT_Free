@@ -174,20 +174,22 @@ function printEqLogic(_eqLogic) {
         }
         jeedomUtils.showAlert({ message: '{{Synchronisation lancée. Rechargez la page des commandes dans quelques instants.}}', level: 'success' })
       } else {
+        const errMsg = data.result ?? '{{Erreur inconnue}}'
         if (statusMsg) {
           statusMsg.className = 'label label-danger'
-          statusMsg.textContent = data.result ?? '{{Erreur inconnue}}'
+          statusMsg.textContent = errMsg
         }
-        jeedomUtils.showAlert({ message: data.result ?? '{{Erreur inconnue}}', level: 'danger' })
+        jeedomUtils.showAlert({ message: errMsg, level: 'danger' })
       }
     })
     .catch(err => {
       btDiscover.removeAttribute('disabled')
+      const errMsg = String(err)
       if (statusMsg) {
         statusMsg.className = 'label label-danger'
-        statusMsg.textContent = String(err)
+        statusMsg.textContent = errMsg
       }
-      jeedomUtils.showAlert({ message: String(err), level: 'danger' })
+      jeedomUtils.showAlert({ message: errMsg, level: 'danger' })
     })
   }
 
