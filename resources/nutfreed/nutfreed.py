@@ -90,7 +90,7 @@ class NutDevice:
 
     @classmethod
     def from_dict(cls, d: dict[str, Any]) -> 'NutDevice':
-        login = str(d.get('nutUsername', '')).strip() or None
+        username = str(d.get('nutUsername', '')).strip() or None
         password = str(d.get('nutPassword', '')).strip() or None
         return cls(
             eqLogicId=str(d['eqLogicId']),
@@ -99,7 +99,7 @@ class NutDevice:
             port=int(d.get('port', 3493)),
             upsName=str(d.get('upsName', '')).strip(),
             autoDetect=bool(int(d.get('autoDetect', '1'))),
-            nutUsername=login,
+            nutUsername=username,
             nutPassword=password,
             resolvedUpsName=None,
         )
@@ -158,15 +158,14 @@ def _nutGetVar(host: str, port: int, upsName: str, varName: str,
     Lecture directe d'une seule variable NUT via le protocole brut.
     Envoie : GET VAR <ups> <var>\n
     Attend  : VAR <ups> <var> "<value>"\n
-    Supporte l'authentification upsd (USERNAME / PASSWORD) si fournie.
+    Supporte l'authentification upsd (USERNAME / PASSWORD) si les deux sont fournis.
     Beaucoup plus léger que PyNUTClient + LIST VAR (toutes les vars).
     """
     try:
         with socket.create_connection((host, port), timeout=timeout) as sock:
-            if username:
+            if username and password:
                 sock.sendall(f'USERNAME {username}\n'.encode('ascii'))
                 _recvLine(sock)  # attend OK\n
-            if password:
                 sock.sendall(f'PASSWORD {password}\n'.encode('ascii'))
                 _recvLine(sock)  # attend OK\n
             sock.sendall(f'GET VAR {upsName} {varName}\n'.encode('ascii'))
@@ -183,7 +182,7 @@ def _nutGetVar(host: str, port: int, upsName: str, varName: str,
         return None
 
 
-def getUpsStatusLabel(device: NutDevice) -> str | None:
+def getUpsStatus(device: NutDevice) -> str | None:
     """
     Lecture légère de ups.status uniquement via GET VAR (protocole brut).
     Utilisé par le StatusWatcher pour détecter les changements d'état.
@@ -246,7 +245,7 @@ def queryDevice(device: NutDevice) -> dict[str, str] | None:
         return None
 
     try:
-        allVarsRaw = client.GetUPSVars(upsName)
+        allVarsRaw = client.GetUPSVars(upsName) or {}
         allVars: dict[str, str] = {_nutToStr(k): _nutToStr(v) for k, v in allVarsRaw.items()}
     except Exception as e:
         logging.error('[DAEMON][%s] GetUPSVars(%s) erreur :: %s', device.name, upsName, e)
@@ -256,7 +255,6 @@ def queryDevice(device: NutDevice) -> dict[str, str] | None:
     for nut_var, raw in allVars.items():
         value = raw.strip()
         logicalId = nut_var.replace('.', '_')
-
         results[logicalId] = value
         logging.debug('[DAEMON][%s] %s = %s', device.name, logicalId, value)
 
@@ -507,7 +505,7 @@ class Loops:
                             devices_snapshot = dict(myConfig.devices)
                         for dev in devices_snapshot.values():
                             Loops._startWatcher(dev)
-                        logging.info('[DAEMON] Liste mise à jour : %d équipement(s)', len(myConfig.devices))
+                        logging.info('[DAEMON] Liste mise à jour : %d équipement(s)', len(devices_snapshot))
 
                     elif action == 'add_device':
                         device_data = message.get('device')
@@ -650,7 +648,7 @@ class Loops:
         first_poll = True
 
         while not stop_event.is_set() and not myConfig.IS_ENDING:
-            status = getUpsStatusLabel(device)
+            status = getUpsStatus(device)
 
             if status is not None:
                 last = myConfig.deviceLastStatus.get(device.eqLogicId, '')
@@ -666,8 +664,8 @@ class Loops:
                     myConfig.deviceLastStatus[device.eqLogicId] = status
                     first_poll = False
 
-                # Cycle adaptatif : réduit si sur batterie
-                current_cycle = myConfig.cycleWatcherAlert if 'OB' in status.upper() else myConfig.cycleWatcher
+                # Cycle adaptatif : réduit si sur batterie (NUT retourne toujours des statuts en majuscules)
+                current_cycle = myConfig.cycleWatcherAlert if 'OB' in status else myConfig.cycleWatcher
             else:
                 current_cycle = myConfig.cycleWatcher  # erreur connexion → cycle normal
 
@@ -723,7 +721,7 @@ myConfig = Config()
 
 
 def handler(signum=None, frame=None):
-    logging.info('[DAEMON] Signal %d reçu, arrêt en cours...', signum)
+    logging.info('[DAEMON] Signal %s reçu, arrêt en cours...', signum)
     shutdown()
 
 
