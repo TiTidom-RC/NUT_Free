@@ -1,7 +1,7 @@
-<div class="cmd cmd-widget"
+<div class="cmd cmd-widget #history#"
 	data-type="info"
 	data-subtype="binary"
-	data-template="Nut_free"
+	data-template="ups"
 	data-cmd_id="#id#"
 	data-cmd_uid="#uid#"
 	data-version="#version#"
@@ -10,6 +10,7 @@
 	<style>
 		.cmd[data-cmd_uid="#uid#"] {
 			display: block;
+			text-align: left;
 			line-height: 1.6;
 			white-space: nowrap;
 			overflow: hidden;
@@ -35,10 +36,11 @@
 
 	<script>
 		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
-			var cmd = $('.cmd[data-cmd_id=#id#]');
-			cmd.attr('title', '#name_display# - {{Date de valeur}}: ' + _options.valueDate + ' - {{Date de collecte}}: ' + _options.collectDate);
-			cmd.find('.value').empty().append(_options.display_value);
-			cmd.find('.unit').empty().append(_options.unit);
+			if (is_object(cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]'))) {
+				cmd.setAttribute('title', '#name_display#<br>{{Date de valeur}}: ' + _options.valueDate + '<br>{{Date de collecte}}: ' + _options.collectDate);
+				cmd.querySelector('.value').innerHTML = _options.display_value;
+				cmd.querySelector('.unit').innerHTML = _options.unit;
+			}
 		});
 		jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }]);
 	</script>

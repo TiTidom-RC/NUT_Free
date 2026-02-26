@@ -307,8 +307,10 @@ class Nut_free extends eqLogic {
 						$cmd->setDisplay('icon', $info['icon']);
 					}
 					if (($info['type'] ?? 'info') === 'info') {
-						$cmd->setTemplate('dashboard', 'Nut_free');
-						$cmd->setTemplate('mobile', 'Nut_free');
+						$cmd->setDisplay('showIconAndNamedashboard', 1);
+						$cmd->setDisplay('showIconAndNamemobile', 1);
+						$cmd->setTemplate('dashboard', 'Nut_free::ups');
+						$cmd->setTemplate('mobile', 'Nut_free::ups');
 					}
 					if (isset($info['isVisible'])) {
 						$cmd->setIsVisible($info['isVisible']);
@@ -362,8 +364,10 @@ class Nut_free extends eqLogic {
 				$cmd->setName($name);
 				$cmd->setUnite($unit);
 				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($icon, ENT_QUOTES) . '"></i>');
-				$cmd->setTemplate('dashboard', 'Nut_free');
-				$cmd->setTemplate('mobile', 'Nut_free');
+				$cmd->setDisplay('showIconAndNamedashboard', 1);
+				$cmd->setDisplay('showIconAndNamemobile', 1);
+				$cmd->setTemplate('dashboard', 'Nut_free::ups');
+				$cmd->setTemplate('mobile', 'Nut_free::ups');
 				$cmd->setIsVisible(0);
 				$cmd->setOrder($order);
 			}
