@@ -286,28 +286,32 @@ class Nut_free extends eqLogic {
 		foreach ($targets as $eq) {
 			$order = 0;
 			foreach ($commandsConfig as $logicalId => $info) {
-				$cmd = $eq->getCmd(null, $logicalId);
-				if (!is_object($cmd)) {
+				$cmd   = $eq->getCmd(null, $logicalId);
+				$isNew = !is_object($cmd);
+				if ($isNew) {
 					$cmd = new Nut_freeCmd();
 					$cmd->setLogicalId($logicalId);
 				}
 				$cmd->setEqLogic_id($eq->getId());
-				$cmd->setName(__($info['name'], __FILE__));
+				// Données techniques : toujours propagées (cohérence après mise à jour plugin)
 				$cmd->setType($info['type'] ?? 'info');
 				$cmd->setSubType($info['subtype'] ?? 'numeric');
-				$cmd->setOrder($order);
-				// Toujours écraser l'unité et la variable NUT pour propager les changements lors des mises à jour
-				$cmd->setUnite($info['unite'] ?? '');
 				$cmd->setConfiguration('nutCmd',      $info['nutCmd']      ?? '');
 				$cmd->setConfiguration('derivedFrom', $info['derivedFrom'] ?? '');
-				if (isset($info['icon'])) {
-					$cmd->setDisplay('icon', $info['icon']);
-				}
-				if (isset($info['template_dashboard'])) {
-					$cmd->setTemplate('dashboard', $info['template_dashboard']);
-				}
-				if (isset($info['isVisible'])) {
-					$cmd->setIsVisible($info['isVisible']);
+				// Données utilisateur : initialisées à la création uniquement (l'utilisateur est maître)
+				if ($isNew) {
+					$cmd->setName(__($info['name'], __FILE__));
+					$cmd->setOrder($order);
+					$cmd->setUnite($info['unite'] ?? '');
+					if (isset($info['icon'])) {
+						$cmd->setDisplay('icon', $info['icon']);
+					}
+					if (isset($info['template_dashboard'])) {
+						$cmd->setTemplate('dashboard', $info['template_dashboard']);
+					}
+					if (isset($info['isVisible'])) {
+						$cmd->setIsVisible($info['isVisible']);
+					}
 				}
 				try {
 					$cmd->save();
@@ -336,22 +340,28 @@ class Nut_free extends eqLogic {
 		// Helper interne : crée ou met à jour une commande info dynamique
 		// $derivedFrom : logicalId de la commande source si cette commande est calculée (pas de nutCmd direct)
 		$makeInfo = function(string $logicalId, string $name, string $subtype, string $unit, string $nutVar, string $icon, string $value, string $derivedFrom = '') use ($eqLogic, &$order): void {
-			$cmd = $eqLogic->getCmd(null, $logicalId);
-			if (!is_object($cmd)) {
+			$cmd   = $eqLogic->getCmd(null, $logicalId);
+			$isNew = !is_object($cmd);
+			if ($isNew) {
 				$cmd = new Nut_freeCmd();
 				$cmd->setLogicalId($logicalId);
 			}
 			$cmd->setEqLogic_id($eqLogic->getId());
-			$cmd->setName($name);
+			// Données techniques : toujours propagées
 			$cmd->setType('info');
 			$cmd->setSubType($subtype);
-			$cmd->setUnite($unit);
 			$cmd->setConfiguration('nutCmd',      $nutVar);
 			$cmd->setConfiguration('derivedFrom', $derivedFrom);
 			$cmd->setConfiguration('isDynamic', 1);
-			$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($icon, ENT_QUOTES) . '"></i>');
-			$cmd->setIsVisible(1);
-			$cmd->setOrder($order++);
+			// Données utilisateur : initialisées à la création uniquement
+			if ($isNew) {
+				$cmd->setName($name);
+				$cmd->setUnite($unit);
+				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($icon, ENT_QUOTES) . '"></i>');
+				$cmd->setIsVisible(0);
+				$cmd->setOrder($order);
+			}
+			$order++;
 			try {
 				$cmd->save();
 				if ($value !== '') {
@@ -392,22 +402,28 @@ class Nut_free extends eqLogic {
 				$makeInfo($logicalId . '_min', $entry['name'] . ' (min)', 'numeric', 'min', '', 'fas fa-clock', $toMin($rawVal), $logicalId);
 			}
 			// Action écriture
-			$setId  = $logicalId . '_set';
-			$cmdRw  = $eqLogic->getCmd(null, $setId);
-			if (!is_object($cmdRw)) {
+			$setId    = $logicalId . '_set';
+			$cmdRw    = $eqLogic->getCmd(null, $setId);
+			$isNewRw  = !is_object($cmdRw);
+			if ($isNewRw) {
 				$cmdRw = new Nut_freeCmd();
 				$cmdRw->setLogicalId($setId);
 			}
 			$cmdRw->setEqLogic_id($eqId);
-			$cmdRw->setName(__('Modifier', __FILE__) . ' ' . $entry['name']);
+			// Données techniques : toujours propagées
 			$cmdRw->setType('action');
 			$cmdRw->setSubType(($entry['subtype'] === 'numeric') ? 'slider' : 'message');
-			$cmdRw->setUnite($unit);
 			$cmdRw->setConfiguration('nutRwVar', $entry['nut_var']);
 			$cmdRw->setConfiguration('isDynamic', 1);
-			$cmdRw->setDisplay('icon', '<i class="fas fa-pencil-alt icon_orange"></i>');
-			$cmdRw->setIsVisible(0);
-			$cmdRw->setOrder($order++);
+			// Données utilisateur : initialisées à la création uniquement
+			if ($isNewRw) {
+				$cmdRw->setName(__('Modifier', __FILE__) . ' ' . $entry['name']);
+				$cmdRw->setUnite($unit);
+				$cmdRw->setDisplay('icon', '<i class="fas fa-pencil-alt icon_orange"></i>');
+				$cmdRw->setIsVisible(0);
+				$cmdRw->setOrder($order);
+			}
+			$order++;
 			try {
 				$cmdRw->save();
 			} catch (\Throwable $th) {
@@ -418,20 +434,26 @@ class Nut_free extends eqLogic {
 		// --- instcmds : commandes action (exécution) ---
 		foreach ($payload['instcmds'] ?? [] as $entry) {
 			$logicalId = $entry['logicalId'];
-			$cmd = $eqLogic->getCmd(null, $logicalId);
-			if (!is_object($cmd)) {
+			$cmd   = $eqLogic->getCmd(null, $logicalId);
+			$isNew = !is_object($cmd);
+			if ($isNew) {
 				$cmd = new Nut_freeCmd();
 				$cmd->setLogicalId($logicalId);
 			}
 			$cmd->setEqLogic_id($eqId);
-			$cmd->setName($entry['name']);
+			// Données techniques : toujours propagées
 			$cmd->setType('action');
 			$cmd->setSubType('other');
 			$cmd->setConfiguration('nutCmd', $entry['nut_cmd']);
 			$cmd->setConfiguration('isDynamic', 1);
-			$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($entry['icon'] ?? 'fas fa-terminal icon_blue', ENT_QUOTES) . '"></i>');
-			$cmd->setIsVisible(0);
-			$cmd->setOrder($order++);
+			// Données utilisateur : initialisées à la création uniquement
+			if ($isNew) {
+				$cmd->setName($entry['name']);
+				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($entry['icon'] ?? 'fas fa-terminal icon_blue', ENT_QUOTES) . '"></i>');
+				$cmd->setIsVisible(0);
+				$cmd->setOrder($order);
+			}
+			$order++;
 			try {
 				$cmd->save();
 			} catch (\Throwable $th) {

@@ -303,7 +303,7 @@ $eqLogics = eqLogic::byType($plugin->getId());
 if (class_exists('sshmanager')) {
     include_file('desktop', 'sshmanager.helper', 'js', 'sshmanager');
 } else {
-    log::add('Nut_free', 'error', '[PLUGIN] Impossible de charger sshmanager.helper.js (vérifiez les dépendances)');
+    log::add('Nut_free', 'debug', '[PLUGIN] sshmanager.helper.js non chargé (plugin SSH-Manager non installé)');
 }
 ?>
 <?php include_file('desktop', 'Nut_free', 'js', 'Nut_free'); ?>

@@ -27,6 +27,10 @@ Actions reçues via socket :
   add_device      : ajoute/met à jour un équipement
   remove_device   : supprime un équipement de la liste de polling
   query_now       : force une interrogation immédiate d'un équipement
+  instcmd         : exécute une commande NUT instcmd
+  list_query      : récupère instcmds + RW vars disponibles
+  discover_all    : découverte complète des capacités de l'UPS
+  setrwvar        : modifie une variable RW sur l'UPS
   shutdown        : arrête le daemon proprement
 """
 
@@ -64,8 +68,9 @@ from utils import Config, Comm
 #   refresh, ups_status, ups_status_label, ups_load, battery_charge,
 #   battery_runtime (+battery_runtime_min dérivé), device_mfr, device_model,
 #   ups_serial, cmd_result.
-# Le polling query_device() couvre TOUTES les vars via le catalogue nut_vars.json ;
-# les commandes dynamiques découvertes sont ainsi aussi tenues à jour en continu.
+# Le polling queryDevice() couvre TOUTES les vars retournées par l'UPS ;
+# le logicalId est calculé directement (nut_var.replace('.', '_')).
+# Les commandes dynamiques découvertes sont ainsi aussi tenues à jour en continu.
 # ---------------------------------------------------------------------------
 
 
@@ -136,9 +141,7 @@ def _resolveUpsName(device: NutDevice) -> str | None:
 
 
 def _recvLine(s: socket.socket) -> bytes:
-    """Accumule les octets jusqu'au premier \\n (réponse NUT complète).
-    Défini au niveau module pour éviter une ré-allocation à chaque appel.
-    """
+    """Accumule les octets jusqu'au premier \\n (réponse NUT complète)."""
     buf = b''
     while b'\n' not in buf:
         chunk = s.recv(256)
@@ -180,7 +183,7 @@ def _nutGetVar(host: str, port: int, upsName: str, varName: str,
         return None
 
 
-def get_ups_status_label(device: NutDevice) -> str | None:
+def getUpsStatusLabel(device: NutDevice) -> str | None:
     """
     Lecture légère de ups.status uniquement via GET VAR (protocole brut).
     Utilisé par le StatusWatcher pour détecter les changements d'état.
@@ -193,11 +196,39 @@ def get_ups_status_label(device: NutDevice) -> str | None:
                       username=device.nutUsername, password=device.nutPassword)
 
 
-def query_device(device: NutDevice) -> dict[str, str] | None:
+def _nutToStr(v: Any) -> str:
+    """Normalise bytes → str (réponses PyNUTClient)."""
+    if isinstance(v, bytes):
+        return v.decode('utf-8', errors='replace')
+    return str(v) if v is not None else ''
+
+
+def _loadNutVars() -> dict[str, Any]:
+    """
+    Charge nut_vars.json en cache thread-safe (cache stocké dans Config).
+    Retourne {'vars': {...}, 'instcmds': {...}} ou dict vide en cas d'erreur.
+    """
+    with Config.nutVarsLock:
+        if Config.nutVarsCache is not None:
+            return Config.nutVarsCache
+        try:
+            with open(Config.NUT_VARS_PATH, 'r', encoding='utf-8') as f:
+                data: dict[str, Any] = json.load(f)
+        except Exception as e:
+            logging.error('[DAEMON][NUT_VARS] Impossible de charger nut_vars.json :: %s', e)
+            data = {'vars': {}, 'instcmds': {}}
+        Config.nutVarsCache = data
+        logging.info('[DAEMON][NUT_VARS] Catalogue chargé (%d vars, %d instcmds)',
+                     len(data.get('vars', {})),
+                     len(data.get('instcmds', {})))
+        return data
+
+
+def queryDevice(device: NutDevice) -> dict[str, str] | None:
     """
     Interroge un serveur NUT et retourne {logicalId: valeur} ou None.
-    Couvre TOUTES les variables retournées par l'UPS (statiques + dynamiques
-    découvertes), mappées via le catalogue nut_vars.json.
+    Couvre TOUTES les variables retournées par l'UPS (statiques + dynamiques découvertes).
+    Le logicalId est calculé directement : nut_var.replace('.', '_').
     Seules les valeurs brutes sont envoyées ; toute dérivation (_min, labels)
     est traitée côté PHP par le mécanisme derivedFrom (jeeNut_free.php).
     """
@@ -221,14 +252,10 @@ def query_device(device: NutDevice) -> dict[str, str] | None:
         logging.error('[DAEMON][%s] GetUPSVars(%s) erreur :: %s', device.name, upsName, e)
         return None
 
-    catalog = _loadNutVars()
-    known_vars = catalog.get('vars', {})
-
     results: dict[str, str] = {}
     for nut_var, raw in allVars.items():
         value = raw.strip()
-        entry = known_vars.get(nut_var, {})
-        logicalId = entry.get('logicalId', nut_var.replace('.', '_'))
+        logicalId = nut_var.replace('.', '_')
 
         results[logicalId] = value
         logging.debug('[DAEMON][%s] %s = %s', device.name, logicalId, value)
@@ -301,34 +328,6 @@ def runListQueryAll(device: NutDevice) -> None:
     })
 
 
-def _nutToStr(v: Any) -> str:
-    """Normalise bytes → str (réponses PyNUTClient)."""
-    if isinstance(v, bytes):
-        return v.decode('utf-8', errors='replace')
-    return str(v) if v is not None else ''
-
-
-def _loadNutVars() -> dict[str, Any]:
-    """
-    Charge nut_vars.json en cache thread-safe (cache stocké dans Config).
-    Retourne {'vars': {...}, 'instcmds': {...}} ou dict vide en cas d'erreur.
-    """
-    with Config.nutVarsLock:
-        if Config.nutVarsCache is not None:
-            return Config.nutVarsCache
-        try:
-            with open(Config.NUT_VARS_PATH, 'r', encoding='utf-8') as f:
-                data: dict[str, Any] = json.load(f)
-        except Exception as e:
-            logging.error('[DAEMON][NUT_VARS] Impossible de charger nut_vars.json :: %s', e)
-            data = {'vars': {}, 'instcmds': {}}
-        Config.nutVarsCache = data
-        logging.info('[DAEMON][NUT_VARS] Catalogue chargé (%d vars, %d instcmds)',
-                     len(data.get('vars', {})),
-                     len(data.get('instcmds', {})))
-        return data
-
-
 def runDiscoverAll(device: NutDevice) -> None:
     """
     Découverte complète des capacités d'un UPS :
@@ -336,8 +335,9 @@ def runDiscoverAll(device: NutDevice) -> None:
       - variables RW (GetRWVars) — subtype issu du catalogue nut_vars.json
       - commandes instcmd disponibles (GetUPSCommands)
 
-    Enrichit chaque entrée avec les données du catalogue nut_vars.json (logicalId, name, unit,
-    subtype, icon) et renvoie le résultat à Jeedom via le callback 'discover_result'.
+    Enrichit chaque entrée avec les métadonnées du catalogue nut_vars.json (name, unit, subtype, icon).
+    Le logicalId est calculé directement : nut_var.replace('.', '_').
+    Renvoie le résultat à Jeedom via le callback 'discover_result'.
 
     Format du payload envoyé :
     {
@@ -391,7 +391,7 @@ def runDiscoverAll(device: NutDevice) -> None:
         info_vars.append({
             'nut_var': nut_var,
             'value': value,
-            'logicalId': entry.get('logicalId', nut_var.replace('.', '_')),
+            'logicalId': nut_var.replace('.', '_'),
             'name': entry.get('name', nut_var),
             'unit': entry.get('unit', ''),
             'subtype': entry.get('subtype', 'string'),
@@ -405,7 +405,7 @@ def runDiscoverAll(device: NutDevice) -> None:
         rw_vars.append({
             'nut_var': nut_var,
             'value': all_vars.get(nut_var, ''),
-            'logicalId': entry.get('logicalId', nut_var.replace('.', '_')),
+            'logicalId': nut_var.replace('.', '_'),
             'name': entry.get('name', nut_var),
             'unit': entry.get('unit', ''),
             'subtype': entry.get('subtype', 'string'),
@@ -418,7 +418,7 @@ def runDiscoverAll(device: NutDevice) -> None:
         entry = known_cmds.get(nut_cmd, {})
         instcmds.append({
             'nut_cmd': nut_cmd,
-            'logicalId': entry.get('logicalId', nut_cmd.replace('.', '_')),
+            'logicalId': nut_cmd.replace('.', '_'),
             'name': entry.get('name', nut_cmd),
             'icon': entry.get('icon', 'fas fa-terminal icon_blue'),
         })
@@ -456,9 +456,7 @@ def runSetRwVar(device: NutDevice, nutRwVar: str, value: str) -> None:
             result = f'{nutRwVar} → OK ({value})'
             logging.info('[DAEMON][%s] runSetRwVar() %s = %s :: OK', device.name, nutRwVar, value)
             # Mettre à jour la commande info correspondante avec la nouvelle valeur
-            catalog = _loadNutVars()
-            entry = catalog.get('vars', {}).get(nutRwVar, {})
-            mapped_id = entry.get('logicalId', nutRwVar.replace('.', '_'))
+            mapped_id = nutRwVar.replace('.', '_')
             # Envoi valeur brute + cmd_result ; dérivation (_min…) assurée par PHP via derivedFrom
             Comm.sendToJeedom.send_change_immediate({
                 'update': {device.eqLogicId: {mapped_id: value, 'cmd_result': result}}
@@ -652,7 +650,7 @@ class Loops:
         first_poll = True
 
         while not stop_event.is_set() and not myConfig.IS_ENDING:
-            status = get_ups_status_label(device)
+            status = getUpsStatusLabel(device)
 
             if status is not None:
                 last = myConfig.deviceLastStatus.get(device.eqLogicId, '')
@@ -708,7 +706,7 @@ class Loops:
     @staticmethod
     def _pollDevice(device: NutDevice) -> None:
         logging.debug('[DAEMON][%s] Interrogation NUT %s:%d', device.name, device.host, device.port)
-        results = query_device(device)
+        results = queryDevice(device)
         if results is not None:
             Comm.sendToJeedom.add_changes(f'update::{device.eqLogicId}', results)
             logging.info('[DAEMON][%s] Envoi de %d valeur(s) vers Jeedom', device.name, len(results))

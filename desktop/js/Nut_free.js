@@ -45,11 +45,6 @@ function addCmdToTable(_cmd) {
   const canBeVisible    = VISIBLE_COMMANDS.includes(logicalId) || isDynamic
   const canBeHistorized = HISTORIZED_COMMANDS.includes(logicalId) || (isDynInfo && init(_cmd.subType) === 'numeric')
 
-  // Badge dynamique
-  const dynBadge = isDynamic
-    ? '<span class="label label-info" style="font-size:0.7em;vertical-align:middle;margin-left:4px;">dyn</span>'
-    : ''
-
   // Clé NUT à afficher : nutRwVar pour les actions RW, sinon nutCmd
   const nutKey = isDynRw
     ? init(_cmd.configuration?.nutRwVar)
@@ -59,7 +54,7 @@ function addCmdToTable(_cmd) {
     ? '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fas fa-cogs"></i></a> <a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fas fa-rss"></i> {{Tester}}</a>'
     : ''
 
-  const rowHtml = `<td class="hidden-xs"><span class="cmdAttr" data-l1key="id"></span></td>
+  const rowHtml = `<td class="hidden-xs"><span class="cmdAttr${isDynamic ? ' text-primary' : ''}" data-l1key="id"></span></td>
     <td>
       <div class="input-group">
         <input class="cmdAttr form-control input-sm" data-l1key="type" value="info" style="display:none">
@@ -67,7 +62,6 @@ function addCmdToTable(_cmd) {
         <span class="input-group-btn"><a class="cmdAction btn btn-sm btn-default" data-l1key="chooseIcon" title="{{Choisir une icône}}"><i class="fas fa-icons"></i></a></span>
         <span class="cmdAttr input-group-addon roundedRight" data-l1key="display" data-l2key="icon" style="font-size:19px;padding:0 5px 0 0!important;"></span>
       </div>
-      ${dynBadge}
     </td>
     <td>
       ${nutKey ? `<span class="label label-default" style="font-size:0.9em;display:inline-block;">${jeedom.escapeHtml ? jeedom.escapeHtml(nutKey) : nutKey}</span>` : ''}
