@@ -1,0 +1,44 @@
+<div class="cmd cmd-widget reportModeHidden"
+    data-type="action"
+    data-subtype="message"
+    data-template="ups"
+    data-cmd_id="#id#"
+    data-cmd_uid="#uid#"
+    data-version="#version#"
+    data-eqLogic_id="#eqLogic_id#">
+
+    <style>
+        .cmd[data-cmd_uid="#uid#"] .cmdName { opacity: 0.6; font-style: italic; }
+        .cmd[data-cmd_uid="#uid#"] .cmdName::after { content: ' :'; }
+        .cmd[data-cmd_uid="#uid#"] .in_value {
+            display: inline-block;
+            width: 80px;
+            height: 20px;
+            padding: 0 4px;
+            font-size: 11px;
+            vertical-align: middle;
+            border: 1px solid var(--border-color, #ccc);
+            border-radius: 3px;
+            background: transparent;
+            color: inherit;
+        }
+        .cmd[data-cmd_uid="#uid#"] .execute {
+            cursor: pointer;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+    </style>
+
+    <div class="content-xs">
+        <span class="cmdName #hide_name#">#name_display#</span>
+        <input class="in_value" type="text" value="#title#" placeholder="#title_placeholder#">
+        <a class="execute" title="#name#"><i class="fas fa-check icon_green"></i></a>
+    </div>
+
+    <script>
+        document.querySelector('.cmd[data-cmd_uid="#uid#"] .execute').addEventListener('click', function() {
+            var val = document.querySelector('.cmd[data-cmd_uid="#uid#"] .in_value').value;
+            jeedom.cmd.execute({ id: '#id#', value: { message: val } });
+        });
+    </script>
+</div>

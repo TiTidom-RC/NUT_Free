@@ -433,6 +433,10 @@ class Nut_free extends eqLogic {
 				$cmdRw->setName(__('Modifier', __FILE__) . ' ' . $entry['name']);
 				$cmdRw->setUnite($unit);
 				$cmdRw->setDisplay('icon', '<i class="fas fa-pencil-alt icon_orange"></i>');
+				$cmdRw->setDisplay('showIconAndNamedashboard', 1);
+				$cmdRw->setDisplay('showIconAndNamemobile', 1);
+				$cmdRw->setTemplate('dashboard', 'Nut_free::ups');
+				$cmdRw->setTemplate('mobile', 'Nut_free::ups');
 				$cmdRw->setIsVisible(0);
 				$cmdRw->setOrder($order);
 			}
@@ -466,6 +470,10 @@ class Nut_free extends eqLogic {
 			if ($isNew) {
 				$cmd->setName($entry['name']);
 				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($entry['icon'] ?? 'fas fa-terminal icon_blue', ENT_QUOTES) . '"></i>');
+				$cmd->setDisplay('showIconAndNamedashboard', 1);
+				$cmd->setDisplay('showIconAndNamemobile', 1);
+				$cmd->setTemplate('dashboard', 'Nut_free::ups');
+				$cmd->setTemplate('mobile', 'Nut_free::ups');
 				$cmd->setIsVisible(0);
 				$cmd->setOrder($order);
 			}
