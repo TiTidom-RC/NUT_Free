@@ -609,8 +609,7 @@ class Nut_free extends eqLogic {
 					$titleAttr = $nameEnc . '<br><i>Date de valeur : ' . $dateVal . '<br>Date de collecte : ' . $dateCol . '</i>';
 				}
 				$cmdsHtml  .= '<div class="nut-row tooltips" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
-				$cmdsHtml  .= '<span title="' . $titleAttr . '"';
-				$cmdsHtml  .= ' style="width:15px;max-width:15px;max-height:15px;">' . $icon . '</span>' . "\n\t\t";
+				$cmdsHtml  .= '<span class="nut-icon" title="' . $titleAttr . '">' . $icon . '</span>' . "\n\t\t";
 				$cmdsHtml  .= '<span class="nut-label">' . $nameEnc . ' : </span>';
 				$cmdsHtml  .= '<span data-cmd_id="' . $cmdId . '" class="' . $historized . '">' . $value . '</span>';
 				if ($unite !== '') {
@@ -620,7 +619,7 @@ class Nut_free extends eqLogic {
 
 			} elseif ($cmd->getType() === 'action') {
 				$cmdsHtml .= '<div class="nut-row nut-action" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
-				$cmdsHtml .= '<span style="width:15px;max-width:15px;">' . $icon . '</span>' . "\n\t\t";
+				$cmdsHtml .= '<span class="nut-icon">' . $icon . '</span>' . "\n\t\t";
 				$cmdsHtml .= '<span class="nut-label">' . $nameEnc . '</span>' . "\n\t\t";
 				if ($cmd->getSubType() === 'message') {
 					$placeholder = htmlspecialchars($cmd->getDisplay('message_placeholder', ''), ENT_QUOTES);
