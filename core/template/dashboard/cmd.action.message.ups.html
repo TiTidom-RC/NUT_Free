@@ -1,0 +1,51 @@
+<div class="cmd cmd-widget reportModeHidden"
+    data-type="action"
+    data-subtype="message"
+    data-template="ups"
+    data-cmd_id="#id#"
+    data-cmd_uid="#uid#"
+    data-version="#version#"
+    data-eqLogic_id="#eqLogic_id#">
+
+    <style>
+        .cmd[data-cmd_uid="#uid#"] .cmdName { font-style: italic; font-size: 14px; }
+        .cmd[data-cmd_uid="#uid#"] .cmdName i { display: inline-block; width: 16px; text-align: center; margin-right: 2px; }
+        .cmd[data-cmd_uid="#uid#"] .cmdName .cmdLabel { opacity: 0.6; }
+        .cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden):not(.icon-only)::after { content: ' :'; }
+        .cmd[data-cmd_uid="#uid#"] .content-xs { display: flex; align-items: center; gap: 4px; font-size: 13px; }
+        .cmd[data-cmd_uid="#uid#"] .in_value {
+            width: 80px;
+            height: 20px;
+            padding: 0 4px;
+            font-size: 11px;
+            border: 1px solid var(--border-color, #ccc);
+            border-radius: 3px;
+            background: transparent;
+            color: inherit;
+        }
+        .cmd[data-cmd_uid="#uid#"] .execute { cursor: pointer; }
+    </style>
+
+    <div class="content-xs">
+        <span class="cmdName #hide_name#">#name_display#</span>
+        <input class="in_value" type="text" value="#message#" placeholder="#message_placeholder#">
+        <a class="execute" title="#name#"><i class="fas fa-check icon_green"></i></a>
+    </div>
+
+    <template>
+        <div>message_placeholder : {{Valeur}} ({{Placeholder du champ valeur}})</div>
+    </template>
+
+    <script>
+        document.querySelector('.cmd[data-cmd_uid="#uid#"] .execute').addEventListener('click', function() {
+            var val = document.querySelector('.cmd[data-cmd_uid="#uid#"] .in_value').value;
+            jeedom.cmd.execute({ id: '#id#', value: { message: val } });
+        });
+        var _n = document.querySelector('.cmd[data-cmd_uid="#uid#"] .cmdName');
+        if (_n) {
+            var _txt = Array.from(_n.childNodes).filter(function(n){return n.nodeType===3 && n.textContent.trim();});
+            if (_txt.length) { _txt.forEach(function(t){ var s=document.createElement('span'); s.className='cmdLabel'; t.parentNode.insertBefore(s,t); s.appendChild(t); }); }
+            else { _n.classList.add('icon-only'); }
+        }
+    </script>
+</div>

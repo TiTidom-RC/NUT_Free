@@ -265,7 +265,7 @@ class Nut_free extends eqLogic {
 	public static function createCmd($eqLogic = null) {
 		$commandsConfig = array(
 			// Action virtuelle
-			'refresh'              => array('name' => 'Rafraîchir',                    'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'icon' => '<i class="fas fa-sync-alt icon_green"></i>'),
+			'refresh'              => array('name' => 'Rafraîchir',                    'type' => 'action', 'subtype' => 'other', 'isVisible' => 1, 'icon' => '<i class="fas fa-sync-alt icon_green"></i>'),
 			// Identification (quasi-universelles)
 			'device_mfr'           => array('name' => 'Fabricant',               'subtype' => 'string', 'nutCmd' => 'device.mfr',      'icon' => '<i class="fas fa-tag icon_green"></i>'),
 			'device_model'         => array('name' => 'Modèle',                                                   'subtype' => 'string', 'nutCmd' => 'device.model',    'icon' => '<i class="fas fa-tag icon_blue"></i>'),
@@ -432,7 +432,17 @@ class Nut_free extends eqLogic {
 			if ($isNewRw) {
 				$cmdRw->setName(__('Modifier', __FILE__) . ' ' . $entry['name']);
 				$cmdRw->setUnite($unit);
-				$cmdRw->setDisplay('icon', '<i class="fas fa-pencil-alt icon_orange"></i>');
+				foreach ([
+					'icon'                     => '<i class="fas fa-pencil-alt icon_orange"></i>',
+					'showIconAndNamedashboard'  => 1,
+					'showIconAndNamemobile'     => 1,
+					'message_placeholder'       => __('Valeur', __FILE__),
+					'title_disable'             => 1,
+				] as $_k => $_v) {
+					$cmdRw->setDisplay($_k, $_v);
+				}
+				$cmdRw->setTemplate('dashboard', 'Nut_free::ups');
+				$cmdRw->setTemplate('mobile', 'Nut_free::ups');
 				$cmdRw->setIsVisible(0);
 				$cmdRw->setOrder($order);
 			}
@@ -465,7 +475,15 @@ class Nut_free extends eqLogic {
 			// Données utilisateur : initialisées à la création uniquement
 			if ($isNew) {
 				$cmd->setName($entry['name']);
-				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($entry['icon'] ?? 'fas fa-terminal icon_blue', ENT_QUOTES) . '"></i>');
+				foreach ([
+					'icon'                     => '<i class="' . htmlspecialchars($entry['icon'] ?? 'fas fa-terminal icon_blue', ENT_QUOTES) . '"></i>',
+					'showIconAndNamedashboard'  => 1,
+					'showIconAndNamemobile'     => 1,
+				] as $_k => $_v) {
+					$cmd->setDisplay($_k, $_v);
+				}
+				$cmd->setTemplate('dashboard', 'Nut_free::ups');
+				$cmd->setTemplate('mobile', 'Nut_free::ups');
 				$cmd->setIsVisible(0);
 				$cmd->setOrder($order);
 			}
@@ -570,8 +588,8 @@ class Nut_free extends eqLogic {
 				$replace['#' . $logicalId . '#'] = $rawValue;
 			}
 
-			// Corps : refresh géré dans le header ; commandes masquées et actions ignorées
-			if ($logicalId === 'refresh' || !$cmd->getIsVisible() || $cmd->getType() !== 'info') {
+			// Corps : refresh géré dans le header ; commandes masquées ignorées
+			if ($logicalId === 'refresh' || !$cmd->getIsVisible()) {
 				continue;
 			}
 
@@ -590,9 +608,8 @@ class Nut_free extends eqLogic {
 				} else {
 					$titleAttr = $nameEnc . '<br><i>Date de valeur : ' . $dateVal . '<br>Date de collecte : ' . $dateCol . '</i>';
 				}
-				$cmdsHtml  .= '<div class="tooltips" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
-				$cmdsHtml  .= '<span title="' . $titleAttr . '"';
-				$cmdsHtml  .= ' style="width:15px;max-width:15px;max-height:15px;">' . $icon . '</span>' . "\n\t\t";
+				$cmdsHtml  .= '<div class="nut-row tooltips" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
+				$cmdsHtml  .= '<span class="nut-icon" title="' . $titleAttr . '">' . $icon . '</span>' . "\n\t\t";
 				$cmdsHtml  .= '<span class="nut-label">' . $nameEnc . ' : </span>';
 				$cmdsHtml  .= '<span data-cmd_id="' . $cmdId . '" class="' . $historized . '">' . $value . '</span>';
 				if ($unite !== '') {
@@ -600,6 +617,16 @@ class Nut_free extends eqLogic {
 				}
 				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
 
+			} elseif ($cmd->getType() === 'action') {
+				$cmdsHtml .= '<div class="nut-row nut-action" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
+				$cmdsHtml .= '<span class="nut-icon">' . $icon . '</span>' . "\n\t\t";
+				$cmdsHtml .= '<span class="nut-label">' . $nameEnc . '</span>' . "\n\t\t";
+				if ($cmd->getSubType() === 'message') {
+					$placeholder = htmlspecialchars($cmd->getDisplay('message_placeholder', ''), ENT_QUOTES);
+					$cmdsHtml .= '<input class="nut-action-input" type="text" placeholder="' . $placeholder . '">' . "\n\t\t";
+				}
+				$cmdsHtml .= '<a class="nut-action-btn cursor" data-cmd_id="' . $cmdId . '" data-subtype="' . $cmd->getSubType() . '" title="' . $nameEnc . '"><i class="fas fa-play-circle icon_blue"></i></a>';
+				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
 			}
 		}
 
