@@ -66,6 +66,22 @@
 			opacity: 0.6;
 			font-style: italic !important;
 		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-row {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			white-space: nowrap;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-action-input {
+			width: 80px;
+			height: 18px;
+			padding: 0 4px;
+			font-size: 11px;
+			border: 1px solid var(--border-color, #ccc);
+			border-radius: 3px;
+			background: transparent;
+			color: inherit;
+		}
 		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .history.cursor {
 			font-weight: 600;
 		}
@@ -89,6 +105,19 @@
 	</span>
 
 	<script>
+		// Boutons exécution commandes action
+		$('[data-eqLogic_uid="#uid#"] .nut-action-btn').off('click').on('click', function() {
+			var btn     = $(this);
+			var cmdId   = btn.data('cmd_id');
+			var subtype = btn.data('subtype');
+			if (subtype === 'message') {
+				var val = btn.closest('.nut-row').find('.nut-action-input').val();
+				jeedom.cmd.execute({ id: cmdId, value: { message: val } });
+			} else {
+				jeedom.cmd.execute({ id: cmdId });
+			}
+		});
+
 		// Icône connexion SSH (mode SSH uniquement)
 		if ('#cnx_ssh#' === 'OK') {
 			if ('#ssh_op#' === '1') {

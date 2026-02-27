@@ -588,8 +588,8 @@ class Nut_free extends eqLogic {
 				$replace['#' . $logicalId . '#'] = $rawValue;
 			}
 
-			// Corps : refresh géré dans le header ; commandes masquées et actions ignorées
-			if ($logicalId === 'refresh' || !$cmd->getIsVisible() || $cmd->getType() !== 'info') {
+			// Corps : refresh géré dans le header ; commandes masquées ignorées
+			if ($logicalId === 'refresh' || !$cmd->getIsVisible()) {
 				continue;
 			}
 
@@ -608,7 +608,7 @@ class Nut_free extends eqLogic {
 				} else {
 					$titleAttr = $nameEnc . '<br><i>Date de valeur : ' . $dateVal . '<br>Date de collecte : ' . $dateCol . '</i>';
 				}
-				$cmdsHtml  .= '<div class="tooltips" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
+				$cmdsHtml  .= '<div class="nut-row tooltips" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
 				$cmdsHtml  .= '<span title="' . $titleAttr . '"';
 				$cmdsHtml  .= ' style="width:15px;max-width:15px;max-height:15px;">' . $icon . '</span>' . "\n\t\t";
 				$cmdsHtml  .= '<span class="nut-label">' . $nameEnc . ' : </span>';
@@ -618,6 +618,16 @@ class Nut_free extends eqLogic {
 				}
 				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
 
+			} elseif ($cmd->getType() === 'action') {
+				$cmdsHtml .= '<div class="nut-row nut-action" data-cmd_id="' . $cmdId . '">' . "\n\t\t";
+				$cmdsHtml .= '<span style="width:15px;max-width:15px;">' . $icon . '</span>' . "\n\t\t";
+				$cmdsHtml .= '<span class="nut-label">' . $nameEnc . '</span>' . "\n\t\t";
+				if ($cmd->getSubType() === 'message') {
+					$placeholder = htmlspecialchars($cmd->getDisplay('message_placeholder', ''), ENT_QUOTES);
+					$cmdsHtml .= '<input class="nut-action-input" type="text" placeholder="' . $placeholder . '">' . "\n\t\t";
+				}
+				$cmdsHtml .= '<a class="nut-action-btn cursor" data-cmd_id="' . $cmdId . '" data-subtype="' . $cmd->getSubType() . '" title="' . $nameEnc . '"><i class="fas fa-play-circle icon_blue"></i></a>';
+				$cmdsHtml .= "\n\t\t" . '</div>' . "\n\n\t\t";
 			}
 		}
 
