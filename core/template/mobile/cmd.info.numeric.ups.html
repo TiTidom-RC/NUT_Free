@@ -12,7 +12,7 @@
 			opacity: 0.6;
 			font-style: italic;
 		}
-		.cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden):not(:has(> i:only-child))::after {
+		.cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden):not(.icon-only)::after {
 			content: ' :';
 		}
 		.cmd[data-cmd_uid="#uid#"] .value {
@@ -32,6 +32,8 @@
 			cmd.find('.unit').empty().append(_options.unit);
 		});
 		jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }]);
+		var _n = document.querySelector('.cmd[data-cmd_uid="#uid#"] .cmdName');
+		if (_n && _n.textContent.trim() === '') _n.classList.add('icon-only');
 	</script>
 
 </div>
