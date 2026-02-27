@@ -12,7 +12,7 @@
 			opacity: 0.6;
 			font-style: italic;
 		}
-		.cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden)::after {
+		.cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden):not(:has(> i:only-child))::after {
 			content: ' :';
 		}
 		.cmd[data-cmd_uid="#uid#"] .value {
