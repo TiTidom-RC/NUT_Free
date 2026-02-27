@@ -9,14 +9,15 @@
 
 	<style>
 		.cmd[data-cmd_uid="#uid#"] .cmdName {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
 			font-style: italic;
 			font-size: 14px;
 		}
 		.cmd[data-cmd_uid="#uid#"] .cmdName i {
-			display: inline-block;
-			width: 16px;
+			min-width: 16px;
 			text-align: center;
-			margin-right: 2px;
 		}
 		.cmd[data-cmd_uid="#uid#"] .cmdName .cmdLabel {
 			opacity: 0.6;
@@ -25,7 +26,7 @@
 			font-size: 14px;
 		}
 		.cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden):not(.icon-only)::after {
-			content: ' :';
+			content: ':';
 		}
 		.cmd[data-cmd_uid="#uid#"] .value {
 			font-weight: 500;
