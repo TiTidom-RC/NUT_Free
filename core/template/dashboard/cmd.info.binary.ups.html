@@ -9,8 +9,20 @@
 
 	<style>
 		.cmd[data-cmd_uid="#uid#"] .cmdName {
-			opacity: 0.6;
 			font-style: italic;
+			font-size: 14px;
+		}
+		.cmd[data-cmd_uid="#uid#"] .cmdName i {
+			display: inline-block;
+			width: 16px;
+			text-align: center;
+			margin-right: 2px;
+		}
+		.cmd[data-cmd_uid="#uid#"] .cmdName .cmdLabel {
+			opacity: 0.6;
+		}
+		.cmd[data-cmd_uid="#uid#"] .content-xs {
+			font-size: 14px;
 		}
 		.cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden):not(.icon-only)::after {
 			content: ' :';
@@ -34,7 +46,11 @@
 		});
 		jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }]);
 		var _n = document.querySelector('.cmd[data-cmd_uid="#uid#"] .cmdName');
-		if (_n && _n.textContent.trim() === '') _n.classList.add('icon-only');
+		if (_n) {
+			var _txt = Array.from(_n.childNodes).filter(function(n){return n.nodeType===3 && n.textContent.trim();});
+			if (_txt.length) { _txt.forEach(function(t){ var s=document.createElement('span'); s.className='cmdLabel'; t.parentNode.insertBefore(s,t); s.appendChild(t); }); }
+			else { _n.classList.add('icon-only'); }
+		}
 	</script>
 
 </div>
