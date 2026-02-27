@@ -8,25 +8,20 @@
     data-eqLogic_id="#eqLogic_id#">
 
     <style>
-        .cmd[data-cmd_uid="#uid#"] .cmdName { opacity: 0.6; font-style: italic; vertical-align: middle; }
+        .cmd[data-cmd_uid="#uid#"] .cmdName { opacity: 0.6; font-style: italic; }
         .cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden)::after { content: ' :'; }
+        .cmd[data-cmd_uid="#uid#"] .content-xs { display: flex; align-items: center; gap: 4px; }
         .cmd[data-cmd_uid="#uid#"] .in_value {
-            display: inline-block;
             width: 80px;
             height: 20px;
             padding: 0 4px;
             font-size: 11px;
-            vertical-align: middle;
             border: 1px solid var(--border-color, #ccc);
             border-radius: 3px;
             background: transparent;
             color: inherit;
         }
-        .cmd[data-cmd_uid="#uid#"] .execute {
-            cursor: pointer;
-            margin-left: 4px;
-            vertical-align: middle;
-        }
+        .cmd[data-cmd_uid="#uid#"] .execute { cursor: pointer; }
     </style>
 
     <div class="content-xs">
