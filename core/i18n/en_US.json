@@ -12,7 +12,12 @@
         "Modifier": "Edit",
         "Nom UPS non configuré pour l\\'équipement ": "UPS name not configured for the equipment ",
         "Plugin SSH-Manager introuvable - vérifiez les dépendances": "SSH Manager plugin not found - check dependencies",
-        "SSHHostId non configuré pour l\\'équipement ": "SSHHostId not configured for the equipment "
+        "SSHHostId non configuré pour l\\'équipement ": "SSHHostId not configured for the equipment ",
+        "Valeur": "Value"
+    },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.action.message.ups.html": {
+        "Placeholder du champ valeur": "Placeholder for the value field",
+        "Valeur": "Value"
     },
     "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.binary.ups.html": {
         "Date de collecte": "Date of collection",
@@ -25,6 +30,10 @@
     "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.string.ups.html": {
         "Date de collecte": "Date of collection",
         "Date de valeur": "Value date"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.action.message.ups.html": {
+        "Placeholder du champ valeur": "Placeholder for the value field",
+        "Valeur": "Value"
     },
     "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.binary.ups.html": {
         "Date de collecte": "Date of collection",

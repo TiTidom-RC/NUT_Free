@@ -12,7 +12,12 @@
         "Modifier": "Editar",
         "Nom UPS non configuré pour l\\'équipement ": "Nome UPS não configurado para o equipamento ",
         "Plugin SSH-Manager introuvable - vérifiez les dépendances": "Plugin SSH-Manager não encontrado - verifique as dependências",
-        "SSHHostId non configuré pour l\\'équipement ": "SSHHostId não configurado para o equipamento "
+        "SSHHostId non configuré pour l\\'équipement ": "SSHHostId não configurado para o equipamento ",
+        "Valeur": "Valor"
+    },
+    "plugins\/Nut_free\/core\/template\/dashboard\/cmd.action.message.ups.html": {
+        "Placeholder du champ valeur": "Espaço reservado para o campo valor",
+        "Valeur": "Valor"
     },
     "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.binary.ups.html": {
         "Date de collecte": "Data de recolha",
@@ -25,6 +30,10 @@
     "plugins\/Nut_free\/core\/template\/dashboard\/cmd.info.string.ups.html": {
         "Date de collecte": "Data de recolha",
         "Date de valeur": "Data de valor"
+    },
+    "plugins\/Nut_free\/core\/template\/mobile\/cmd.action.message.ups.html": {
+        "Placeholder du champ valeur": "Espaço reservado para o campo valor",
+        "Valeur": "Valor"
     },
     "plugins\/Nut_free\/core\/template\/mobile\/cmd.info.binary.ups.html": {
         "Date de collecte": "Data de recolha",
