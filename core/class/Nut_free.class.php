@@ -265,7 +265,7 @@ class Nut_free extends eqLogic {
 	public static function createCmd($eqLogic = null) {
 		$commandsConfig = array(
 			// Action virtuelle
-			'refresh'              => array('name' => 'Rafraîchir',                    'type' => 'action', 'subtype' => 'other', 'isVisible' => 0, 'icon' => '<i class="fas fa-sync-alt icon_green"></i>'),
+			'refresh'              => array('name' => 'Rafraîchir',                    'type' => 'action', 'subtype' => 'other', 'isVisible' => 1, 'icon' => '<i class="fas fa-sync-alt icon_green"></i>'),
 			// Identification (quasi-universelles)
 			'device_mfr'           => array('name' => 'Fabricant',               'subtype' => 'string', 'nutCmd' => 'device.mfr',      'icon' => '<i class="fas fa-tag icon_green"></i>'),
 			'device_model'         => array('name' => 'Modèle',                                                   'subtype' => 'string', 'nutCmd' => 'device.model',    'icon' => '<i class="fas fa-tag icon_blue"></i>'),
