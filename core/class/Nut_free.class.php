@@ -432,9 +432,15 @@ class Nut_free extends eqLogic {
 			if ($isNewRw) {
 				$cmdRw->setName(__('Modifier', __FILE__) . ' ' . $entry['name']);
 				$cmdRw->setUnite($unit);
-				$cmdRw->setDisplay('icon', '<i class="fas fa-pencil-alt icon_orange"></i>');
-				$cmdRw->setDisplay('showIconAndNamedashboard', 1);
-				$cmdRw->setDisplay('showIconAndNamemobile', 1);
+				foreach ([
+					'icon'                     => '<i class="fas fa-pencil-alt icon_orange"></i>',
+					'showIconAndNamedashboard'  => 1,
+					'showIconAndNamemobile'     => 1,
+					'message_placeholder'       => __('Valeur', __FILE__),
+					'title_disable'             => 1,
+				] as $_k => $_v) {
+					$cmdRw->setDisplay($_k, $_v);
+				}
 				$cmdRw->setTemplate('dashboard', 'Nut_free::ups');
 				$cmdRw->setTemplate('mobile', 'Nut_free::ups');
 				$cmdRw->setIsVisible(0);
@@ -469,9 +475,13 @@ class Nut_free extends eqLogic {
 			// Données utilisateur : initialisées à la création uniquement
 			if ($isNew) {
 				$cmd->setName($entry['name']);
-				$cmd->setDisplay('icon', '<i class="' . htmlspecialchars($entry['icon'] ?? 'fas fa-terminal icon_blue', ENT_QUOTES) . '"></i>');
-				$cmd->setDisplay('showIconAndNamedashboard', 1);
-				$cmd->setDisplay('showIconAndNamemobile', 1);
+				foreach ([
+					'icon'                     => '<i class="' . htmlspecialchars($entry['icon'] ?? 'fas fa-terminal icon_blue', ENT_QUOTES) . '"></i>',
+					'showIconAndNamedashboard'  => 1,
+					'showIconAndNamemobile'     => 1,
+				] as $_k => $_v) {
+					$cmd->setDisplay($_k, $_v);
+				}
 				$cmd->setTemplate('dashboard', 'Nut_free::ups');
 				$cmd->setTemplate('mobile', 'Nut_free::ups');
 				$cmd->setIsVisible(0);

@@ -31,9 +31,13 @@
 
     <div class="content-xs">
         <span class="cmdName #hide_name#">#name_display#</span>
-        <input class="in_value" type="text" value="#title#" placeholder="#title_placeholder#">
+        <input class="in_value" type="text" value="#message#" placeholder="#message_placeholder#">
         <a class="execute" title="#name#"><i class="fas fa-check icon_green"></i></a>
     </div>
+
+    <template>
+        <div>message_placeholder : {{Valeur}} ({{Placeholder du champ valeur}})</div>
+    </template>
 
     <script>
         document.querySelector('.cmd[data-cmd_uid="#uid#"] .execute').addEventListener('click', function() {
