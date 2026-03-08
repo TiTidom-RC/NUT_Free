@@ -42,6 +42,7 @@
         "upscmd",
         "upsd",
         "upsmon",
+        "upsrw",
         "vendorid",
         "warningflag"
     ]

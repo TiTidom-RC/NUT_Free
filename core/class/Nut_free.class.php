@@ -31,15 +31,44 @@ class Nut_free extends eqLogic {
 	public static $_widgetPossibility = array('custom' => true, 'custom::layout' => false);
 
     public static function cron() {
+        // Mode NUT : le daemon gère son propre polling (cyclePolling + statusWatcher) — rien à faire ici.
+        // Mode SSH : collecte synchrone via SSH-Manager, avec décalage proportionnel
+        // pour éviter les exécutions simultanées quand plusieurs équipements sont actifs.
+        $sshEquipments = [];
         foreach (eqLogic::byType('Nut_free') as $eqLogic) {
             /** @var Nut_free $eqLogic */
             if (!$eqLogic->getIsEnable()) continue;
-            $mode = $eqLogic->getConfiguration('connexionMode', 'nut');
-            if ($mode === 'nut') {
-                // Mode NUT : le daemon gère son propre polling (cyclePolling + statusWatcher).
+            if ($eqLogic->getConfiguration('connexionMode', 'nut') === 'ssh') {
+                $sshEquipments[] = $eqLogic;
+            }
+        }
+        $total = count($sshEquipments);
+        foreach ($sshEquipments as $eqLogic) {
+            /** @var Nut_free $eqLogic */
+            // Avant la première discovery (mode auto, ups vide), il n'y a pas de commandes
+            // dynamiques à mettre à jour — inutile de faire des appels SSH.
+            if ($eqLogic->getConfiguration('upsAutoSelect', 'auto') === 'auto'
+                && trim($eqLogic->getConfiguration('ups', '')) === '') {
+                log::add('Nut_free', 'debug', '[CRON][SSH] "' . $eqLogic->getName() . '" ignoré : discovery non effectuée');
                 continue;
             }
-            // Mode SSH : collecte via SSH-Manager directement en PHP
+            // Vérification de la fréquence de polling via cronIsDue()
+            $cronExpr = trim($eqLogic->getConfiguration('sshPollingCron', '* * * * *'));
+            if ($cronExpr === '') {
+                $cronExpr = '* * * * *';
+            }
+            if (!cronIsDue($cronExpr)) {
+                log::add('Nut_free', 'debug', '[CRON][SSH] "' . $eqLogic->getName() . '" ignoré : pas encore dû (' . $cronExpr . ')');
+                continue;
+            }
+            // Décalage aléatoire : répartition sur 30 s max pour éviter les exécutions simultanées
+            if ($total > 1) {
+                $delay = rand(0, 30);
+                if ($delay > 0) {
+                    log::add('Nut_free', 'debug', '[CRON][SSH] Décalage ' . $delay . 's pour "' . $eqLogic->getName() . '"');
+                    sleep($delay);
+                }
+            }
             $eqLogic->getInfosSSH();
             $eqLogic->refreshWidget();
         }
@@ -229,7 +258,7 @@ class Nut_free extends eqLogic {
 			'host'        => $eq->getConfiguration('addressIp', '127.0.0.1'),
 			'port'        => (int) $eq->getConfiguration('nutPort', 3493),
 			'upsName'     => $eq->getConfiguration('ups', ''),
-			'autoDetect'  => ($eq->getConfiguration('upsAutoSelect', '0') === '0') ? 1 : 0,
+			'autoDetect'  => ($eq->getConfiguration('upsAutoSelect', 'auto') === 'auto') ? 1 : 0,
 			'nutUsername' => $eq->getConfiguration('nutUsername', ''),
 			'nutPassword' => $eq->getConfiguration('nutPassword', ''),
 		];
@@ -245,10 +274,6 @@ class Nut_free extends eqLogic {
 				'action' => 'add_device',
 				'device' => self::buildDevicePayload($this),
 			));
-		} else {
-			// Mode SSH : collecte via SSH-Manager directement en PHP
-			$this->getInfosSSH();
-			$this->refreshWidget();
 		}
 	}
 
@@ -635,13 +660,247 @@ class Nut_free extends eqLogic {
 		return $html;
 	}
 	
+    /**
+     * Résout le nom de l'UPS via SSH.
+     * - Mode manuel (upsAutoSelect='manual') : retourne le champ 'ups' configuré directement.
+     * - Mode auto   (upsAutoSelect='auto')   : retourne le champ 'ups' enregistré par discoverSSH(),
+     *   ou fait un appel SSH 'upsc -l' si 'ups' est encore vide (cas : discoverSSH() pré-discovery).
+     *   Le cron ne peut pas atteindre ce dernier chemin (protégé dans cron()).
+     * Aucune persistance ici — c'est discoverSSH() qui écrit dans 'ups'.
+     * Public pour être accessible depuis Nut_freeCmd::execute().
+     *
+     * @param string $sshHostId  ID de l'hôte SSH-Manager
+     */
+    public function resolveUpsNameSSH(string $sshHostId): string {
+        $equipment     = $this->getName();
+        $upsAutoSelect = $this->getConfiguration('upsAutoSelect', 'auto');
+        $ups           = trim($this->getConfiguration('ups', ''));
+
+        // Mode manuel : on fait confiance au champ 'ups' saisi par l'utilisateur
+        if ($upsAutoSelect === 'manual') {
+            log::add('Nut_free', 'debug', '[' . $equipment . '] UPS manuel : ' . $ups);
+            return $ups;
+        }
+
+        // Mode auto : 'ups' peut contenir une valeur enregistrée par discoverSSH()
+        if ($ups !== '') {
+            log::add('Nut_free', 'debug', '[' . $equipment . '] UPS (enregistré par discovery) : ' . $ups);
+            return $ups;
+        }
+
+        // Auto-détection via SSH (cas : avant la première discovery)
+        try {
+            $ups = trim((string) sshmanager::executeCmds($sshHostId, "upsc -l 2>&1 | grep -v '^Init SSL'"));
+            log::add('Nut_free', 'debug', '[' . $equipment . '] UPS auto-détecté : ' . $ups);
+        } catch (\Throwable $e) {
+            log::add('Nut_free', 'error', '[' . $equipment . '] Auto-détection UPS échouée : ' . $e->getMessage());
+            return '';
+        }
+
+        if (empty($ups)) {
+            log::add('Nut_free', 'error', '[' . $equipment . '] Impossible de déterminer le nom de l\'UPS');
+            return '';
+        }
+
+        return $ups;
+    }
+
+    /**
+     * Découverte complète des capacités d'un UPS via SSH (symétrique de runDiscoverAll() côté daemon).
+     * Commandes SSH utilisées :
+     *   upsc <ups>                        → toutes les variables (info + valeurs courantes)
+     *   upsrw [-u user -p pass] <ups>     → liste des variables en lecture/écriture
+     *   upscmd -l [-u user -p pass] <ups> → liste des commandes instcmd disponibles
+     *
+     * Appelle createDynamicCmd() directement (synchrone), contrairement au mode NUT (asynchrone via daemon).
+     * Les credentials NUT (nutUsername / nutPassword) sont utilisés si configurés.
+     */
+    public function discoverSSH(): void {
+        $equipment = $this->getName();
+        $sshHostId = $this->getConfiguration('SSHHostId', '');
+        $nutUser   = trim($this->getConfiguration('nutUsername', ''));
+        $nutPass   = trim($this->getConfiguration('nutPassword', ''));
+
+        log::add('Nut_free', 'debug', '--- [' . $equipment . '] Début discoverSSH ---');
+
+        if (!class_exists('sshmanager')) {
+            throw new \Exception(__('Plugin SSH-Manager introuvable - vérifiez les dépendances', __FILE__));
+        }
+        if (empty($sshHostId)) {
+            throw new \Exception(__('SSHHostId non configuré pour l\'équipement ', __FILE__) . $equipment);
+        }
+
+        // Résolution du nom de l'UPS
+        // discoverSSH() est une action explicite : en mode auto, on interroge toujours
+        // le serveur pour obtenir le nom réel, sans se fier à la valeur en configuration.
+        $upsAutoSelect = $this->getConfiguration('upsAutoSelect', 'auto');
+        if ($upsAutoSelect === 'manual') {
+            // Mode manuel : l'utilisateur a saisi le nom lui-même
+            $ups = trim($this->getConfiguration('ups', ''));
+            if (empty($ups)) {
+                throw new \Exception('[' . $equipment . '] ' . __('Champ "Nom de l\'UPS" vide, synchronisation annulée', __FILE__));
+            }
+        } else {
+            // Mode auto : détection fraîche via SSH (ignore toute valeur en configuration)
+            try {
+                $ups = trim((string) sshmanager::executeCmds($sshHostId, "upsc -l 2>&1 | grep -v '^Init SSL'"));
+            } catch (\Throwable $e) {
+                throw new \Exception('[' . $equipment . '] ' . __('Auto-détection UPS échouée : ', __FILE__) . $e->getMessage());
+            }
+            if (empty($ups)) {
+                throw new \Exception('[' . $equipment . '] ' . __('Impossible de déterminer le nom de l\'UPS, synchronisation annulée', __FILE__));
+            }
+            // Enregistre le nom si différent de ce qui est stocké (premier discovery ou correction)
+            if ($ups !== trim($this->getConfiguration('ups', ''))) {
+                $this->setConfiguration('ups', $ups);
+                $this->save();
+            }
+        }
+
+        // Arguments d'authentification NUT/upsd (optionnels)
+        $authArgs = ($nutUser !== '')
+            ? ' -u ' . escapeshellarg($nutUser) . ' -p ' . escapeshellarg($nutPass)
+            : '';
+
+        // --- 1. Toutes les variables via upsc (valeurs courantes) ---
+        try {
+            $allVarsRaw = (string) sshmanager::executeCmds(
+                $sshHostId,
+                'upsc ' . escapeshellarg($ups) . " 2>&1 | grep -v '^Init SSL'"
+            );
+        } catch (\Throwable $e) {
+            throw new \Exception('[' . $equipment . '] upsc erreur : ' . $e->getMessage());
+        }
+
+        $allVars = [];
+        foreach (explode("\n", $allVarsRaw) as $line) {
+            $line = trim($line);
+            if ($line === '' || strpos($line, ':') === false) continue;
+            [$k, $v] = explode(':', $line, 2);
+            $allVars[trim($k)] = trim($v);
+        }
+
+        // --- 2. Variables RW via upsrw (listing sans -s) ---
+        try {
+            $rwVarsRaw = (string) sshmanager::executeCmds(
+                $sshHostId,
+                'upsrw' . $authArgs . ' ' . escapeshellarg($ups) . " 2>&1 | grep -v '^Init SSL'"
+            );
+        } catch (\Throwable $e) {
+            log::add('Nut_free', 'warning', '[' . $equipment . '] upsrw listing erreur : ' . $e->getMessage());
+            $rwVarsRaw = '';
+        }
+
+        // Parsing upsrw : récupère les noms de vars entre [crochets]
+        $rwKeys = [];
+        foreach (explode("\n", $rwVarsRaw) as $line) {
+            if (preg_match('/^\[([^\]]+)\]$/', trim($line), $m)) {
+                $rwKeys[] = $m[1];
+            }
+        }
+
+        // --- 3. Commandes instcmd via upscmd -l ---
+        try {
+            $instCmdsRaw = (string) sshmanager::executeCmds(
+                $sshHostId,
+                'upscmd -l' . $authArgs . ' ' . escapeshellarg($ups) . " 2>&1 | grep -v '^Init SSL'"
+            );
+        } catch (\Throwable $e) {
+            log::add('Nut_free', 'warning', '[' . $equipment . '] upscmd -l erreur : ' . $e->getMessage());
+            $instCmdsRaw = '';
+        }
+
+        // Parsing upscmd -l : "cmdname - description" (ou juste "cmdname" selon version NUT)
+        $instCmdsList = [];
+        foreach (explode("\n", $instCmdsRaw) as $line) {
+            $line = trim($line);
+            if ($line === '' || stripos($line, 'Instant commands') !== false) continue;
+            $cmdName = (strpos($line, ' - ') !== false)
+                ? trim(explode(' - ', $line, 2)[0])
+                : $line;
+            // Garde uniquement les noms sans espace (ex: "beeper.disable"), pas les messages d'erreur
+            if ($cmdName !== '' && strpos($cmdName, ' ') === false) {
+                $instCmdsList[] = $cmdName;
+            }
+        }
+
+        // --- Catalogue nut_vars.json : métadonnées (name, unit, subtype, icon) ---
+        $catalogPath = __DIR__ . '/../../resources/nut_vars.json';
+        $catalog     = [];
+        if (file_exists($catalogPath)) {
+            $raw = file_get_contents($catalogPath);
+            if ($raw !== false) {
+                $catalog = json_decode($raw, true) ?? [];
+            }
+        }
+        $knownVars = $catalog['vars']     ?? [];
+        $knownCmds = $catalog['instcmds'] ?? [];
+
+        // --- Constitution du payload pour createDynamicCmd ---
+        $rwKeysSet = array_flip($rwKeys);
+        $infoVars  = [];
+        $rwVars    = [];
+
+        foreach ($allVars as $nutVar => $value) {
+            $logicalId = str_replace('.', '_', $nutVar);
+            $entry     = $knownVars[$nutVar] ?? [];
+            $item = [
+                'nut_var'   => $nutVar,
+                'value'     => $value,
+                'logicalId' => $logicalId,
+                'name'      => $entry['name']    ?? $nutVar,
+                'unit'      => $entry['unit']    ?? '',
+                'subtype'   => $entry['subtype'] ?? 'string',
+                'icon'      => $entry['icon']    ?? 'fas fa-circle',
+            ];
+            if (isset($rwKeysSet[$nutVar])) {
+                $rwVars[] = $item;
+            } else {
+                $infoVars[] = $item;
+            }
+        }
+
+        // Vars RW absentes de upsc (cas rare, ex: upsd configuré en lecture restreinte)
+        foreach ($rwKeys as $nutVar) {
+            if (!isset($allVars[$nutVar])) {
+                $entry    = $knownVars[$nutVar] ?? [];
+                $rwVars[] = [
+                    'nut_var'   => $nutVar,
+                    'value'     => '',
+                    'logicalId' => str_replace('.', '_', $nutVar),
+                    'name'      => $entry['name']    ?? $nutVar,
+                    'unit'      => $entry['unit']    ?? '',
+                    'subtype'   => $entry['subtype'] ?? 'string',
+                    'icon'      => $entry['icon']    ?? 'fas fa-sliders-h icon_blue',
+                ];
+            }
+        }
+
+        $instCmdsPayload = [];
+        foreach ($instCmdsList as $nutCmd) {
+            $entry           = $knownCmds[$nutCmd] ?? [];
+            $instCmdsPayload[] = [
+                'nut_cmd'   => $nutCmd,
+                'logicalId' => str_replace('.', '_', $nutCmd),
+                'name'      => $entry['name'] ?? $nutCmd,
+                'icon'      => $entry['icon'] ?? 'fas fa-terminal icon_blue',
+            ];
+        }
+
+        log::add('Nut_free', 'info', '[discoverSSH][' . $equipment . '] ' . count($infoVars) . ' info_vars, ' . count($rwVars) . ' rw_vars, ' . count($instCmdsPayload) . ' instcmds');
+
+        static::createDynamicCmd($this, [
+            'info_vars' => $infoVars,
+            'rw_vars'   => $rwVars,
+            'instcmds'  => $instCmdsPayload,
+        ]);
+    }
+
     public function getInfosSSH(): void {
         if (!$this->getIsEnable()) return;
 
-        $equipment      = $this->getName();
-        $upsAutoSelect = $this->getConfiguration('upsAutoSelect', '0');
-        $ups           = trim($this->getConfiguration('ups', ''));
-        $sshHostId     = $this->getConfiguration('SSHHostId', '');
+        $equipment = $this->getName();
+        $sshHostId = $this->getConfiguration('SSHHostId', '');
 
         log::add('Nut_free', 'debug', '--- [' . $equipment . '] Début collecte NUT via SSH ---');
 
@@ -655,24 +914,8 @@ class Nut_free extends eqLogic {
             return;
         }
 
-        // --- Résolution du nom de l'UPS (auto-détection si upsAutoSelect = '0') ---
-        if ($upsAutoSelect === '0' || $ups === '') {
-            try {
-                $upsListCmd = "upsc -l 2>&1 | grep -v '^Init SSL'";
-                $ups = trim((string) sshmanager::executeCmds($sshHostId, $upsListCmd));
-                log::add('Nut_free', 'debug', '[' . $equipment . '] UPS auto-détecté : ' . $ups);
-            } catch (\Throwable $e) {
-                log::add('Nut_free', 'error', '[' . $equipment . '] Auto-détection UPS échouée : ' . $e->getMessage());
-                return;
-            }
-        } else {
-            log::add('Nut_free', 'debug', '[' . $equipment . '] UPS manuel : ' . $ups);
-        }
-
-        if (empty($ups)) {
-            log::add('Nut_free', 'error', '[' . $equipment . '] Impossible de déterminer le nom de l\'UPS');
-            return;
-        }
+        $ups = $this->resolveUpsNameSSH($sshHostId);
+        if (empty($ups)) return;
 
         // --- Collecte unique de toutes les variables NUT (1 seul appel SSH) ---
         try {
@@ -696,49 +939,47 @@ class Nut_free extends eqLogic {
         log::add('Nut_free', 'debug', '[' . $equipment . '] ' . count($nutData) . ' variable(s) reçues via upsc');
 
         // --- Distribution aux commandes Jeedom ---
-        // Passe 1 : commandes directes (nutCmd défini) — construit aussi $logicalIdMap pour la passe 2
-        // Passe 2 : commandes dérivées (derivedFrom défini) — calculées depuis les valeurs de la passe 1
-        $logicalIdMap = []; // logicalId => valeur brute
-        $derivedCmds  = []; // commandes dérivées, traitées après
+        // On part des variables reçues par l'UPS (source de vérité), on cherche la commande
+        // correspondante (nutCmd) et on pousse la valeur.
+        // Les commandes sans variable disponible ce cycle ne sont pas touchées
+        // (elles conservent leur dernière valeur — le masquage appartient à discoverSSH()).
+        //
+        // Passe 1 : indexation des commandes par nutCmd, puis distribution des valeurs SSH.
+        // Passe 2 : commandes dérivées (derivedFrom) — calculées depuis les valeurs de la passe 1.
+        $cmdByNutVar  = []; // nutCmd => cmd
+        $derivedCmds  = []; // commandes dérivées (derivedFrom), traitées après
+        $logicalIdMap = []; // logicalId => valeur brute reçue (nécessaire pour la passe 2)
 
         foreach ($this->getCmd() as $cmd) {
-            if ($cmd->getType() === 'action') continue; // instcmds et actions RW : pas de lecture upsc
+            if ($cmd->getType() === 'action') continue; // instcmds / setrwvar : pas de lecture upsc
 
-            $nutVar      = $cmd->getConfiguration('nutCmd', '');
             $derivedFrom = $cmd->getConfiguration('derivedFrom', '');
-
-            // Commande dérivée : mise de côté pour la passe 2
             if (!empty($derivedFrom)) {
                 $derivedCmds[] = $cmd;
                 continue;
             }
+
+            $nutVar = $cmd->getConfiguration('nutCmd', '');
             if (empty($nutVar)) continue; // commande sans var NUT (ex: cmd_result)
 
-            if (!array_key_exists($nutVar, $nutData)) {
-                // Variable non retournée par l'UPS : masquer la commande
-                log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : non supporté par l\'UPS');
-                $cmd->setIsVisible(0);
-                $cmd->setEqLogic_id($this->getId());
-                $cmd->save();
-                continue;
-            }
+            $cmdByNutVar[$nutVar] = $cmd;
+        }
 
-            $result = $nutData[$nutVar];
-            $logicalIdMap[$cmd->getLogicalId()] = $result; // mémorise la valeur brute pour les dérivées
+        // Passe 1 : variables SSH → commandes Jeedom
+        foreach ($nutData as $varName => $varValue) {
+            if (!isset($cmdByNutVar[$varName])) continue; // variable sans commande Jeedom : ignorée
 
-            // Conversion sec → min : toute commande avec unite='min' (-1 passé tel quel)
-            if ($cmd->getUnite() === 'min' && trim((string) $result) !== '-1' && is_numeric($result)) {
-                $result = (string) round((float) $result / 60, 2);
-            }
+            $cmd = $cmdByNutVar[$varName];
+            $logicalIdMap[$cmd->getLogicalId()] = $varValue; // mémorise pour les dérivées
 
-            log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : ' . $result);
-            $cmd->event($result);
+            log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : ' . $varValue);
+            $cmd->event($varValue);
         }
 
         // Passe 2 : commandes dérivées (ups_status_label, battery_runtime_min, _min dynamiques…)
         foreach ($derivedCmds as $cmd) {
             $derivedFrom = $cmd->getConfiguration('derivedFrom', '');
-            if (!isset($logicalIdMap[$derivedFrom])) continue; // source non disponible
+            if (!isset($logicalIdMap[$derivedFrom])) continue; // source non disponible ce cycle
 
             $sourceValue = $logicalIdMap[$derivedFrom];
             $result      = $sourceValue;
@@ -916,7 +1157,6 @@ class Nut_freeCmd extends cmd {
         /** @var Nut_free $eqLogic */
         $eqLogic        = $this->getEqLogic();
         $connexionType  = $eqLogic->getConfiguration('connexionMode', 'nut');
-        $ups            = trim($eqLogic->getConfiguration('ups', ''));
         $sshHostId      = $eqLogic->getConfiguration('SSHHostId', '');
         $logicalId      = $this->getLogicalId();
         $equipment     = $eqLogic->getName();
@@ -949,7 +1189,33 @@ class Nut_freeCmd extends cmd {
                     'value'     => (string) $value,
                 ));
             } else {
-                throw new Exception(__('setrwvar non supporté en mode SSH (commande ' . $logicalId . ')', __FILE__));
+                // Mode SSH : upsrw -s var=value [-u user -p pass] <ups>
+                if (!class_exists('sshmanager')) {
+                    throw new Exception(__('Plugin SSH-Manager introuvable - vérifiez les dépendances', __FILE__));
+                }
+                if (empty($sshHostId)) {
+                    throw new Exception(__('SSHHostId non configuré pour l\'équipement ', __FILE__) . $equipment);
+                }
+                $nutUser    = trim($eqLogic->getConfiguration('nutUsername', ''));
+                $nutPass    = trim($eqLogic->getConfiguration('nutPassword', ''));
+                $authArgs   = ($nutUser !== '') ? ' -u ' . escapeshellarg($nutUser) . ' -p ' . escapeshellarg($nutPass) : '';
+                $resolvedUps = $eqLogic->resolveUpsNameSSH($sshHostId);
+                if (empty($resolvedUps)) {
+                    throw new Exception(__('Nom UPS non déterminable pour l\'équipement ', __FILE__) . $equipment);
+                }
+                $sshCmd = 'upsrw -s ' . escapeshellarg($nutRwVar . '=' . $value) . $authArgs . ' ' . escapeshellarg($resolvedUps) . ' 2>&1';
+                $result  = trim((string) sshmanager::executeCmds($sshHostId, $sshCmd));
+                log::add('Nut_free', 'debug', '[' . $equipment . '] Résultat setrwvar ' . $nutRwVar . '=' . $value . ' : ' . $result);
+                // Mise à jour immédiate : commande info correspondante + cmd_result
+                $mappedId = str_replace('.', '_', $nutRwVar);
+                $infoCmd  = $eqLogic->getCmd('info', $mappedId);
+                if (is_object($infoCmd)) {
+                    $infoCmd->event($value);
+                }
+                $cmdResult = $eqLogic->getCmd('info', 'cmd_result');
+                if (is_object($cmdResult)) {
+                    $cmdResult->event($nutRwVar . ' → ' . ($result ?: 'OK'));
+                }
             }
             return;
         }
@@ -978,13 +1244,16 @@ class Nut_freeCmd extends cmd {
                 if (empty($sshHostId)) {
                     throw new Exception(__('SSHHostId non configuré pour l\'équipement ', __FILE__) . $equipment);
                 }
-                if (empty($ups)) {
-                    throw new Exception(__('Nom UPS non configuré pour l\'équipement ', __FILE__) . $equipment);
+                $nutUser    = trim($eqLogic->getConfiguration('nutUsername', ''));
+                $nutPass    = trim($eqLogic->getConfiguration('nutPassword', ''));
+                $authArgs   = ($nutUser !== '') ? ' -u ' . escapeshellarg($nutUser) . ' -p ' . escapeshellarg($nutPass) : '';
+                $resolvedUps = $eqLogic->resolveUpsNameSSH($sshHostId);
+                if (empty($resolvedUps)) {
+                    throw new Exception(__('Nom UPS non déterminable pour l\'équipement ', __FILE__) . $equipment);
                 }
-                $cmd    = 'upscmd ' . escapeshellarg($ups) . ' ' . escapeshellarg($nutInstCmd) . ' 2>&1';
+                $cmd    = 'upscmd' . $authArgs . ' ' . escapeshellarg($resolvedUps) . ' ' . escapeshellarg($nutInstCmd) . ' 2>&1';
                 $result = trim((string) sshmanager::executeCmds($sshHostId, $cmd));
                 log::add('Nut_free', 'debug', '[' . $equipment . '] Résultat instcmd ' . $nutInstCmd . ' : ' . $result);
-                // Stocker le résultat dans la commande cmd_result
                 $cmdResult = $eqLogic->getCmd('info', 'cmd_result');
                 if (is_object($cmdResult)) {
                     $cmdResult->event($nutInstCmd . ' → ' . ($result ?: 'OK'));

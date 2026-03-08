@@ -44,24 +44,34 @@ try {
         if (!is_object($eqLogic)) {
             throw new Exception(__('Équipement introuvable', __FILE__));
         }
-        if ($eqLogic->getConfiguration('connexionMode', 'nut') !== 'nut') {
-            throw new Exception(__('Fonctionnalité disponible uniquement en mode NUT direct', __FILE__));
-        }
 
         $eqLogic->setConfiguration('discover_status', 'pending');
         $eqLogic->setConfiguration('discover_error', '');
         $eqLogic->save();
 
-        $sent = Nut_free::sendToDaemon(array(
-            'action'    => 'discover_all',
-            'eqLogicId' => $eqLogicId,
-        ));
-
-        if (!$sent) {
-            throw new Exception(__('Impossible de contacter le démon (vérifiez qu\'il est démarré)', __FILE__));
+        $mode = $eqLogic->getConfiguration('connexionMode', 'nut');
+        if ($mode === 'nut') {
+            // Mode NUT : découverte async via le daemon Python
+            $sent = Nut_free::sendToDaemon(array(
+                'action'    => 'discover_all',
+                'eqLogicId' => $eqLogicId,
+            ));
+            if (!$sent) {
+                throw new Exception(__('Impossible de contacter le démon (vérifiez qu\'il est démarré)', __FILE__));
+            }
+        } else {
+            // Mode SSH : découverte synchrone directement en PHP
+            try {
+                $eqLogic->discoverSSH();
+            } catch (\Throwable $e) {
+                $eqLogic->setConfiguration('discover_status', 'error');
+                $eqLogic->setConfiguration('discover_error', $e->getMessage());
+                $eqLogic->save();
+                throw $e;
+            }
         }
 
-        ajax::success(__('ok', __FILE__));
+        ajax::success(['mode' => $mode]);
     }
 
     // ----- Action : Supprimer toutes les commandes dynamiques d'un équipement -----

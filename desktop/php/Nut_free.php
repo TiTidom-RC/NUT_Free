@@ -163,25 +163,6 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                             <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutPort" type="number" min="1" max="65535" placeholder="3493"/>
                                         </div>
                                     </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">{{Utilisateur NUT}}
-                                            <sup><i class="fas fa-question-circle tooltips" title="{{Utilisateur d'authentification upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)}}"></i></sup>
-                                        </label>
-                                        <div class="col-sm-6">
-                                            <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutUsername" type="text" placeholder="{{optionnel}}" autocomplete="off"/>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label class="col-sm-4 control-label">{{Mot de passe NUT}}
-                                            <sup><i class="fas fa-question-circle tooltips" title="{{Mot de passe upsd (optionnel, laisser vide si le serveur NUT ne l'exige pas)}}"></i></sup>
-                                        </label>
-                                        <div class="col-sm-6 input-group">
-                                            <input class="eqLogicAttr form-control roundedLeft" data-l1key="configuration" data-l2key="nutPassword" type="password" placeholder="{{optionnel}}" autocomplete="new-password"/>
-                                            <span class="input-group-btn">
-                                                <a class="btn btn-default form-control roundedRight bt_togglePass"><i class="fas fa-eye"></i></a>
-                                            </span>
-                                        </div>
-                                    </div>
                                 </div>
                                 <!-- Mode SSH (via SSH-Manager) -->
                                 <div class="nut-ssh" style="display:none;">
@@ -202,16 +183,50 @@ $eqLogics = eqLogic::byType($plugin->getId());
                                             </div>
                                         </div>
                                     </div>
+                                    <div class="form-group">
+                                        <label class="col-sm-4 control-label">{{Fréquence de polling}}
+                                            <sup><i class="fas fa-question-circle tooltips" title="{{Fréquence de rafraîchissement des données en mode SSH — utiliser l'assistant pour définir l'expression cron}}"></i></sup>
+                                        </label>
+                                        <div class="col-sm-6">
+                                            <div class="input-group">
+                                                <input type="text" class="eqLogicAttr form-control roundedLeft" data-l1key="configuration" data-l2key="sshPollingCron" placeholder="* * * * *"/>
+                                                <span class="input-group-btn">
+                                                    <a class="btn btn-default cursor jeeHelper roundedRight" data-helper="cron" title="{{Assistant cron}}">
+                                                        <i class="fas fa-question-circle"></i>
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <!-- Commun NUT + SSH -->
+                                <!-- Commun NUT + SSH : credentials upsd (utilisés en TCP pour la conn. au daemon, en SSH pour upsrw/upscmd) -->
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{{Utilisateur NUT}}
+                                        <sup><i class="fas fa-question-circle tooltips" title="{{Utilisateur d'authentification upsd (optionnel, laisser vide si non requis)}}"></i></sup>
+                                    </label>
+                                    <div class="col-sm-6">
+                                        <input class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="nutUsername" type="text" placeholder="{{optionnel}}" autocomplete="off"/>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-4 control-label">{{Mot de passe NUT}}
+                                        <sup><i class="fas fa-question-circle tooltips" title="{{Mot de passe upsd (optionnel, laisser vide si non requis)}}"></i></sup>
+                                    </label>
+                                    <div class="col-sm-6 input-group">
+                                        <input class="eqLogicAttr form-control roundedLeft" data-l1key="configuration" data-l2key="nutPassword" type="password" placeholder="{{optionnel}}" autocomplete="new-password"/>
+                                        <span class="input-group-btn">
+                                            <a class="btn btn-default form-control roundedRight bt_togglePass"><i class="fas fa-eye"></i></a>
+                                        </span>
+                                    </div>
+                                </div>
                                 <div class="form-group">
                                     <label class="col-sm-4 control-label">{{Auto-détection UPS ?}}
                                         <sup><i class="fas fa-question-circle tooltips" title="{{Si activé, le nom de l'UPS sera détecté automatiquement via upsc -l}}"></i></sup>
                                     </label>
                                     <div class="col-sm-6">
                                         <select id="selUpsAuto" class="eqLogicAttr form-control" data-l1key="configuration" data-l2key="upsAutoSelect">
-                                            <option value="0" selected>{{Oui (automatique)}}</option>
-                                            <option value="1">{{Non (manuel)}}</option>
+                                            <option value="auto" selected>{{Oui (automatique)}}</option>
+                                            <option value="manual">{{Non (manuel)}}</option>
                                         </select>
                                     </div>
                                 </div>
@@ -228,8 +243,8 @@ $eqLogics = eqLogic::byType($plugin->getId());
                             </fieldset>
                         </form>
                     </div>
-                    <!-- Colonne droite : Données UPS disponibles (mode NUT direct uniquement) -->
-                    <div class="col-sm-6 nut-list-section">
+                    <!-- Colonne droite : Synchronisation des commandes (disponible dans les deux modes) -->
+                    <div class="col-sm-6">
                         <!-- Synchronisation dynamique des commandes -->
                         <fieldset>
                             <legend><i class="fas fa-sync-alt icon_blue"></i> {{Synchronisation des Commandes}}</legend>

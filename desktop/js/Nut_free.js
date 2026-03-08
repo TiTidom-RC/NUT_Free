@@ -113,16 +113,15 @@ document.addEventListener('click', function(event) {
 function updateConnexionModeDisplay(value) {
   const nutEl  = document.querySelector('.nut-protocol')
   const sshEl  = document.querySelector('.nut-ssh')
-  const listEl = document.querySelector('.nut-list-section')
   const isSsh  = value === 'ssh'
   if (nutEl)  nutEl.style.display  = isSsh ? 'none' : ''
   if (sshEl)  sshEl.style.display  = isSsh ? '' : 'none'
-  if (listEl) listEl.style.display = isSsh ? 'none' : ''
+  // Le bloc Synchronisation des Commandes est visible dans les deux modes
 }
 
 function updateUpsManualDisplay(value) {
   const manualEl = document.querySelector('.nut-ups-manual')
-  if (manualEl) manualEl.style.display = (value === '1') ? '' : 'none'
+  if (manualEl) manualEl.style.display = (value === 'manual') ? '' : 'none'
 }
 
 /**
@@ -168,11 +167,19 @@ function printEqLogic(_eqLogic) {
     .then(data => {
       btDiscover.removeAttribute('disabled')
       if (data.state === 'ok') {
+        const resultMode = (data.result && data.result.mode) ? data.result.mode : 'nut'
+        const isSshMode  = resultMode === 'ssh'
+        const statusText = isSshMode
+          ? '{{Synchronisation terminée. Rechargez la page des commandes pour les voir.}}'
+          : '{{Requête envoyée. Les commandes seront créées dans quelques instants — rechargez la page des commandes pour les voir.}}'
+        const alertText = isSshMode
+          ? '{{Synchronisation terminée. Rechargez la page des commandes.}}'
+          : '{{Synchronisation lancée. Rechargez la page des commandes dans quelques instants.}}'
         if (statusMsg) {
           statusMsg.className = 'label label-success'
-          statusMsg.textContent = '{{Requête envoyée. Les commandes seront créées dans quelques instants — rechargez la page des commandes pour les voir.}}'
+          statusMsg.textContent = statusText
         }
-        jeedomUtils.showAlert({ message: '{{Synchronisation lancée. Rechargez la page des commandes dans quelques instants.}}', level: 'success' })
+        jeedomUtils.showAlert({ message: alertText, level: 'success' })
       } else {
         const errMsg = data.result ?? '{{Erreur inconnue}}'
         if (statusMsg) {
@@ -251,7 +258,7 @@ function printEqLogic(_eqLogic) {
   // Auto-détection UPS — lire depuis le DOM, forcer le défaut si vide
   const selUpsAuto = document.querySelector('#selUpsAuto')
   if (selUpsAuto) {
-    if (!selUpsAuto.value) selUpsAuto.value = '0'
+    if (!selUpsAuto.value) selUpsAuto.value = 'auto'
     updateUpsManualDisplay(selUpsAuto.value)
     selUpsAuto.removeEventListener('change', handleUpsAutoChange)
     selUpsAuto.addEventListener('change', handleUpsAutoChange)
