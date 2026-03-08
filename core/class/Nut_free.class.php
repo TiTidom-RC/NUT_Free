@@ -32,8 +32,8 @@ class Nut_free extends eqLogic {
 
     public static function cron() {
         // Mode NUT : le daemon gère son propre polling (cyclePolling + statusWatcher) — rien à faire ici.
-        // Mode SSH : collecte synchrone via SSH-Manager, avec décalage proportionnel
-        // pour éviter les exécutions simultanées quand plusieurs équipements sont actifs.
+        // Mode SSH : collecte synchrone via SSH-Manager, avec décalage aléatoire
+        // pour éviter les exécutions simultanées avec d'autres plugins ou équipements NUT.
         $sshEquipments = [];
         foreach (eqLogic::byType('Nut_free') as $eqLogic) {
             /** @var Nut_free $eqLogic */
@@ -42,7 +42,6 @@ class Nut_free extends eqLogic {
                 $sshEquipments[] = $eqLogic;
             }
         }
-        $total = count($sshEquipments);
         foreach ($sshEquipments as $eqLogic) {
             /** @var Nut_free $eqLogic */
             // Avant la première discovery (mode auto, ups vide), il n'y a pas de commandes
@@ -61,13 +60,12 @@ class Nut_free extends eqLogic {
                 log::add('Nut_free', 'debug', '[CRON][SSH] "' . $eqLogic->getName() . '" ignoré : pas encore dû (' . $cronExpr . ')');
                 continue;
             }
-            // Décalage aléatoire : répartition sur 30 s max pour éviter les exécutions simultanées
-            if ($total > 1) {
-                $delay = rand(0, 30);
-                if ($delay > 0) {
-                    log::add('Nut_free', 'debug', '[CRON][SSH] Décalage ' . $delay . 's pour "' . $eqLogic->getName() . '"');
-                    sleep($delay);
-                }
+            // Décalage aléatoire : toujours appliqué pour éviter les exécutions simultanées
+            // avec d'autres plugins ou d'autres équipements NUT (TCP/SSH).
+            $delay = rand(0, 30);
+            if ($delay > 0) {
+                log::add('Nut_free', 'debug', '[CRON][SSH] Décalage ' . $delay . 's pour "' . $eqLogic->getName() . '"');
+                sleep($delay);
             }
             $eqLogic->getInfosSSH();
             $eqLogic->refreshWidget();
