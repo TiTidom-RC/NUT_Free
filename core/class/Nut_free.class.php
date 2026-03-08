@@ -264,6 +264,15 @@ class Nut_free extends eqLogic {
 		];
 	}
 
+	public function preRemove() {
+		if ($this->getConfiguration('connexionMode', 'nut') === 'nut') {
+			self::sendToDaemon(array(
+				'action'    => 'remove_device',
+				'eqLogicId' => $this->getId(),
+			));
+		}
+	}
+
 	public function postSave() {
 		static::createCmd($this);
 

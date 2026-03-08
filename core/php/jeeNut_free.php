@@ -122,7 +122,7 @@ try {
         /** @var Nut_free $eqLogic */
         $eqLogic = Nut_free::byId($eqLogicId);
         if (!is_object($eqLogic)) {
-            log::add('Nut_free', 'warning', '[CALLBACK] eqLogic introuvable : ' . $eqLogicId);
+            log::add('Nut_free', 'warning', '[CALLBACK] eqLogic introuvable (supprimé ?) : ' . $eqLogicId);
             continue;
         }
 
