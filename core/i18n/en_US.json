@@ -12,7 +12,7 @@
         "Commande non implémentée actuellement": "Command not currently implemented",
         "Impossible de déterminer le nom de l\\'UPS, synchronisation annulée": "Unable to determine UPS name, synchronization canceled",
         "Modifier": "Edit",
-        "Nom UPS non déterminable pour l\\'équipement ": "UPS name cannot be determined for the equipment ",
+        "Nom UPS introuvable pour l\\'équipement ": "UPS name not found for equipment ",
         "Plugin SSH-Manager introuvable - vérifiez les dépendances": "SSH Manager plugin not found - check dependencies",
         "SSHHostId non configuré pour l\\'équipement ": "SSHHostId not configured for the equipment ",
         "Valeur": "Value"

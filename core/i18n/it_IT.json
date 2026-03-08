@@ -12,7 +12,7 @@
         "Commande non implémentée actuellement": "Comando attualmente non implementato",
         "Impossible de déterminer le nom de l\\'UPS, synchronisation annulée": "Impossibile determinare il nome dell'UPS, sincronizzazione annullata",
         "Modifier": "Modifica",
-        "Nom UPS non déterminable pour l\\'équipement ": "Nome UPS non determinabile per l'apparecchiatura ",
+        "Nom UPS introuvable pour l\\'équipement ": "Nome UPS non trovato per l'apparecchiatura ",
         "Plugin SSH-Manager introuvable - vérifiez les dépendances": "Plugin SSH-Manager non trovato - controllare le dipendenze",
         "SSHHostId non configuré pour l\\'équipement ": "SSHHostId non configurato per l'apparecchiatura ",
         "Valeur": "Valore"
