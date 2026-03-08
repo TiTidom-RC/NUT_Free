@@ -315,12 +315,19 @@ class Nut_free extends eqLogic {
 			'battery_runtime_min'  => array('name' => 'Autonomie Batterie (min)', 'unite' => 'min', 'derivedFrom' => 'battery_runtime',   'icon' => '<i class="fas fa-clock icon_green"></i>'),
 			// Virtuelle
 			'cmd_result'           => array('name' => 'Retour Commande',          'subtype' => 'string', 'isVisible' => 1,             'icon' => '<i class="fas fa-terminal icon_blue"></i>'),
+			// Interne mode SSH uniquement
+			'cnx_ssh'              => array('name' => 'Connexion SSH',            'subtype' => 'string', 'isVisible' => 0,             'icon' => '<i class="fas fa-network-wired icon_blue"></i>', 'sshOnly' => true),
 		);
 
 		$targets = is_object($eqLogic) ? array($eqLogic) : eqLogic::byType('Nut_free');
 		foreach ($targets as $eq) {
+			$isEqSsh = ($eq->getConfiguration('connexionMode', 'nut') === 'ssh');
 			$order = 0;
 			foreach ($commandsConfig as $logicalId => $info) {
+				// Commandes réservées au mode SSH : ignorées sur les équipements NUT TCP
+				if (isset($info['sshOnly']) && !$isEqSsh) {
+					continue;
+				}
 				$cmd   = $eq->getCmd(null, $logicalId);
 				$isNew = !is_object($cmd);
 				if ($isNew) {
@@ -935,6 +942,10 @@ class Nut_free extends eqLogic {
             );
         } catch (\Throwable $e) {
             log::add('Nut_free', 'error', '[' . $equipment . '] upsc erreur : ' . $e->getMessage());
+            $cnxCmd = $this->getCmd('info', 'cnx_ssh');
+            if (is_object($cnxCmd)) {
+                $cnxCmd->event('KO');
+            }
             return;
         }
 
@@ -1002,6 +1013,12 @@ class Nut_free extends eqLogic {
 
             log::add('Nut_free', 'debug', '[' . $equipment . '] ' . $cmd->getName() . ' : ' . $result . ' (dérivé de ' . $derivedFrom . ')');
             $cmd->event($result);
+        }
+
+        // Marquer la connexion SSH comme OK (toutes les passes terminées)
+        $cnxCmd = $this->getCmd('info', 'cnx_ssh');
+        if (is_object($cnxCmd)) {
+            $cnxCmd->event('OK');
         }
 
         log::add('Nut_free', 'debug', '--- [' . $equipment . '] Fin collecte NUT ---');

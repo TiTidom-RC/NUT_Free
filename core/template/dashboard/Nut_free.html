@@ -97,11 +97,7 @@
 
 		// Icône connexion SSH (mode SSH uniquement)
 		if ('#cnx_ssh#' === 'OK') {
-			if ('#ssh_op#' === '1') {
-				$('#iconSSH#id#').append('<i title="Connexion SSH OK" class="techno techno-tv tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
-			} else {
-				$('#iconSSH#id#').append('<i title="Sans connexion SSH" class="fa fa-sitemap tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
-			}
+			$('#iconSSH#id#').append('<i title="Connexion SSH OK" class="techno techno-tv tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
 		} else if ('#cnx_ssh#' === 'KO') {
 			$('#iconSSH#id#').append('<i title="Connexion SSH KO" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
 		}
