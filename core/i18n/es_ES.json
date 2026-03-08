@@ -12,7 +12,7 @@
         "Commande non implémentée actuellement": "Comando no implementado actualmente",
         "Impossible de déterminer le nom de l\\'UPS, synchronisation annulée": "No se puede determinar el nombre del SAI, sincronización cancelada",
         "Modifier": "Modificar",
-        "Nom UPS non déterminable pour l\\'équipement ": "Nombre UPS no determinable para el equipo ",
+        "Nom UPS introuvable pour l\\'équipement ": "No se encuentra el nombre UPS para el equipo ",
         "Plugin SSH-Manager introuvable - vérifiez les dépendances": "No se encuentra el complemento SSH-Manager: compruebe las dependencias.",
         "SSHHostId non configuré pour l\\'équipement ": "SSHHostId no configurado para el equipo ",
         "Valeur": "Valor"
