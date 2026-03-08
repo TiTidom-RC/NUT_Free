@@ -133,7 +133,7 @@ try {
             continue;
         }
 
-        $updated = false;
+        $updatedCount = 0;
         foreach ($values as $logicalId => $value) {
             $cmd = $eqLogic->getCmd('info', $logicalId);
             if (!is_object($cmd)) {
@@ -141,7 +141,7 @@ try {
                 continue;
             }
             $cmd->event($value);
-            $updated = true;
+            $updatedCount++;
             log::add('Nut_free', 'debug', '[CALLBACK][' . $equipment . '] ' . $logicalId . ' = ' . $value);
         }
 
@@ -161,13 +161,13 @@ try {
             }
 
             $cmd->event($result);
-            $updated = true;
+            $updatedCount++;
             log::add('Nut_free', 'debug', '[CALLBACK][' . $equipment . '] ' . $cmd->getLogicalId() . ' = ' . $result . ' (dérivé de ' . $derivedFrom . ')');
         }
 
-        if ($updated) {
+        if ($updatedCount > 0) {
             $eqLogic->refreshWidget();
-            log::add('Nut_free', 'info', '[CALLBACK][' . $equipment . '] Widget rafraîchi');
+            log::add('Nut_free', 'info', '[CALLBACK][' . $equipment . '] ' . $updatedCount . ' valeur(s) mise(s) à jour');
         }
     }
 
