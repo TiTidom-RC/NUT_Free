@@ -92,15 +92,16 @@ try {
                 log::add('Nut_free', 'warning', '[CALLBACK] discover_result :: eqLogic introuvable : ' . $eqLogicId);
                 continue;
             }
+            $equipment = $eqLogic->getName();
             if (isset($payload['error'])) {
-                log::add('Nut_free', 'error', '[CALLBACK] discover_result :: erreur pour eqLogic ' . $eqLogicId . ' :: ' . $payload['error']);
+                log::add('Nut_free', 'error', '[CALLBACK][' . $equipment . '] discover_result :: erreur :: ' . $payload['error']);
                 $eqLogic->setConfiguration('discover_error', $payload['error']);
                 $eqLogic->setConfiguration('discover_status', 'error');
                 $eqLogic->save();
                 continue;
             }
             Nut_free::createDynamicCmd($eqLogic, $payload);
-            log::add('Nut_free', 'info', '[CALLBACK] discover_result :: synchronisation terminée pour eqLogic ' . $eqLogicId);
+            log::add('Nut_free', 'info', '[CALLBACK][' . $equipment . '] discover_result :: synchronisation terminée');
         }
         echo json_encode(['status' => 'ok']);
         exit;
@@ -125,8 +126,10 @@ try {
             continue;
         }
 
+        $equipment = $eqLogic->getName();
+
         if (!$eqLogic->getIsEnable()) {
-            log::add('Nut_free', 'debug', '[CALLBACK] eqLogic désactivé, ignore : ' . $eqLogicId);
+            log::add('Nut_free', 'debug', '[CALLBACK][' . $equipment . '] désactivé, ignoré');
             continue;
         }
 
@@ -134,12 +137,12 @@ try {
         foreach ($values as $logicalId => $value) {
             $cmd = $eqLogic->getCmd('info', $logicalId);
             if (!is_object($cmd)) {
-                log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] Commande introuvable : ' . $logicalId);
+                log::add('Nut_free', 'debug', '[CALLBACK][' . $equipment . '] Commande introuvable : ' . $logicalId);
                 continue;
             }
             $cmd->event($value);
             $updated = true;
-            log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] ' . $logicalId . ' = ' . $value);
+            log::add('Nut_free', 'debug', '[CALLBACK][' . $equipment . '] ' . $logicalId . ' = ' . $value);
         }
 
         // Dériver les commandes marquées derivedFrom dont la valeur n'est pas déjà envoyée par le daemon
@@ -159,12 +162,12 @@ try {
 
             $cmd->event($result);
             $updated = true;
-            log::add('Nut_free', 'debug', '[CALLBACK][' . $eqLogicId . '] ' . $cmd->getLogicalId() . ' = ' . $result . ' (dérivé de ' . $derivedFrom . ')');
+            log::add('Nut_free', 'debug', '[CALLBACK][' . $equipment . '] ' . $cmd->getLogicalId() . ' = ' . $result . ' (dérivé de ' . $derivedFrom . ')');
         }
 
         if ($updated) {
             $eqLogic->refreshWidget();
-            log::add('Nut_free', 'info', '[CALLBACK] Widget rafraîchi pour eqLogic ' . $eqLogicId);
+            log::add('Nut_free', 'info', '[CALLBACK][' . $equipment . '] Widget rafraîchi');
         }
     }
 
