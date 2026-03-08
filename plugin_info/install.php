@@ -30,6 +30,7 @@ function initDefaultConfig(): void {
         'cyclePolling'        => '60',
         'cycleWatcher'        => '5',
         'cycleFactor'         => '1.0',
+        'sshRandomDelay'      => '15',
         'debugInstallUpdates' => '0',
         'debugRestorePyEnv'   => '0',
         'debugRestoreVenv'    => '0',

@@ -60,12 +60,15 @@ class Nut_free extends eqLogic {
                 log::add('Nut_free', 'debug', '[CRON][SSH] "' . $eqLogic->getName() . '" ignoré : pas encore dû (' . $cronExpr . ')');
                 continue;
             }
-            // Décalage aléatoire : toujours appliqué pour éviter les exécutions simultanées
-            // avec d'autres plugins ou d'autres équipements NUT (TCP/SSH).
-            $delay = rand(0, 30);
-            if ($delay > 0) {
-                log::add('Nut_free', 'debug', '[CRON][SSH] Décalage ' . $delay . 's pour "' . $eqLogic->getName() . '"');
-                sleep($delay);
+            // Décalage aléatoire : configurable dans la configuration du plugin (0 = désactivé, défaut = 15s max).
+            // Évite les exécutions simultanées avec d'autres plugins ou équipements NUT.
+            $maxDelay = (int) config::byKey('sshRandomDelay', 'Nut_free', '15');
+            if ($maxDelay > 0) {
+                $delay = rand(0, min($maxDelay, 30));
+                if ($delay > 0) {
+                    log::add('Nut_free', 'debug', '[CRON][SSH] Décalage ' . $delay . 's pour "' . $eqLogic->getName() . '"');
+                    sleep($delay);
+                }
             }
             $eqLogic->getInfosSSH();
             $eqLogic->refreshWidget();
