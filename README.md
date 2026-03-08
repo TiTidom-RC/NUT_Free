@@ -9,7 +9,7 @@ Deux modes de connexion : TCP direct vers le serveur NUT, ou à distance via le 
 
 - Supervision complète de l'onduleur : statut, tensions, fréquences, charge, batterie, temperaturas, autonomie, puissance
 - **Mode NUT** (TCP direct) : daemon Python persistant (`nutfreed.py`) avec polling configurable et surveillance temps-réel de `ups.status` (StatusWatcher adaptatif, 2–5s)
-- **Mode SSH** : collecte synchrone via le plugin SSH-Manager, sans daemon — fréquence configurable via expression cron + délai aléatoire anti-collision
+- **Mode SSH** : collecte synchrone via le plugin SSH-Manager, sans daemon — fréquence configurable via expression cron + délai aléatoire d'exécution
 - **Synchronisation automatique** des commandes depuis l'onduleur (`upsc`, `upsrw`, `upscmd -l`)
 - **Commandes dynamiques** : toutes les variables info, RW et instcmd supportées par l'onduleur
 - **Variables dérivées** : autonomie en minutes, statut traduit (`ups_status_label`), variables `_min` pour les timers
@@ -67,7 +67,7 @@ Les commandes supplémentaires (tensions, fréquences, températures, variables 
 | Intervalle de polling | Fréquence de collecte complète (mode NUT) | `60` s |
 | Intervalle du surveillant de statut | Fréquence du StatusWatcher `ups.status` (mode NUT) | `5` s |
 | Fréquence des cycles | Facteur multiplicateur des cycles internes du daemon | `1.0` (Normal) |
-| Délai Aléatoire (collecte SSH) | Délai max aléatoire avant collecte SSH pour éviter les collisions avec d'autres plugins | `15` s (0 = désactivé) |
+| Délai Aléatoire (collecte SSH) | Délai aléatoire d'exécution avant chaque collecte SSH (évite la surcharge système) | `15` s (0 = désactivé) |
 
 ---
 
