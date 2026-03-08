@@ -7,47 +7,45 @@ Deux modes de connexion : TCP direct vers le serveur NUT, ou à distance via le 
 
 ## Fonctionnalités
 
-- Supervision complète de l'onduleur : état de la ligne, tensions, fréquences, charge, batterie, températures, temps restant
-- **Mode NUT** (TCP direct) : daemon Python persistant (`nutfreed.py`) avec polling configurable et surveillance temps-réel de `ups.status` (StatusWatcher adaptatif)
-- **Mode SSH** : collecte via le plugin SSH-Manager, sans daemon
+- Supervision complète de l'onduleur : statut, tensions, fréquences, charge, batterie, temperaturas, autonomie, puissance
+- **Mode NUT** (TCP direct) : daemon Python persistant (`nutfreed.py`) avec polling configurable et surveillance temps-réel de `ups.status` (StatusWatcher adaptatif, 2–5s)
+- **Mode SSH** : collecte synchrone via le plugin SSH-Manager, sans daemon — fréquence configurable via expression cron + délai aléatoire d'exécution
+- **Synchronisation automatique** des commandes depuis l'onduleur (`upsc`, `upsrw`, `upscmd -l`)
+- **Commandes dynamiques** : toutes les variables info, RW et instcmd supportées par l'onduleur
+- **Variables dérivées** : autonomie en minutes, statut traduit (`ups_status_label`), variables `_min` pour les timers
 - Auto-détection du nom de l'UPS (`upsc -l`) ou saisie manuelle
 - Authentification upsd optionnelle (login / mot de passe)
-- Rafraîchissement automatique du widget Jeedom à chaque mise à jour
-- Heartbeat daemon configurable
+- Actions sur l'onduleur : `setrwvar` (variables RW) et `instcmd` (beeper, test batterie, arrêt/redémarrage…)
+- Retour des résultats de commandes dans la commande `Retour Commande` (`cmd_result`)
+- Rafraîchissement manuel via la commande `Rafraîchir`
+- Heartbeat daemon configurable (mode NUT)
 
 ---
 
-## Variables supervisées
+## Commandes statiques (créées à l'installation)
 
-| Commande | Description | Unité |
-|---|---|---|
-| `Marque` | Marque + Modèle | — |
-| `Model` | Modèle | — |
-| `ups_serial` | Numéro de série | — |
-| `ups_line` | Mode UPS (OL / OB / LB…) | — |
-| `input_volt` | Tension en entrée | V |
-| `input_freq` | Fréquence en entrée | Hz |
-| `output_volt` | Tension en sortie | V |
-| `output_freq` | Fréquence en sortie | Hz |
-| `output_power` | Puissance en sortie | VA |
-| `output_real_power` | Puissance réelle en sortie | W |
-| `batt_charge` | Niveau de charge batterie | % |
-| `batt_volt` | Tension de la batterie | V |
-| `batt_temp` | Température de la batterie | °C |
-| `ups_temp` | Température UPS | °C |
-| `ups_load` | Charge onduleur | % |
-| `batt_runtime` | Temps restant sur batterie | s |
-| `batt_runtime_min` | Temps restant sur batterie | min |
-| `timer_shutdown` | Temps restant avant arrêt | s |
-| `timer_shutdown_min` | Temps restant avant arrêt | min |
-| `beeper_stat` | État du beeper | — |
+| logicalId | Nom | Type | Description |
+|---|---|---|---|
+| `refresh` | Rafraîchir | action | Déclenche une collecte immédiate |
+| `device_mfr` | Fabricant | info string | `device.mfr` |
+| `device_model` | Modèle | info string | `device.model` |
+| `ups_serial` | Numéro Série | info string | `ups.serial` |
+| `ups_status` | Code NUT | info string | `ups.status` brut (OL, OB, LB…) |
+| `ups_status_label` | Statut Onduleur | info string | Traduction française de `ups.status` |
+| `ups_load` | Charge Onduleur | info numeric | `ups.load` (%) |
+| `battery_charge` | Charge Batterie | info numeric | `battery.charge` (%) |
+| `battery_runtime` | Autonomie Batterie | info numeric | `battery.runtime` (sec) |
+| `battery_runtime_min` | Autonomie Batterie (min) | info numeric | Dérivé de `battery_runtime` (min) |
+| `cmd_result` | Retour Commande | info string | Résultat de la dernière commande RW ou instcmd |
+
+Les commandes supplémentaires (tensions, fréquences, températures, variables RW, instcmd…) sont créées dynamiquement lors de la synchronisation avec l'onduleur.
 
 ---
 
 ## Prérequis
 
-- **Jeedom** ≥ 4.4.2
-- **Python** ≥ 3.10 (géré via `pyenv` + `venv`)
+- **Jeedom** ≥ 4.4.8
+- **Python** `3.12.12` (installé automatiquement via `pyenv` + `venv`)
 - Plugin **SSH-Manager** requis uniquement pour le mode SSH
 - Dépendances Python : `pynutclient==2.8.4`, `requests==2.32.5`
 
@@ -57,20 +55,38 @@ Deux modes de connexion : TCP direct vers le serveur NUT, ou à distance via le 
 
 1. Installer le plugin depuis le Market Jeedom
 2. Cliquer sur **Installer les dépendances**
-3. Démarrer le daemon depuis la page de configuration du plugin
+3. Démarrer le daemon depuis la page de configuration du plugin (mode NUT uniquement)
 
 ---
 
-## Configuration
+## Configuration du plugin
 
-Créer un équipement, renseigner :
+| Paramètre | Description | Défaut |
+|---|---|---|
+| Port Socket Interne | Port de communication PHP ↔ daemon | `55113` |
+| Intervalle de polling | Fréquence de collecte complète (mode NUT) | `60` s |
+| Intervalle du surveillant de statut | Fréquence du StatusWatcher `ups.status` (mode NUT) | `5` s |
+| Fréquence des cycles | Facteur multiplicateur des cycles internes du daemon | `1.0` (Normal) |
+| Délai Aléatoire (collecte SSH) | Délai aléatoire d'exécution avant chaque collecte SSH (évite la surcharge système) | `15` s (0 = désactivé) |
+
+---
+
+## Configuration d'un équipement
 
 - **Protocole de connexion** : `NUT` (TCP direct) ou `SSH` (via SSH-Manager)
-- **Mode NUT** : adresse IP, port TCP (défaut : 3493), login/mot de passe upsd (optionnels)
-- **Mode SSH** : sélectionner un hôte SSH configuré dans SSH-Manager
+- **Mode NUT** : adresse IP du serveur NUT, port TCP (défaut : 3493), login/mot de passe upsd (optionnels)
+- **Mode SSH** : sélectionner un hôte configuré dans SSH-Manager, définir la fréquence de polling (expression cron, défaut : `* * * * *`)
 - **Auto-détection UPS** : activée par défaut (`upsc -l`), ou saisir le nom manuellement
+- **Utilisateur / Mot de passe NUT** : optionnels, utilisés pour `setrwvar` et `instcmd`
 
-Sauvegarder — toutes les commandes de supervision sont créées automatiquement.
+Sauvegarder → toutes les commandes statiques sont créées automatiquement.  
+Cliquer sur **Synchroniser les Commandes** pour créer les commandes dynamiques propres à l'onduleur.
+
+---
+
+## Limitations du mode SSH
+
+Le mode SSH est synchrone et cadencé par cron (minimum 1 minute). La détection d'une coupure secteur peut donc prendre jusqu'à la prochaine exécution du cron, contre 2–5s en mode NUT. Les alertes et scénarios Jeedom fonctionnent normalement dès la collecte effectuée.
 
 ---
 
@@ -85,3 +101,4 @@ Sauvegarder — toutes les commandes de supervision sont créées automatiquemen
 ## Licence
 
 AGPL — Auteur : <a href="https://github.com/TiTidom-RC" target="_blank" rel="noopener noreferrer">TiTidom</a>
+

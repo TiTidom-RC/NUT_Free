@@ -179,5 +179,16 @@ $_labelBranchSSHM = _branchLabel($_branchSSHManager);
                 </select>
             </div>
         </div>
+
+        <legend><i class="fas fa-terminal"></i> {{SSH}}</legend>
+
+        <div class="form-group">
+            <label class="col-md-3 control-label">{{Délai Aléatoire (collecte SSH)}}
+                <sup><i class="fas fa-question-circle tooltips" title="{{Délai maximal aléatoire (en secondes) ajouté au lancement de chaque collecte SSH pour éviter les exécutions simultanées avec d'autres plugins. 0 = désactivé, max = 30. (Défaut = 15)}}"></i></sup>
+            </label>
+            <div class="col-md-1">
+                <input type="number" min="0" max="30" class="configKey form-control" data-l1key="sshRandomDelay" placeholder="15" />
+            </div>
+        </div>
     </fieldset>
 </form>

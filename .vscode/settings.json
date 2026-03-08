@@ -38,10 +38,12 @@
         "SSHM",
         "sshmanager",
         "stayoff",
+        "stype",
         "upsc",
         "upscmd",
         "upsd",
         "upsmon",
+        "upsrw",
         "vendorid",
         "warningflag"
     ]

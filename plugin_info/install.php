@@ -30,6 +30,7 @@ function initDefaultConfig(): void {
         'cyclePolling'        => '60',
         'cycleWatcher'        => '5',
         'cycleFactor'         => '1.0',
+        'sshRandomDelay'      => '15',
         'debugInstallUpdates' => '0',
         'debugRestorePyEnv'   => '0',
         'debugRestoreVenv'    => '0',
@@ -39,24 +40,6 @@ function initDefaultConfig(): void {
         if (config::byKey($key, 'Nut_free') == '') {
             config::save($key, $value, 'Nut_free');
         }
-    }
-}
-
-/**
- * Crée le cron de collecte (toutes les minutes) s'il n'existe pas encore.
- * Idempotent : ne recrée pas si déjà présent.
- */
-function ensureCron(): void {
-    $cron = cron::byClassAndFunction('Nut_free', 'cron');
-    if (!is_object($cron)) {
-        $cron = new cron();
-        $cron->setClass('Nut_free');
-        $cron->setFunction('cron');
-        $cron->setEnable(1);
-        $cron->setDeamon(0);
-        $cron->setSchedule('* * * * *');
-        $cron->setTimeout(1);
-        $cron->save();
     }
 }
 
@@ -72,7 +55,6 @@ function Nut_free_install() {
 
     Nut_free::getPythonDepFromRequirements();
     initDefaultConfig();
-    ensureCron();
 
     $dependencyInfo = Nut_free::dependancy_info();
     if (!isset($dependencyInfo['state'])) {
@@ -147,7 +129,13 @@ function Nut_free_update() {
         log::add('Nut_free', 'warning', '[CLEAN] Exception :: ' . $e->getMessage());
     }
 
-    ensureCron();
+    // Migration : supprimer le cron manuel créé par les anciennes versions du plugin.
+    // Jeedom appelle nativement Nut_free::cron() via plugin::cron() — un cron explicite créerait une double exécution.
+    $oldCron = cron::byClassAndFunction('Nut_free', 'cron');
+    if (is_object($oldCron)) {
+        $oldCron->remove();
+        log::add('Nut_free', 'info', '[UPDATE] Cron manuel supprimé (géré nativement par Jeedom)');
+    }
 
     // Mise à jour des commandes de tous les équipements existants (propage nutCmd, unité, etc.)
     Nut_free::createCmd();
