@@ -1211,7 +1211,7 @@ class Nut_freeCmd extends cmd {
                 $authArgs   = ($nutUser !== '') ? ' -u ' . escapeshellarg($nutUser) . ' -p ' . escapeshellarg($nutPass) : '';
                 $resolvedUps = $eqLogic->resolveUpsNameSSH($sshHostId);
                 if (empty($resolvedUps)) {
-                    throw new Exception(__('Nom UPS non déterminable pour l\'équipement ', __FILE__) . $equipment);
+                    throw new Exception(__('Nom UPS introuvable pour l\'équipement ', __FILE__) . $equipment);
                 }
                 $sshCmd = 'upsrw -s ' . escapeshellarg($nutRwVar . '=' . $value) . $authArgs . ' ' . escapeshellarg($resolvedUps) . ' 2>&1';
                 $result  = trim((string) sshmanager::executeCmds($sshHostId, $sshCmd));
@@ -1259,7 +1259,7 @@ class Nut_freeCmd extends cmd {
                 $authArgs   = ($nutUser !== '') ? ' -u ' . escapeshellarg($nutUser) . ' -p ' . escapeshellarg($nutPass) : '';
                 $resolvedUps = $eqLogic->resolveUpsNameSSH($sshHostId);
                 if (empty($resolvedUps)) {
-                    throw new Exception(__('Nom UPS non déterminable pour l\'équipement ', __FILE__) . $equipment);
+                    throw new Exception(__('Nom UPS introuvable pour l\'équipement ', __FILE__) . $equipment);
                 }
                 $cmd    = 'upscmd' . $authArgs . ' ' . escapeshellarg($resolvedUps) . ' ' . escapeshellarg($nutInstCmd) . ' 2>&1';
                 $result = trim((string) sshmanager::executeCmds($sshHostId, $cmd));
