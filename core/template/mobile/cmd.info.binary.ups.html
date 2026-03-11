@@ -1,0 +1,56 @@
+<div class="cmd cmd-widget"
+	data-type="info"
+	data-subtype="binary"
+	data-template="ups"
+	data-cmd_id="#id#"
+	data-cmd_uid="#uid#"
+	data-version="#version#"
+	data-eqLogic_id="#eqLogic_id#">
+
+	<style>
+		.cmd[data-cmd_uid="#uid#"] .cmdName {
+			display: inline-flex;
+			align-items: center;
+			gap: 4px;
+			font-style: italic;
+			font-size: 14px;
+		}
+		.cmd[data-cmd_uid="#uid#"] .cmdName i {
+			min-width: 16px;
+			text-align: center;
+		}
+		.cmd[data-cmd_uid="#uid#"] .cmdName .cmdLabel {
+			opacity: 0.6;
+		}
+		.cmd[data-cmd_uid="#uid#"] .content-xs {
+			font-size: 14px;
+		}
+		.cmd[data-cmd_uid="#uid#"] .cmdName:not(.hidden):not(.icon-only)::after {
+			content: ':';
+		}
+		.cmd[data-cmd_uid="#uid#"] .value {
+			font-weight: 500;
+		}
+	</style>
+
+	<div class="content-xs">
+		<span class="cmdName #hide_name#">#name_display#</span> <span class="value">#state#</span> <strong class="unit">#unite#</strong>
+	</div>
+
+	<script>
+		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
+			var cmd = $('.cmd[data-cmd_id=#id#]');
+			cmd.attr('title', '#name# - {{Date de valeur}}: ' + _options.valueDate + ' - {{Date de collecte}}: ' + _options.collectDate);
+			cmd.find('.value').empty().append(_options.display_value);
+			cmd.find('.unit').empty().append(_options.unit);
+		});
+		jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }]);
+		var _n = document.querySelector('.cmd[data-cmd_uid="#uid#"] .cmdName');
+		if (_n) {
+			var _txt = Array.from(_n.childNodes).filter(function(n){return n.nodeType===3 && n.textContent.trim();});
+			if (_txt.length) { _txt.forEach(function(t){ var s=document.createElement('span'); s.className='cmdLabel'; t.parentNode.insertBefore(s,t); s.appendChild(t); }); }
+			else { _n.classList.add('icon-only'); }
+		}
+	</script>
+
+</div>

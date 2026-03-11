@@ -14,42 +14,339 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 
+;(function() {
+'use strict'
+
+// Commandes pouvant être historisées
+const HISTORIZED_COMMANDS = Object.freeze([
+  'ups_load', 'battery_charge', 'battery_runtime', 'battery_runtime_min'
+])
+
+// Commandes affichables (visibles par défaut) — set statique uniquement
+const VISIBLE_COMMANDS = Object.freeze([
+  'device_mfr', 'device_model', 'ups_serial',
+  'ups_status', 'ups_status_label',
+  'ups_load', 'battery_charge', 'battery_runtime', 'battery_runtime_min',
+  'cmd_result'
+])
+
+/**
+ * Construit la ligne de commande dans le tableau de l'onglet Commandes
+ */
 function addCmdToTable(_cmd) {
-	if (!isset(_cmd)) {
-		var _cmd = {configuration: {}};
-	}
-	var tr = '<tr class="cmd" data-cmd_id="' + init(_cmd.id) + '">';
-	tr += '<td>';
-	tr += '<span class="cmdAttr" data-l1key="id" ></span>';
-	tr += '</td>';
-	tr += '<td>';
-	tr += '<input class="cmdAttr form-control input-sm" data-l1key="type" value="info" style="display: none">';
-	tr += '<input class="cmdAttr form-control input-sm" data-l1key="name"">';
-	tr += '</td>'; 
-	tr += '<td>';
-	tr += '</td>';
-	tr += '<td style="width: 150px;">';
-	if (_cmd.logicalId == 'Model' || _cmd.logicalId == 'ups_serial' || _cmd.logicalId == 'ups_line' ||_cmd.logicalId == 'input_volt' || _cmd.logicalId == 'input_freq'|| _cmd.logicalId == 'output_volt' || _cmd.logicalId == 'output_freq'||_cmd.logicalId == 'output_power'||_cmd.logicalId == 'output_real_power'||_cmd.logicalId == 'batt_charge'||_cmd.logicalId == 'batt_volt'||_cmd.logicalId == 'batt_temp'||_cmd.logicalId == 'ups_temp'||_cmd.logicalId == 'ups_load'||_cmd.logicalId == 'batt_runtime'||_cmd.logicalId == 'batt_runtime_min'||_cmd.logicalId == 'timer_shutdown'||_cmd.logicalId == 'timer_shutdown_min'||_cmd.logicalId == 'beeper_stat') {
-		tr += '<span><input type="checkbox" class="cmdAttr" data-size="mini" data-l1key="isVisible" checked/> {{Afficher}}<br/></span>';
-	}
-	if (_cmd.logicalId == 'input_volt' ||_cmd.logicalId == 'input_freq'||_cmd.logicalId == 'output_volt' ||_cmd.logicalId == 'output_freq'||_cmd.logicalId == 'output_power'||_cmd.logicalId == 'output_real_power'||_cmd.logicalId == 'batt_charge'||_cmd.logicalId == 'batt_volt'||_cmd.logicalId == 'batt_temp'||_cmd.logicalId == 'ups_temp'||_cmd.logicalId == 'ups_load'||_cmd.logicalId == 'batt_runtime'||_cmd.logicalId == 'batt_runtime_min'||_cmd.logicalId == 'timer_shutdown'||_cmd.logicalId == 'timer_shutdown_min') {
-		tr += '<span><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/> {{Historiser}}</span>';
-	}
-	tr += '</td>';
-		tr += '<td>';
-	if (is_numeric(_cmd.id)) {
-		tr += '<a class="btn btn-default btn-xs cmdAction expertModeVisible" data-action="configure"><i class="fa fa-cogs"></i></a> ';
-		tr += '<a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fa fa-rss"></i> {{Tester}}</a>';
-	}
-	tr += '</td>';
-	tr += '</tr>';
-	$('#table_cmd tbody').append(tr);
-	$('#table_cmd tbody tr:last').setValues(_cmd, '.cmdAttr');
+  if (!isset(_cmd)) _cmd = { configuration: {} }
+  if (!isset(_cmd.configuration)) _cmd.configuration = {}
+
+  const logicalId       = init(_cmd.logicalId)
+  const isDynamic       = String(_cmd.configuration?.isDynamic ?? '0') === '1'
+  const isDynInfo       = isDynamic && init(_cmd.type) === 'info'
+  const isDynRw         = isDynamic && init(_cmd.type) === 'action' && !!init(_cmd.configuration?.nutRwVar)
+
+  const canBeVisible    = VISIBLE_COMMANDS.includes(logicalId) || isDynamic
+  const canBeHistorized = HISTORIZED_COMMANDS.includes(logicalId) || (isDynInfo && init(_cmd.subType) === 'numeric')
+
+  // Clé NUT à afficher : nutRwVar pour les actions RW, sinon nutCmd
+  const nutKey = isDynRw
+    ? init(_cmd.configuration?.nutRwVar)
+    : init(_cmd.configuration?.nutCmd)
+
+  const testButtons = is_numeric(_cmd.id)
+    ? '<a class="btn btn-default btn-xs cmdAction" data-action="configure"><i class="fas fa-cogs"></i></a> <a class="btn btn-default btn-xs cmdAction" data-action="test"><i class="fas fa-rss"></i> {{Tester}}</a>'
+    : ''
+
+  const rowHtml = `<td class="hidden-xs"><span class="cmdAttr${isDynamic ? ' text-primary' : ''}" data-l1key="id"></span></td>
+    <td>
+      <div class="input-group">
+        <input class="cmdAttr form-control input-sm" data-l1key="type" value="info" style="display:none">
+        <input class="cmdAttr form-control input-sm roundedLeft" data-l1key="name" placeholder="{{Nom de la commande}}">
+        <span class="input-group-btn"><a class="cmdAction btn btn-sm btn-default" data-l1key="chooseIcon" title="{{Choisir une icône}}"><i class="fas fa-icons"></i></a></span>
+        <span class="cmdAttr input-group-addon roundedRight" data-l1key="display" data-l2key="icon" style="font-size:19px;padding:0 5px 0 0!important;"></span>
+      </div>
+    </td>
+    <td>
+      ${nutKey ? `<span class="label label-default" style="font-size:0.9em;display:inline-block;">${jeedom.escapeHtml ? jeedom.escapeHtml(nutKey) : nutKey}</span>` : ''}
+    </td>
+    <td>
+      ${canBeHistorized ? '<input class="cmdAttr form-control input-sm" data-l1key="unite" placeholder="{{Unité}}" style="width:80px;">' : ''}
+    </td>
+    <td>
+      ${canBeVisible    ? '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isVisible"/> {{Afficher}}</label>' : ''}
+      ${canBeHistorized ? '<label class="checkbox-inline"><input type="checkbox" class="cmdAttr" data-l1key="isHistorized"/> {{Historiser}}</label>' : ''}
+    </td>
+    <td><span class="cmdAttr" data-l1key="htmlstate"></span></td>
+    <td>
+      ${testButtons}
+      <i class="fas fa-minus-circle pull-right cmdAction cursor" data-action="remove" title="{{Supprimer la commande}}"></i>
+    </td>`
+
+  const row = Object.assign(document.createElement('tr'), {
+    className: 'cmd',
+    innerHTML: rowHtml
+  })
+  row.setAttribute('data-cmd_id', init(_cmd.id))
+
+  const tbody = document.querySelector('#table_cmd tbody')
+  if (!tbody) return
+
+  tbody.appendChild(row)
+  row.setJeeValues(_cmd, '.cmdAttr')
+  jeedom.cmd.changeType(row, init(_cmd.subType))
 }
 
-$('.eqLogicAttr[data-l1key=configuration][data-l2key=sendMode]').on('change', function () {
-    $('.sendMode').hide();
-    $('.sendMode.' + $(this).value()).show();
-});
+/**
+ * Toggle affichage mot de passe (pattern SSH-Manager)
+ */
+document.addEventListener('click', function(event) {
+  const toggleBtn = event.target.closest('a.bt_togglePass')
+  if (!toggleBtn) return
+  event.stopPropagation()
+  const input = toggleBtn.closest('.input-group').querySelector('input')
+  const icon = toggleBtn.querySelector('.fas')
+  input.type = input.type === 'password' ? 'text' : 'password'
+  icon.classList.toggle('fa-eye')
+  icon.classList.toggle('fa-eye-slash')
+})
 
-//$("#table_cmd").sortable({axis: "y", cursor: "move", items: ".cmd", placeholder: "ui-state-highlight", tolerance: "intersect", forcePlaceholderSize: true});model
+/**
+ * Affichage conditionnel des sections NUT/SSH et UPS manuel
+ */
+function updateConnexionModeDisplay(value) {
+  const nutEl  = document.querySelector('.nut-protocol')
+  const sshEl  = document.querySelector('.nut-ssh')
+  const isSsh  = value === 'ssh'
+  if (nutEl)  nutEl.style.display  = isSsh ? 'none' : ''
+  if (sshEl)  sshEl.style.display  = isSsh ? '' : 'none'
+  // Le bloc Synchronisation des Commandes est visible dans les deux modes
+}
+
+function updateUpsManualDisplay(value) {
+  const manualEl = document.querySelector('.nut-ups-manual')
+  if (manualEl) manualEl.style.display = (value === 'manual') ? '' : 'none'
+}
+
+/**
+ * Appelé par Jeedom lors du chargement d'un équipement dans le formulaire
+ * Jeedom remplit les eqLogicAttr AVANT d'appeler cette fonction.
+ * Pour les selects, si la valeur est vide (nouvel équipement), on force le défaut.
+ */
+function printEqLogic(_eqLogic) {
+  if (!_eqLogic) return
+
+  // Mode protocole — lire depuis le DOM (déjà rempli par Jeedom), forcer le défaut si vide
+  const selConnexionMode = document.querySelector('#selConnexionMode')
+  if (selConnexionMode) {
+    if (!selConnexionMode.value) selConnexionMode.value = 'nut'
+    updateConnexionModeDisplay(selConnexionMode.value)
+    selConnexionMode.removeEventListener('change', handleConnexionModeChange)
+    selConnexionMode.addEventListener('change', handleConnexionModeChange)
+  }
+
+  // Bouton Synchroniser les Commandes
+  const btDiscover = document.querySelector('#bt_discover_all')
+  if (btDiscover) btDiscover.onclick = () => {
+    const eqLogicId = _eqLogic.id
+    if (!eqLogicId) {
+      jeedomUtils.showAlert({ message: '{{Sauvegardez d\'abord l\'équipement avant de lancer la synchronisation}}', level: 'warning' })
+      return
+    }
+    const statusBlock = document.querySelector('#discover_status_block')
+    const statusMsg   = document.querySelector('#discover_status_msg')
+    if (statusBlock) statusBlock.style.display = ''
+    if (statusMsg) {
+      statusMsg.className = 'label label-info'
+      statusMsg.textContent = '{{Synchronisation en cours...}}'
+    }
+    btDiscover.setAttribute('disabled', 'disabled')
+
+    fetch('plugins/Nut_free/core/ajax/Nut_free.ajax.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'discoverAll', eqLogicId })
+    })
+    .then(r => r.json())
+    .then(data => {
+      btDiscover.removeAttribute('disabled')
+      if (data.state === 'ok') {
+        const resultMode = (data.result && data.result.mode) ? data.result.mode : 'nut'
+        const isSshMode  = resultMode === 'ssh'
+        const statusText = isSshMode
+          ? '{{Synchronisation terminée. Rechargez la page des commandes pour les voir.}}'
+          : '{{Requête envoyée. Les commandes seront créées dans quelques instants — rechargez la page des commandes pour les voir.}}'
+        const alertText = isSshMode
+          ? '{{Synchronisation terminée. Rechargez la page des commandes.}}'
+          : '{{Synchronisation lancée. Rechargez la page des commandes dans quelques instants.}}'
+        if (statusMsg) {
+          statusMsg.className = 'label label-success'
+          statusMsg.textContent = statusText
+        }
+        jeedomUtils.showAlert({ message: alertText, level: 'success' })
+      } else {
+        const errMsg = data.result ?? '{{Erreur inconnue}}'
+        if (statusMsg) {
+          statusMsg.className = 'label label-danger'
+          statusMsg.textContent = errMsg
+        }
+        jeedomUtils.showAlert({ message: errMsg, level: 'danger' })
+      }
+    })
+    .catch(err => {
+      btDiscover.removeAttribute('disabled')
+      const errMsg = String(err)
+      if (statusMsg) {
+        statusMsg.className = 'label label-danger'
+        statusMsg.textContent = errMsg
+      }
+      jeedomUtils.showAlert({ message: errMsg, level: 'danger' })
+    })
+  }
+
+  // Bouton Supprimer Commandes Synchronisées
+  const btClean = document.querySelector('#bt_clean_dynamic_cmds')
+  if (btClean) btClean.onclick = () => {
+    const eqLogicId = _eqLogic.id
+    if (!eqLogicId) {
+      jeedomUtils.showAlert({ message: '{{Sauvegardez d\'abord l\'équipement}}', level: 'warning' })
+      return
+    }
+    if (!confirm('{{Supprimer toutes les commandes dynamiques de cet équipement ?}}')) return
+
+    fetch('plugins/Nut_free/core/ajax/Nut_free.ajax.php', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({ action: 'cleanDynamicCmds', eqLogicId })
+    })
+    .then(r => r.json())
+    .then(data => {
+      if (data.state === 'ok') {
+        const statusBlock = document.querySelector('#discover_status_block')
+        const statusMsg   = document.querySelector('#discover_status_msg')
+        if (statusBlock) statusBlock.style.display = 'none'
+        if (statusMsg)   statusMsg.textContent = ''
+        jeedomUtils.showAlert({ message: '{{Commandes dynamiques supprimées. Rechargez la page des commandes.}}', level: 'success' })
+      } else {
+        jeedomUtils.showAlert({ message: data.result ?? '{{Erreur inconnue}}', level: 'danger' })
+      }
+    })
+    .catch(err => {
+      jeedomUtils.showAlert({ message: String(err), level: 'danger' })
+    })
+  }
+
+  // Restauration du statut de synchronisation (affiché si déjà lancé)
+  const discoverStatus = _eqLogic.configuration?.discover_status ?? ''
+  const discoverError  = _eqLogic.configuration?.discover_error  ?? ''
+  const statusBlock = document.querySelector('#discover_status_block')
+  const statusMsg   = document.querySelector('#discover_status_msg')
+  if (statusBlock && statusMsg) {
+    if (discoverStatus === 'done') {
+      statusBlock.style.display = ''
+      statusMsg.className = 'label label-success'
+      statusMsg.textContent = '{{Dernière Synchronisation : terminée avec succès}}'
+    } else if (discoverStatus === 'error') {
+      statusBlock.style.display = ''
+      statusMsg.className = 'label label-danger'
+      statusMsg.textContent = '{{Erreur lors de la dernière synchronisation}}' + (discoverError ? ' : ' + discoverError : '')
+    } else if (discoverStatus === 'pending') {
+      statusBlock.style.display = ''
+      statusMsg.className = 'label label-warning'
+      statusMsg.textContent = '{{Synchronisation en cours ou en attente...}}'
+    } else {
+      statusBlock.style.display = 'none'
+    }
+  }
+
+  // Auto-détection UPS — lire depuis le DOM, forcer le défaut si vide
+  const selUpsAuto = document.querySelector('#selUpsAuto')
+  if (selUpsAuto) {
+    if (!selUpsAuto.value) selUpsAuto.value = 'auto'
+    updateUpsManualDisplay(selUpsAuto.value)
+    selUpsAuto.removeEventListener('change', handleUpsAutoChange)
+    selUpsAuto.addEventListener('change', handleUpsAutoChange)
+  }
+
+  // Liste des hôtes SSH — peuplée via buildSelectHost (fourni par sshmanager.helper.js)
+  if (typeof window.buildSelectHost === 'function') {
+    const buildPromise = window.buildSelectHost(_eqLogic.configuration?.SSHHostId)
+    const sshHostSelect = document.querySelector('.sshmanagerHelper[data-helper="list"]')
+    if (sshHostSelect) {
+      sshHostSelect.removeEventListener('change', toggleSSHButtons)
+      sshHostSelect.addEventListener('change', toggleSSHButtons)
+      if (buildPromise && buildPromise.then) {
+        buildPromise.then(() => {
+          toggleSSHButtons(_eqLogic.configuration?.SSHHostId)
+        })
+      } else {
+        toggleSSHButtons(_eqLogic.configuration?.SSHHostId)
+      }
+    }
+  }
+}
+
+function handleConnexionModeChange() {
+  updateConnexionModeDisplay(this.value)
+}
+
+function handleUpsAutoChange() {
+  updateUpsManualDisplay(this.value)
+}
+
+/**
+ * Gestion des boutons Ajouter/Éditer selon la sélection de l'hôte SSH
+ * @param {Event|string|number} eventOrValue
+ */
+function toggleSSHButtons(eventOrValue) {
+  let selectedValue
+  if (typeof eventOrValue === 'string' || typeof eventOrValue === 'number') {
+    selectedValue = eventOrValue
+  } else if (eventOrValue?.target || eventOrValue?.currentTarget) {
+    selectedValue = eventOrValue.target?.value ?? eventOrValue.currentTarget?.value
+  }
+  if (!selectedValue) {
+    selectedValue = document.querySelector('.sshmanagerHelper[data-helper="list"]')?.value
+  }
+  const addBtn  = document.querySelector('.sshmanagerHelper[data-helper="add"]')
+  const editBtn = document.querySelector('.sshmanagerHelper[data-helper="edit"]')
+  if (selectedValue && selectedValue !== '') {
+    if (addBtn)  addBtn.style.display  = 'none'
+    if (editBtn) editBtn.style.display = 'block'
+  } else {
+    if (addBtn)  addBtn.style.display  = 'block'
+    if (editBtn) editBtn.style.display = 'none'
+  }
+}
+
+// Exposition globale pour Jeedom Core
+window.addCmdToTable = addCmdToTable
+window.printEqLogic  = printEqLogic
+
+// Event delegation (un seul listener sur document.body, guard anti-doublon SPA)
+if (!window._nutFreeClickAttached) {
+  window._nutFreeClickAttached = true
+  document.body.addEventListener('click', (event) => {
+    const openTarget = event.target.closest('.pluginAction[data-action=openLocation]')
+    if (openTarget) {
+      const location = openTarget.getAttribute('data-location')
+      if (location) window.open(location, '_blank', null)
+    }
+
+    if (event.target.closest('[data-action="createCommunityPost"]')) {
+      jeedom.plugin.createCommunityPost({
+        type: eqType,
+        error: function (error) {
+          jeedomUtils.showAlert({ message: error.message, level: 'danger' })
+        },
+        success: function (data) {
+          const link = document.createElement('a')
+          link.href = data.url
+          link.target = '_blank'
+          link.style.display = 'none'
+          document.body.appendChild(link)
+          link.click()
+          document.body.removeChild(link)
+        }
+      })
+    }
+  })
+}
+
+})()

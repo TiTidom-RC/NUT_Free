@@ -14,7 +14,7 @@ Puis saisir le nom de l'équipement (ex. Onduleur_Nas)
 - Objet parent
 - Catégorie (optionnelle)
 - Activer (à cocher, sinon l'équipement ne sera pas utilisable)
-- Visible (optionel si vous ne désirez pas le rendre visible sur le Dashboard)
+- Visible (optionnel si vous ne désirez pas le rendre visible sur le Dashboard)
 
 ![Image 3](../images/Nut_free_3.png)
 
@@ -24,9 +24,9 @@ Puis saisir le nom de l'équipement (ex. Onduleur_Nas)
 
 **Nom de la configuration UPS:** Nom de l'onduleur à surveiller vu par NUT ( Résultat de la commande upsc -l).
 - Si il y a 1 seul onduleur sur le serveur NUT, l'est pas utile de renseigner le champs.Le plugin trouvera seul le nom.
-- Si il y a plusieurs onduleur, il faudra connaitre le nom et le renseigner.
+- Si il y a plusieurs onduleur, il faudra connaître le nom et le renseigner.
 							 
-**Auto detectetion de l'UPS:**
+**Auto détection de l'UPS:**
 
 ![Image 3_2](../images/Nut_free_3_2.png)
 
@@ -42,7 +42,7 @@ le type de connexion au serveur NUT:
 
 **Non :**
 Sans connexion ssh.
-Dialogue direct avec le serveur nut via l'IP et le port de communincation standard de NUT
+Dialogue direct avec le serveur nut via l'IP et le port de communication standard de NUT
 
 ## IMPORTANT ##
 
@@ -54,9 +54,9 @@ Aller dans le "Panneau de configuration" => "Matériel et alimentation" => "UPS"
 
 
 **Oui :**
-Cela signifi avec connexion ssh. Dans ce ca renseigner:
+Cela signifie avec connexion ssh. Dans ce ca renseigner:
 
-Aprés avoir sélectionné ce mode, 3 champs supplémentaires s'affichent :
+Après avoir sélectionné ce mode, 3 champs supplémentaires s'affichent :
 
 -**Port SSH:** saisir le numéro du port SSH (par défaut il s'agit du port 22)
 
@@ -71,7 +71,7 @@ Vous devez choisir un identifiant avec les droits nécessaires pour lancer les c
 
 Pour un NAS Synology:
 - il faut utiliser le login "root" et le mot de passe de votre compte "admin"
-- il faut autoriser l'IP du NAS ou le localhost (127.0.0.1) à recuperer les info de l'onduleur. 
+- il faut autoriser l'IP du NAS ou le localhost (127.0.0.1) à récupérer les info de l'onduleur. 
 Aller dans le "Panneau de configuration" => "Matériel et alimentation" => "UPS" => "Périphériques DiskStation autorisés"
 
 ![Image 6](../images/Nut_free_6.png)
