@@ -91,6 +91,7 @@ function Nut_free_update() {
     // À compléter au fur et à mesure des migrations
     $dirsToDelete = array(
         __DIR__ . '/../ressources',   // Ancienne orthographe → suppression pour les utilisateurs existants
+        __DIR__ . '/../docs',         // Documentation centralisée dans le projet Documentation
     );
 
     $filesToDelete = array(
