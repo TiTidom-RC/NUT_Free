@@ -1,5 +1,6 @@
-<div class="eqLogic-widget eqLogic col2" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#"
-	data-translate-category="#translate_category#" data-category="#category#" style="#style#">
+<div class="eqLogic eqLogic-widget col2" data-eqLogic_id="#id#" data-eqType="#eqType#" data-version="#version#"
+	data-eqLogic_uid="#uid#" data-translate-category="#translate_category#" data-category="#category#"
+	data-tags="#tags#" style="#style#">
 	<style>
 		div.eqLogic-widget[data-eqLogic_uid="#uid#"] span.nut-name-flex {
 			display: flex;
@@ -110,39 +111,82 @@
 	</span>
 
 	<script>
-		// Boutons exécution commandes action
-		$('[data-eqLogic_uid="#uid#"] .nut-action-btn').off('click').on('click', function() {
-			var btn     = $(this);
-			var cmdId   = btn.data('cmd_id');
-			var subtype = btn.data('subtype');
-			if (subtype === 'message') {
-				var val = btn.closest('.nut-row').find('.nut-action-input').val();
-				jeedom.cmd.execute({ id: cmdId, value: { message: val } });
-			} else {
-				jeedom.cmd.execute({ id: cmdId });
-			}
-		});
+		(() => {
+			'use strict'
 
-		// Icône connexion SSH (mode SSH uniquement)
-		if ('#cnx_ssh#' === 'OK') {
-			if ('#ssh_op#' === '1') {
-				$('#iconSSH#id#').append('<i title="Connexion SSH OK" class="techno techno-tv tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
-			} else {
-				$('#iconSSH#id#').append('<i title="Sans connexion SSH" class="fa fa-sitemap tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
-			}
-		} else if ('#cnx_ssh#' === 'KO') {
-			$('#iconSSH#id#').append('<i title="Connexion SSH KO" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
-		}
+			const widgetRoot = document.querySelector('.eqLogic-widget[data-eqLogic_uid="#uid#"]')
+			if (!widgetRoot) return
 
-		// Icône statut UPS
-		var upsStatus = '#ups_status#';
-		if (upsStatus.indexOf('OL') > -1) {
-			$('#iconUPS_status#id#').append('<i title="#ups_status_label#" class="techno techno-plug2 tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
-		} else if (upsStatus.indexOf('DISCHRG') > -1) {
-			$('#iconUPS_status#id#').append('<i title="#ups_status_label#" class="techno techno-low2 tooltips" style="font-size:1.1em;color:#FEB95E;"></i>');
-		} else {
-			$('#iconUPS_status#id#').append('<i title="Pas de Réponse" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
-		}
+			const initRefreshButton = () => {
+				try {
+					if ('#refreshid#' === '') return
+
+					const refreshBtn = widgetRoot.querySelector('.refresh[data-cmd_id="#refreshid#"]')
+					if (!refreshBtn) return
+
+					refreshBtn.addEventListener('click', () => jeedom.cmd.execute({ id: '#refreshid#' }))
+				} catch (e) {
+					console.error('[NUT_Free] Error in initRefreshButton:', e)
+				}
+			}
+
+			const initActionButtons = () => {
+				try {
+					widgetRoot.querySelectorAll('.nut-action-btn').forEach(btn => {
+						btn.addEventListener('click', () => {
+							const cmdId   = btn.getAttribute('data-cmd_id')
+							const subtype = btn.dataset.subtype
+							if (subtype === 'message') {
+								const val = btn.closest('.nut-row')?.querySelector('.nut-action-input')?.value ?? ''
+								jeedom.cmd.execute({ id: cmdId, value: { message: val } })
+							} else {
+								jeedom.cmd.execute({ id: cmdId })
+							}
+						})
+					})
+				} catch (e) {
+					console.error('[NUT_Free] Error in initActionButtons:', e)
+				}
+			}
+
+			const initIconSSH = () => {
+				try {
+					const iconSSH = widgetRoot.querySelector('#iconSSH#id#')
+					if (!iconSSH) return
+
+					if ('#cnx_ssh#' === 'OK') {
+						iconSSH.innerHTML = '<i title="Connexion SSH OK" class="techno techno-tv tooltips" style="font-size:1.1em;color:var(--al-success-color, #00FF00);"></i>'
+					} else if ('#cnx_ssh#' === 'KO') {
+						iconSSH.innerHTML = '<i title="Connexion SSH KO" class="fa fa-times tooltips" style="font-size:1.1em;color:var(--al-danger-color, #FF0000);"></i>'
+					}
+				} catch (e) {
+					console.error('[NUT_Free] Error in initIconSSH:', e)
+				}
+			}
+
+			const initIconUPS = () => {
+				try {
+					const iconUPS  = widgetRoot.querySelector('#iconUPS_status#id#')
+					if (!iconUPS) return
+
+					const upsStatus = '#ups_status#'
+					if (upsStatus.indexOf('OL') > -1) {
+						iconUPS.innerHTML = '<i title="#ups_status_label#" class="techno techno-plug2 tooltips" style="font-size:1.1em;color:var(--al-success-color, #00FF00);"></i>'
+					} else if (upsStatus.indexOf('DISCHRG') > -1) {
+						iconUPS.innerHTML = '<i title="#ups_status_label#" class="techno techno-low2 tooltips" style="font-size:1.1em;color:var(--al-warning-color, #FEB95E);"></i>'
+					} else {
+						iconUPS.innerHTML = '<i title="Pas de Réponse" class="fa fa-times tooltips" style="font-size:1.1em;color:var(--al-danger-color, #FF0000);"></i>'
+					}
+				} catch (e) {
+					console.error('[NUT_Free] Error in initIconUPS:', e)
+				}
+			}
+
+			initRefreshButton()
+			initActionButtons()
+			initIconSSH()
+			initIconUPS()
+		})()
 	</script>
 
 

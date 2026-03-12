@@ -612,10 +612,10 @@ class Nut_free extends eqLogic {
 		if (!is_array($replace)) {
 			return $replace;
 		}
-		$_version = jeedom::versionAlias($_version);
+		$version = jeedom::versionAlias($_version);
 
 		// Format du title selon la version : mobile ne supporte pas le HTML dans les tooltips
-		$isMobile = ($_version === 'mobile');
+		$isMobile = ($version === 'mobile');
 
 		$cmdsHtml = '';
 		foreach ($this->getCmd() as $cmd) {
@@ -673,8 +673,7 @@ class Nut_free extends eqLogic {
 		}
 
 		$replace['#cmds_html#'] = $cmdsHtml;
-		$html = template_replace($replace, getTemplate('core', $_version, 'Nut_free', 'Nut_free'));
-		return $html;
+		return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'Nut_free', 'Nut_free')));
 	}
 	
     /**

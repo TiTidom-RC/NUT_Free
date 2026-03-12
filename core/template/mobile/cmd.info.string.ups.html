@@ -39,10 +39,12 @@
 
 	<script>
 		jeedom.cmd.addUpdateFunction('#id#', function(_options) {
-			var cmd = $('.cmd[data-cmd_id=#id#]');
-			cmd.attr('title', '#name# - {{Date de valeur}}: ' + _options.valueDate + ' - {{Date de collecte}}: ' + _options.collectDate);
-			cmd.find('.value').empty().append(_options.display_value);
-			cmd.find('.unit').empty().append(_options.unit);
+			var cmd = document.querySelector('.cmd[data-cmd_uid="#uid#"]');
+			if (cmd) {
+				cmd.querySelector('.content-xs').setAttribute('title', '#name# | {{Date de valeur}}: ' + _options.valueDate + ' | {{Date de collecte}}: ' + _options.collectDate);
+				cmd.querySelector('.value').innerHTML = _options.display_value;
+				cmd.querySelector('.unit').innerHTML = _options.unit;
+			}
 		});
 		jeedom.cmd.refreshValue([{ cmd_id: '#id#', value: '#value#', display_value: '#state#', valueDate: '#valueDate#', collectDate: '#collectDate#', alertLevel: '#alertLevel#', unit: '#unite#' }]);
 		var _n = document.querySelector('.cmd[data-cmd_uid="#uid#"] .cmdName');

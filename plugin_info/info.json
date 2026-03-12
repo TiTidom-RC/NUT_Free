@@ -1,7 +1,7 @@
 {
 	"id": "Nut_free",
 	"name": "NUT Free",
-	"pluginVersion": "2.2.0",
+	"pluginVersion": "2.2.1",
 	"description": {
 		"fr_FR": "Plugin de supervision d'onduleur (UPS) via le protocole NUT (Network UPS Tools). Connexion en TCP (NUT) ou SSH (via SSH-Manager). Supervise le statut, les tensions et fréquences entrée/sortie, la charge, l'autonomie, les températures batterie/onduleur, la puissance et le minuteur d'arrêt. Génère automatiquement toutes les commandes et supporte différentes actions sur l'onduleur : beeper (activation/désactivation), test batterie, arrêt/redémarrage, etc.",
 		"en_US": "UPS monitoring plugin via the NUT (Network UPS Tools) protocol. Connects via TCP (NUT) or SSH (via SSH-Manager). Monitors status, input/output voltages and frequencies, load, runtime, battery/UPS temperatures, power and shutdown timer. Automatically generates all commands and supports various UPS actions: beeper (enable/disable), battery test, shutdown/reboot, etc.",
