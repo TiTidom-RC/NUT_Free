@@ -96,6 +96,8 @@
         "Dupliquer": "Duplicare",
         "Editer cet hôte SSH": "Modifica questo host SSH",
         "Equipement": "Attrezzature",
+        "Equipement non visible": "Apparecchiature non visibili",
+        "Equipement visible": "Apparecchiature visibili",
         "Fréquence de polling": "Frequenza di polling",
         "Fréquence de rafraîchissement des données en mode SSH — utiliser l'assistant pour définir l'expression cron": "Frequenza di aggiornamento dei dati in modalità SSH: utilizzare la procedura guidata per definire l'espressione cron",
         "Gestion": "Gestione",

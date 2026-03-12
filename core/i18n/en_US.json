@@ -96,6 +96,8 @@
         "Dupliquer": "Duplicate",
         "Editer cet hôte SSH": "Edit this SSH host",
         "Equipement": "Equipment",
+        "Equipement non visible": "Non-visible equipment",
+        "Equipement visible": "Visible equipment",
         "Fréquence de polling": "Polling frequency",
         "Fréquence de rafraîchissement des données en mode SSH — utiliser l'assistant pour définir l'expression cron": "Data refresh rate in SSH mode — use the wizard to set the cron expression",
         "Gestion": "Management",
