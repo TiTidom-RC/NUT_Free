@@ -1,63 +1,73 @@
-<style>
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name.nut-name-flex {
-		display: flex; justify-content: space-between; padding-left: 5px !important;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-left {
-		display: flex; flex: 0 1 auto; float: left; justify-content: flex-start; align-items: center;
-		box-sizing: border-box;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name.nut-name-center {
-		display: flex; flex: 1 1 auto; justify-content: center; text-align: center;
-		padding-left: 5px; padding-right: 5px; box-sizing: border-box;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name {
-		overflow: auto;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-right {
-		display: flex; flex: 0 1 auto; float: right; justify-content: flex-end; align-items: center;
-		box-sizing: border-box;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-right .cmd.refresh {
-		margin-top: unset !important;
-		padding-right: 5px;
-		color: inherit !important;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds {
-		display: block; text-align: left; padding-left: 5px; overflow: auto;
-		white-space: nowrap; width: 100%; height: calc(100% - 24px);
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-label {
-		opacity: 0.6;
-		font-style: italic !important;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-row {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		white-space: nowrap;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-icon {
-		flex: 0 0 18px;
-		text-align: center;
-		font-size: 13px;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-action-input {
-		width: 80px;
-		height: 18px;
-		padding: 0 4px;
-		font-size: 11px;
-		border: 1px solid var(--border-color, #ccc);
-		border-radius: 3px;
-		background: transparent;
-		color: inherit;
-	}
-	div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .history.cursor {
-		font-weight: 600;
-	}
-</style>
-<div id="plugin_container" class="eqLogic-widget eqLogic allowResize" data-eqLogic_uid="#uid#"
-	style="width:#width#;height:#height#;border:#border#;border-radius:#border-radius#;background-color: #background-color#;color: #color#; #style#"
-	data-translate-category="#translate_category#" data-category="#category#" data-eqLogic_id="#id#" data-version="#version#">
+<div class="eqLogic eqLogic-widget allowResize #custom_layout# #eqLogic_class# #class# #category#"
+	data-eqType="#eqType#" data-eqLogic_id="#id#" data-eqLogic_uid="#uid#" data-version="#version#"
+	data-translate-category="#translate_category#" data-category="#category#" data-tags="#tags#"
+	style="width: #width#;height: #height#;#style#;">
+	<style>
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name.nut-name-flex {
+			display: flex; justify-content: space-between; padding-left: 5px !important;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-left {
+			display: flex; flex: 0 1 auto; float: left; justify-content: flex-start; align-items: center;
+			box-sizing: border-box;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name.nut-name-center {
+			display: flex; flex: 1 1 auto; justify-content: center; text-align: center;
+			padding-left: 5px; padding-right: 5px; box-sizing: border-box;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name.nut-name-center a {
+			overflow: hidden !important;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.widget-name {
+			overflow: auto;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-right {
+			display: flex; flex: 0 1 auto; float: right; justify-content: flex-end; align-items: center;
+			box-sizing: border-box;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-name-right .cmd.refresh {
+			margin-top: unset !important;
+			padding-right: 5px;
+			color: inherit !important;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds {
+			display: block; text-align: left; padding-left: 5px; overflow: auto;
+			white-space: nowrap; width: 100%; height: calc(100% - 24px);
+			box-sizing: border-box;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-label {
+			opacity: 0.6;
+			font-style: italic !important;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-row {
+			display: flex;
+			align-items: center;
+			gap: 4px;
+			white-space: nowrap;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-icon {
+			flex: 0 0 18px;
+			text-align: center;
+			font-size: 13px;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .nut-action-input {
+			width: 80px;
+			height: 18px;
+			padding: 0 4px;
+			font-size: 11px;
+			border: 1px solid var(--border-color, #ccc);
+			border-radius: 3px;
+			background: transparent;
+			color: inherit;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"] div.nut-cmds .history.cursor {
+			font-weight: 600;
+		}
+		div.eqLogic-widget[data-eqLogic_uid="#uid#"].editingMode .nut-action-btn {
+			display: none !important;
+		}
+	</style>
 
 	<div class="widget-name nut-name-flex">
 		<div class="nut-name-left">
@@ -65,7 +75,8 @@
 			<span id="iconSSH#id#" style="margin-left:4px;"></span>
 		</div>
 		<div class="widget-name nut-name-center">
-			<a href="#eqLink#">#name_display#<span style="font-size: 0.85em;position: relative;top:-2px;" class="object_name">#object_name#</span></a>
+			<span class="reportModeVisible">#name_display# <span class="object_name">#object_name#</span></span>
+			<a href="#eqLink#" class="reportModeHidden">#name_display# <span class="object_name">#object_name#</span></a>
 		</div>
 		<div class="nut-name-right">
 			<span data-cmd_id="#refreshid#" class="cmd refresh cursor" title="Rafraîchir">
@@ -75,46 +86,86 @@
 	</div>
 
 	<script>
-		// Bouton Rafraîchir
-		if ('#refreshid#' !== '') {
-			$('[data-cmd_id="#refreshid#"].refresh').off('click').on('click', function() {
-				jeedom.cmd.execute({ id: '#refreshid#' });
-			});
-		}
+		(() => {
+			'use strict'
 
-		// Boutons exécution commandes action
-		$('[data-eqLogic_uid="#uid#"] .nut-action-btn').off('click').on('click', function() {
-			var btn     = $(this);
-			var cmdId   = btn.data('cmd_id');
-			var subtype = btn.data('subtype');
-			if (subtype === 'message') {
-				var val = btn.closest('.nut-row').find('.nut-action-input').val();
-				jeedom.cmd.execute({ id: cmdId, value: { message: val } });
-			} else {
-				jeedom.cmd.execute({ id: cmdId });
+			const widgetRoot = document.querySelector('.eqLogic-widget[data-eqLogic_uid="#uid#"]')
+			if (!widgetRoot) return
+
+			const initRefreshButton = () => {
+				try {
+					if ('#refreshid#' === '') return
+
+					const refreshBtn = widgetRoot.querySelector('.refresh[data-cmd_id="#refreshid#"]')
+					if (!refreshBtn) return
+
+					refreshBtn.addEventListener('click', () => jeedom.cmd.execute({ id: '#refreshid#' }))
+				} catch (e) {
+					console.error('[NUT_Free] Error in initRefreshButton:', e)
+				}
 			}
-		});
 
-		// Icône connexion SSH (mode SSH uniquement)
-		if ('#cnx_ssh#' === 'OK') {
-			$('#iconSSH#id#').append('<i title="Connexion SSH OK" class="techno techno-tv tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
-		} else if ('#cnx_ssh#' === 'KO') {
-			$('#iconSSH#id#').append('<i title="Connexion SSH KO" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
-		}
+			const initActionButtons = () => {
+				try {
+					widgetRoot.querySelectorAll('.nut-action-btn').forEach(btn => {
+						btn.addEventListener('click', () => {
+							const cmdId   = btn.getAttribute('data-cmd_id')
+							const subtype = btn.dataset.subtype
+							if (subtype === 'message') {
+								const val = btn.closest('.nut-row')?.querySelector('.nut-action-input')?.value ?? ''
+								jeedom.cmd.execute({ id: cmdId, value: { message: val } })
+							} else {
+								jeedom.cmd.execute({ id: cmdId })
+							}
+						})
+					})
+				} catch (e) {
+					console.error('[NUT_Free] Error in initActionButtons:', e)
+				}
+			}
 
-		// Icône statut UPS
-		var upsStatus = '#ups_status#';
-		if (upsStatus.indexOf('OL') > -1) {
-			$('#iconUPS_status#id#').append('<i title="#ups_status_label#" class="techno techno-plug2 tooltips" style="font-size:1.1em;color:#00FF00;"></i>');
-		} else if (upsStatus.indexOf('DISCHRG') > -1) {
-			$('#iconUPS_status#id#').append('<i title="#ups_status_label#" class="techno techno-low2 tooltips" style="font-size:1.1em;color:#FEB95E;"></i>');
-		} else {
-			$('#iconUPS_status#id#').append('<i title="Pas de Réponse" class="fa fa-times tooltips" style="font-size:1.1em;color:#FF0000;"></i>');
-		}
+			const initIconSSH = () => {
+				try {
+					const iconSSH = widgetRoot.querySelector('#iconSSH#id#')
+					if (!iconSSH) return
+
+					if ('#cnx_ssh#' === 'OK') {
+						iconSSH.innerHTML = '<i title="Connexion SSH OK" class="techno techno-tv tooltips" style="font-size:1.1em;color:var(--al-success-color, #00FF00);"></i>'
+					} else if ('#cnx_ssh#' === 'KO') {
+						iconSSH.innerHTML = '<i title="Connexion SSH KO" class="fa fa-times tooltips" style="font-size:1.1em;color:var(--al-danger-color, #FF0000);"></i>'
+					}
+				} catch (e) {
+					console.error('[NUT_Free] Error in initIconSSH:', e)
+				}
+			}
+
+			const initIconUPS = () => {
+				try {
+					const iconUPS  = widgetRoot.querySelector('#iconUPS_status#id#')
+					if (!iconUPS) return
+
+					const upsStatus = '#ups_status#'
+					if (upsStatus.indexOf('OL') > -1) {
+						iconUPS.innerHTML = '<i title="#ups_status_label#" class="techno techno-plug2 tooltips" style="font-size:1.1em;color:var(--al-success-color, #00FF00);"></i>'
+					} else if (upsStatus.indexOf('DISCHRG') > -1) {
+						iconUPS.innerHTML = '<i title="#ups_status_label#" class="techno techno-low2 tooltips" style="font-size:1.1em;color:var(--al-warning-color, #FEB95E);"></i>'
+					} else {
+						iconUPS.innerHTML = '<i title="Pas de Réponse" class="fa fa-times tooltips" style="font-size:1.1em;color:var(--al-danger-color, #FF0000);"></i>'
+					}
+				} catch (e) {
+					console.error('[NUT_Free] Error in initIconUPS:', e)
+				}
+			}
+
+			initRefreshButton()
+			initActionButtons()
+			initIconSSH()
+			initIconUPS()
+		})()
 	</script>
-
 
 	<div class="nut-cmds">
 		#cmds_html#
 	</div>
+	#divGraphInfo#
 </div>
