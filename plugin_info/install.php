@@ -88,46 +88,32 @@ function Nut_free_update() {
     initDefaultConfig();
 
     // Nettoyage des fichiers et répertoires obsolètes des anciennes versions
-    // À compléter au fur et à mesure des migrations
-    $dirsToDelete = array(
-        __DIR__ . '/../ressources',   // Ancienne orthographe → suppression pour les utilisateurs existants
-        __DIR__ . '/../docs',         // Documentation centralisée dans le projet Documentation
-    );
-
-    $filesToDelete = array(
-        __DIR__ . '/packages.json',                  // remplacé par info.json
-        __DIR__ . '/../resources/install.sh',        // remplacé par install_apt.sh
-    );
-
+    $pluginDir = dirname(__DIR__);
     try {
-        foreach ($dirsToDelete as $dir) {
-            log::add('Nut_free', 'debug', '[CLEAN] Vérification répertoire :: ' . $dir);
-            if (file_exists($dir)) {
-                $output = shell_exec('sudo rm -rf ' . escapeshellarg($dir) . ' 2>&1');
-                if (file_exists($dir)) {
-                    log::add('Nut_free', 'warning', '[CLEAN] Échec suppression répertoire :: ' . $dir . (!empty($output) ? ' :: ' . trim($output) : ''));
+        $pathsToRemove = array(
+            // Accepte fichiers ET répertoires (rm -rf) — ajouter ici les chemins à supprimer à chaque mise à jour
+            $pluginDir . '/ressources',                   // Ancienne orthographe → suppression pour les utilisateurs existants
+            $pluginDir . '/docs',                         // Documentation centralisée dans le projet Documentation
+            $pluginDir . '/plugin_info/packages.json',    // remplacé par info.json
+            $pluginDir . '/resources/install.sh',         // remplacé par install_apt.sh
+        );
+        foreach ($pathsToRemove as $path) {
+            log::add('Nut_free', 'debug', '[CLEANUP] Vérification du chemin : ' . $path);
+            if (file_exists($path)) {
+                $output = array();
+                $returnVar = 0;
+                exec('rm -rf ' . escapeshellarg($path) . ' 2>&1', $output, $returnVar);
+                if ($returnVar !== 0) {
+                    log::add('Nut_free', 'warning', '[CLEANUP_KO] Echec suppression "' . $path . '" (Code: ' . $returnVar . ') : ' . implode(' ', $output));
                 } else {
-                    log::add('Nut_free', 'debug', '[CLEAN] Supprimé :: ' . $dir);
+                    log::add('Nut_free', 'info', '[CLEANUP_OK] Chemin supprimé : ' . $path);
                 }
             } else {
-                log::add('Nut_free', 'debug', '[CLEAN] Absent (OK) :: ' . $dir);
+                log::add('Nut_free', 'debug', '[CLEANUP_NA] Chemin non trouvé, aucune action : ' . $path);
             }
         }
-
-        foreach ($filesToDelete as $file) {
-            log::add('Nut_free', 'debug', '[CLEAN] Vérification fichier :: ' . $file);
-            if (file_exists($file)) {
-                if (@unlink($file)) {
-                    log::add('Nut_free', 'debug', '[CLEAN] Supprimé :: ' . $file);
-                } else {
-                    log::add('Nut_free', 'warning', '[CLEAN] Échec suppression fichier :: ' . $file);
-                }
-            } else {
-                log::add('Nut_free', 'debug', '[CLEAN] Absent (OK) :: ' . $file);
-            }
-        }
-    } catch (\Throwable $e) {
-        log::add('Nut_free', 'warning', '[CLEAN] Exception :: ' . $e->getMessage());
+    } catch (Exception $e) {
+        log::add('Nut_free', 'warning', '[CLEANUP_KO] Erreur lors du nettoyage : ' . $e->getMessage());
     }
 
     // Migration : supprimer le cron manuel créé par les anciennes versions du plugin.
