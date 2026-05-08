@@ -122,9 +122,7 @@ def _resolveUpsName(device: NutDevice) -> str | None:
 
     # Auto-détection via LIST UPS
     try:
-        client = PyNUTClient(host=device.host, port=device.port,
-                             login=device.nutUsername, password=device.nutPassword)
-        upsList = client.GetUPSList()
+        upsList = _nutClient(device).GetUPSList()
         if not upsList:
             logging.warning('[DAEMON][%s] Aucun UPS trouvé sur %s:%d',
                             device.name, device.host, device.port)
@@ -179,6 +177,12 @@ def _nutGetVar(host: str, port: int, upsName: str, varName: str,
     except Exception as e:
         logging.debug('[WATCHER] _nutGetVar() %s:%d %s=%s :: %s', host, port, upsName, varName, e)
         return None
+
+
+def _nutClient(device: NutDevice) -> PyNUTClient:
+    """Instancie un PyNUTClient avec les paramètres de connexion du device."""
+    return PyNUTClient(host=device.host, port=device.port,
+                       login=device.nutUsername, password=device.nutPassword)
 
 
 def getUpsStatus(device: NutDevice) -> str | None:
@@ -236,18 +240,10 @@ def queryDevice(device: NutDevice) -> dict[str, str] | None:
         return None
 
     try:
-        client = PyNUTClient(host=device.host, port=device.port,
-                             login=device.nutUsername, password=device.nutPassword)
-    except Exception as e:
-        logging.error('[DAEMON][%s] Connexion NUT %s:%d impossible :: %s',
-                      device.name, device.host, device.port, e)
-        return None
-
-    try:
-        allVarsRaw = client.GetUPSVars(upsName) or {}
+        allVarsRaw = _nutClient(device).GetUPSVars(upsName) or {}
         allVars: dict[str, str] = {_nutToStr(k): _nutToStr(v) for k, v in allVarsRaw.items()}
     except Exception as e:
-        logging.error('[DAEMON][%s] GetUPSVars(%s) erreur :: %s', device.name, upsName, e)
+        logging.error('[DAEMON][%s] Erreur NUT %s:%d :: %s', device.name, device.host, device.port, e)
         return None
 
     results: dict[str, str] = {}
@@ -272,9 +268,7 @@ def runInstCmd(device: NutDevice, nutInstCmd: str) -> None:
         logging.error('[DAEMON][%s] runInstCmd() %s :: UPS non résolu', device.name, nutInstCmd)
     else:
         try:
-            client = PyNUTClient(host=device.host, port=device.port,
-                                 login=device.nutUsername, password=device.nutPassword)
-            client.RunUPSCommand(upsName, nutInstCmd)
+            _nutClient(device).RunUPSCommand(upsName, nutInstCmd)
             result = f'{nutInstCmd} → OK'
             logging.info('[DAEMON][%s] runInstCmd() %s :: OK', device.name, nutInstCmd)
         except Exception as e:
@@ -317,24 +311,31 @@ def runDiscoverAll(device: NutDevice) -> None:
         return
 
     try:
-        client = PyNUTClient(host=device.host, port=device.port,
-                             login=device.nutUsername, password=device.nutPassword)
-
-        raw_all = client.GetUPSVars(upsName) or {}
+        raw_all = _nutClient(device).GetUPSVars(upsName) or {}
         all_vars: dict[str, str] = {_nutToStr(k): _nutToStr(v) for k, v in raw_all.items()}
-
-        raw_rw = client.GetRWVars(upsName) or {}
-        rw_keys: set[str] = {_nutToStr(k) for k in raw_rw.keys()}
-
-        raw_cmds = client.GetUPSCommands(upsName) or {}
-        cmds_list: list[str] = sorted(_nutToStr(k) for k in raw_cmds.keys())
-
     except Exception as e:
-        logging.error('[DAEMON][%s] runDiscoverAll() :: erreur NUT :: %s', device.name, e)
+        logging.error('[DAEMON][%s] runDiscoverAll() :: erreur GetUPSVars :: %s', device.name, e)
         Comm.sendToJeedom.send_change_immediate({
             'discover_result': {device.eqLogicId: {'error': str(e)}}
         })
         return
+
+    # GetRWVars et GetUPSCommands sont optionnels : certains serveurs NUT (ex. Unifi)
+    # retournent ERR INVALID-ARGUMENT au lieu d'une liste vide — on les ignore silencieusement.
+    # Chaque appel utilise un client indépendant pour garantir la cohérence des connexions.
+    try:
+        raw_rw = _nutClient(device).GetRWVars(upsName) or {}
+        rw_keys: set[str] = {_nutToStr(k) for k in raw_rw.keys()}
+    except Exception as e:
+        logging.warning('[DAEMON][%s] runDiscoverAll() :: GetRWVars non supporté :: %s', device.name, e)
+        rw_keys = set()
+
+    try:
+        raw_cmds = _nutClient(device).GetUPSCommands(upsName) or {}
+        cmds_list: list[str] = sorted(_nutToStr(k) for k in raw_cmds.keys())
+    except Exception as e:
+        logging.warning('[DAEMON][%s] runDiscoverAll() :: GetUPSCommands non supporté :: %s', device.name, e)
+        cmds_list = []
 
     catalog = _loadNutVars()
     known_vars = catalog.get('vars', {})
@@ -408,9 +409,7 @@ def runSetRwVar(device: NutDevice, nutRwVar: str, value: str) -> None:
         logging.error('[DAEMON][%s] runSetRwVar() %s :: UPS non résolu', device.name, nutRwVar)
     else:
         try:
-            client = PyNUTClient(host=device.host, port=device.port,
-                                 login=device.nutUsername, password=device.nutPassword)
-            client.SetRWVar(upsName, nutRwVar, value)
+            _nutClient(device).SetRWVar(upsName, nutRwVar, value)
             result = f'{nutRwVar} → OK ({value})'
             logging.info('[DAEMON][%s] runSetRwVar() %s = %s :: OK', device.name, nutRwVar, value)
             # Mettre à jour la commande info correspondante avec la nouvelle valeur
