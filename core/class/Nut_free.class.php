@@ -287,10 +287,6 @@ class Nut_free extends eqLogic {
 		}
 	}
 
-	public function postUpdate() {
-		static::createCmd($this);
-	}
-
 	/**
 	 * Crée ou met à jour toutes les commandes d'un équipement (ou de tous).
 	 * Idempotent : peut être appelé plusieurs fois sans effet de bord.
