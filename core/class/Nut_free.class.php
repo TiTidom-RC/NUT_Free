@@ -75,7 +75,7 @@ class Nut_free extends eqLogic {
         }
     }
 
-	
+
 	public static function getPluginBranch() {
 		$pluginBranch = 'N/A';
 		try {
@@ -671,7 +671,7 @@ class Nut_free extends eqLogic {
 		$replace['#cmds_html#'] = $cmdsHtml;
 		return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, 'Nut_free', 'Nut_free')));
 	}
-	
+
     /**
      * Résout le nom de l'UPS via SSH.
      * - Mode manuel (upsAutoSelect='manual') : retourne le champ 'ups' configuré directement.
@@ -1285,5 +1285,6 @@ class Nut_freeCmd extends cmd {
             log::add('Nut_free', 'error', '[' . $equipment . '] Erreur instcmd ' . $nutInstCmd . ' : ' . $e->getMessage());
             throw $e;
         }
+        return true;
     }
 }
