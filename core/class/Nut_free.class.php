@@ -1285,5 +1285,6 @@ class Nut_freeCmd extends cmd {
             log::add('Nut_free', 'error', '[' . $equipment . '] Erreur instcmd ' . $nutInstCmd . ' : ' . $e->getMessage());
             throw $e;
         }
+        return true;
     }
 }
