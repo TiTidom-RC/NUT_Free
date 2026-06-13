@@ -134,23 +134,37 @@ class Nut_free extends eqLogic {
 	}
 
 	public static function dependancy_info() {
-		$_logName = __CLASS__ . '_update';
 		$return = array();
-		$return['log'] = log::getPathToLog($_logName);
+		$return['log'] = log::getPathToLog(__CLASS__ . '_update');
 		$return['progress_file'] = jeedom::getTmpFolder(__CLASS__) . '/dependency';
 
-		if (file_exists($return['progress_file'])) {
+		if (file_exists(jeedom::getTmpFolder(__CLASS__) . '/dependency')) {
 			$return['state'] = 'in_progress';
 		} else {
-			if (!file_exists(self::VENV_PYTHON)) {
-				log::add($_logName, 'debug', '[DepInfo][ERROR] Python venv introuvable');
+			if (exec(system::getCmdSudo() . system::get('cmd_check') . '-Ec "python3\-requests|python3\-setuptools|python3\-dev|python3\-venv"') < 4) {
 				$return['state'] = 'nok';
-			} elseif ((int) exec(self::VENV_PYTHON . ' -m pip --no-cache-dir freeze | grep -Eiwc "' . config::byKey('pythonDepString', 'Nut_free', '', true) . '"') < (int) config::byKey('pythonDepNum', 'Nut_free', 0, true)) {
-				log::add($_logName, 'debug', '[DepInfo][ERROR] Missing Python dependencies');
+				log::add(__CLASS__, 'debug', '[Python-Dep] System packages missing (python3-requests, python3-setuptools, python3-dev, or python3-venv)');
+			} elseif (!file_exists(self::VENV_PYTHON)) {
 				$return['state'] = 'nok';
+				log::add(__CLASS__, 'debug', '[Python-Dep] Python venv executable not found at: ' . self::VENV_PYTHON);
 			} else {
-				log::add($_logName, 'debug', '[DepInfo][INFO] All dependencies are installed');
-				$return['state'] = 'ok';
+				$expectedCount = config::byKey('pythonDepNum', 'Nut_free', 0, true);
+				$pythonDepString = config::byKey('pythonDepString', 'Nut_free', '', true);
+
+				$cmd = self::VENV_PYTHON . ' -m pip --no-cache-dir freeze | grep -Ewci "' . $pythonDepString . '"';
+				$foundCount = exec($cmd);
+
+				if ($foundCount < $expectedCount) {
+					$return['state'] = 'nok';
+					log::add(__CLASS__, 'debug', '[Python-Dep] Missing Dependencies. Found: ' . $foundCount . ' / Expected: ' . $expectedCount);
+					log::add(__CLASS__, 'debug', '[Python-Dep] Regex used: ' . $pythonDepString);
+					// Log actual pip freeze content for debugging
+					$pipFreeze = shell_exec(self::VENV_PYTHON . ' -m pip --no-cache-dir freeze');
+					log::add(__CLASS__, 'debug', '[Python-Dep] Pip Freeze Output: ' . str_replace(PHP_EOL, ' | ', trim($pipFreeze)));
+				} else {
+					$return['state'] = 'ok';
+					log::add(__CLASS__, 'debug', '[Python-Dep] Dependencies installed. State : OK');
+				}
 			}
 		}
 		return $return;
