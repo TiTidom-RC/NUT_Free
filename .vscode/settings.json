@@ -4,6 +4,7 @@
         "commandtab",
         "cyclepolling",
         "cyclewatcher",
+        "depinstall",
         "Eiwc",
         "energysave",
         "eqlogictab",

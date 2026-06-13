@@ -230,7 +230,7 @@ log "* SSH-Manager (opt) *"
 log "********************"
 if [ -f "${CLI_PHP}" ]; then
 	log "** Vérification/installation du plugin SSH-Manager... **"
-	php "${CLI_PHP}" depinstall "Nut_free_update" 2>&1 | log || true
+	php "${CLI_PHP}" depinstall "Nut_free_update" "SSH-Manager" 2>&1 | log || true
 	log "** SSH-Manager :: Done **"
 else
 	log "** CLI PHP introuvable, étape SSH-Manager ignorée **"
