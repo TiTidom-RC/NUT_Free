@@ -1,2 +1,2 @@
 pynutclient==2.8.5
-requests==2.33.1
+requests==2.34.2

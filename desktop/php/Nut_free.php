@@ -309,4 +309,3 @@ if (class_exists('sshmanager')) {
 ?>
 <?php include_file('desktop', 'Nut_free', 'js', 'Nut_free'); ?>
 <?php include_file('core', 'plugin.template', 'js'); ?>
-
