@@ -145,7 +145,7 @@ class Nut_free extends eqLogic {
 			if (!file_exists(self::VENV_PYTHON)) {
 				log::add($_logName, 'debug', '[DepInfo][ERROR] Python venv introuvable');
 				$return['state'] = 'nok';
-			} elseif ((int) exec(self::VENV_PYTHON . ' -m pip freeze | grep -Eiwc "' . config::byKey('pythonDepString', 'Nut_free', '', true) . '"') < (int) config::byKey('pythonDepNum', 'Nut_free', 0, true)) {
+			} elseif ((int) exec(self::VENV_PYTHON . ' -m pip --no-cache-dir freeze | grep -Eiwc "' . config::byKey('pythonDepString', 'Nut_free', '', true) . '"') < (int) config::byKey('pythonDepNum', 'Nut_free', 0, true)) {
 				log::add($_logName, 'debug', '[DepInfo][ERROR] Missing Python dependencies');
 				$return['state'] = 'nok';
 			} else {
