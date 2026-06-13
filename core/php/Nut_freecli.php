@@ -30,7 +30,7 @@ if (!isset($argv[2])) {
 }
 
 $_logName = $argv[2];
-$_depPlugin = isset($argv[3]) ? $argv[3] : '';
+$_depPlugin = isset($argv[3]) ? $argv[3] : 'SSH-Manager';
 
 switch ($argv[1]) {
     case 'depinstall':
