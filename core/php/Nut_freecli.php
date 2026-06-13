@@ -30,22 +30,23 @@ if (!isset($argv[2])) {
 }
 
 $_logName = $argv[2];
+$_depPlugin = isset($argv[3]) ? $argv[3] : '';
 
 switch ($argv[1]) {
     case 'depinstall':
         try {
             $_plugin = plugin::byId('sshmanager');
-            log::add($_logName, 'info', '[DEP-INSTALL] Le plugin SSH-Manager est déjà installé');
+            log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Plugin déjà installé');
             if (!$_plugin->isActive()) {
-                log::add($_logName, 'error', '[DEP-INSTALL] Le plugin SSH-Manager n\'est pas activé');
+                log::add($_logName, 'error', '[DEP-INSTALL][' . $_depPlugin . '] Plugin non activé');
                 $_plugin->setIsEnable(1, true, true);
-                log::add($_logName, 'info', '[DEP-INSTALL] Activation du plugin SSH-Manager');
+                log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Activation du plugin');
             } else {
-                log::add($_logName, 'info', '[DEP-INSTALL] Plugin SSH-Manager :: actif');
+                log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Plugin actif');
             }
         } catch (Exception $e) {
-            log::add($_logName, 'warning', '[DEP-INSTALL] ' . $e->getMessage());
-            log::add($_logName, 'info', '[DEP-INSTALL] Lancement de l\'installation du plugin SSH-Manager');
+            log::add($_logName, 'warning', '[DEP-INSTALL][' . $_depPlugin . '] ' . $e->getMessage());
+            log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Lancement de l\'installation');
 
             // Installation de SSH-Manager depuis la même source que NUT Free
             $_pluginSource    = update::byLogicalId('Nut_free');
@@ -62,15 +63,15 @@ switch ($argv[1]) {
                 $_pluginToInstall->setConfiguration('repository', 'SSH-Manager');
                 if (strpos($_pluginSource->getConfiguration('version', 'stable'), 'dev') !== false) {
                     $_pluginToInstall->setConfiguration('version', 'dev');
-                    log::add($_logName, 'info', '[DEP-INSTALL] Installation de la version :: dev (GitHub)');
+                    log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Installation version :: dev (GitHub)');
                 } else {
                     $_pluginToInstall->setConfiguration('version', $_pluginSource->getConfiguration('version', 'stable'));
-                    log::add($_logName, 'info', '[DEP-INSTALL] Installation de la version :: ' . $_pluginSource->getConfiguration('version', 'stable') . ' (GitHub)');
+                    log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Installation version :: ' . $_pluginSource->getConfiguration('version', 'stable') . ' (GitHub)');
                 }
                 $_pluginToInstall->setConfiguration('token', $_pluginSource->getConfiguration('token'));
             } else {
                 $_pluginToInstall->setConfiguration('version', $_pluginSource->getConfiguration('version', 'stable'));
-                log::add($_logName, 'info', '[DEP-INSTALL] Installation de la version :: ' . $_pluginSource->getConfiguration('version', 'stable') . ' (Market)');
+                log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Installation version :: ' . $_pluginSource->getConfiguration('version', 'stable') . ' (Market)');
             }
             $_pluginToInstall->save();
             $_pluginToInstall->doUpdate();
@@ -84,29 +85,29 @@ switch ($argv[1]) {
                     $_plugin = plugin::byId('sshmanager');
                     $isNotInstalled = false;
                 } catch (Exception $e) {
-                    log::add($_logName, 'debug', '[DEP-INSTALL] Attente (' . strval($num) . ') :: ' . $e->getMessage());
+                    log::add($_logName, 'debug', '[DEP-INSTALL][' . $_depPlugin . '] Attente (' . strval($num) . ') :: ' . $e->getMessage());
                     $num--;
                     sleep(1);
                 }
             }
 
             if ($num == 0) {
-                log::add($_logName, 'error', '[DEP-INSTALL] Le plugin SSH-Manager n\'a pas pu être installé !');
+                log::add($_logName, 'error', '[DEP-INSTALL][' . $_depPlugin . '] Plugin non installé !');
             } else {
-                log::add($_logName, 'info', '[DEP-INSTALL] Le plugin SSH-Manager est maintenant installé');
+                log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Plugin installé');
                 if (is_object($_plugin)) {
                     try {
                         $_plugin->setIsEnable(1, true, true);
-                        log::add($_logName, 'info', '[DEP-INSTALL] Le plugin SSH-Manager est maintenant activé');
+                        log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Plugin activé');
                         jeedom::cleanFileSystemRight();
                     } catch (\Throwable $e) {
-                        log::add($_logName, 'warning', '[DEP-INSTALL] Exception :: ' . $e->getMessage());
-                        log::add($_logName, 'error', '[DEP-INSTALL] Le plugin SSH-Manager n\'a pas pu être activé !');
+                        log::add($_logName, 'warning', '[DEP-INSTALL][' . $_depPlugin . '] Exception :: ' . $e->getMessage());
+                        log::add($_logName, 'error', '[DEP-INSTALL][' . $_depPlugin . '] Plugin non activé !');
                     }
                 }
             }
         }
-        log::add($_logName, 'info', '[DEP-INSTALL] >>>> Fin des dépendances <<<<');
+        log::add($_logName, 'info', '[DEP-INSTALL][' . $_depPlugin . '] Vérification terminée');
         break;
 
     default:
@@ -118,5 +119,5 @@ function help() {
     echo "Usage:  Nut_freecli.php [OPTIONS] COMMAND\n\n";
     echo "Nut_freecli permet d'effectuer des actions sur le plugin en ligne de commande\n\n";
     echo "Commands :\n";
-    echo "\t depinstall : installe le plugin SSH-Manager (optionnel, mode distant uniquement)\n";
+    echo "\t depinstall <logName> <pluginName> : installe le plugin dépendant (optionnel, mode distant uniquement)\n";
 }
