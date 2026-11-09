@@ -59,6 +59,3 @@ id_rsa*
 
 # Documentation Interne
 resources/_docs/
-
-# Github Instructions
-.github/copilot-instructions.md
